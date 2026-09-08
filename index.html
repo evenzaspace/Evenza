@@ -2095,6 +2095,7 @@ async function renderEspace(){
           <span class="esp-nm"><b>${esc(e.name)}</b><small>${esc(fmtDate(e.date))}${e.venue?' · '+esc(e.venue):''} · ${int(e.nGuests)} invités · ${int(e.sent)} invitations envoyées</small></span>
           <span class="esp-acts">
             <a class="mini-btn" href="#/e/${e.slug}/plan">Ouvrir</a>
+            <button class="mini-btn" data-renev="${e.slug}">Renommer</button>
             ${C.duplicate?`<button class="mini-btn" data-dupev="${e.slug}">Dupliquer</button>`:''}
             <button class="mini-btn danger" data-delev="${e.slug}">Supprimer</button>
           </span></div>`).join('')}</div>`
@@ -2186,6 +2187,22 @@ async function renderEspace(){
       pfJobSel=b.dataset.pfjob;
       document.querySelectorAll('[data-pfjob]').forEach(x=>x.classList.toggle('sel',x.dataset.pfjob===pfJobSel));});
   };
+  document.querySelectorAll('[data-renev]').forEach(b=>b.onclick=()=>{
+    const e=evs.find(x=>x.slug===b.dataset.renev);if(!e)return;
+    dialog({title:'Renommer l\u2019événement',
+      body:`<div class="field" style="margin-bottom:0"><label>Nom de l'événement</label>
+        <input class="inp" id="renName" value="${esc(e.name)}" placeholder="Nom de l'événement"></div>`,
+      ok:'Enregistrer',
+      onOk:async()=>{
+        const nv=($('renName')?$('renName').value:'').trim();
+        if(!nv){toast('Le nom ne peut pas être vide');return;}
+        if(nv===e.name)return;
+        const {data:row}=await sb.from('events').select('data').eq('id',e.id).maybeSingle();
+        const d=(row&&row.data)||{};
+        d.name=nv;
+        const {error}=await sb.from('events').update({data:d}).eq('id',e.id);
+        if(error){toast('Erreur : '+error.message);return;}
+        renderEspace();toast('Événement renommé');}});});
   document.querySelectorAll('[data-delev]').forEach(b=>b.onclick=()=>{
     const e=evs.find(x=>x.slug===b.dataset.delev);if(!e)return;
     dialog({title:'Supprimer '+e.name+' ?',
