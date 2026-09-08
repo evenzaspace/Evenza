@@ -663,6 +663,35 @@ footer{background:var(--navy-ink);color:rgba(255,255,255,.6);padding:44px 0 30px
 .song b{font-weight:600;color:var(--navy)}
 .song small{color:var(--muted);font-size:12px;display:block}
 .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(90px);background:var(--navy);color:#fff;padding:13px 22px;border-radius:100px;font-size:14px;font-weight:600;box-shadow:var(--shadow-lg);z-index:200;transition:transform .28s ease;pointer-events:none}
+
+/* ---- Guide d'usager ---- */
+.tour{position:fixed;inset:0;z-index:600;background:rgba(8,26,51,.62);backdrop-filter:blur(4px);
+  display:none;align-items:center;justify-content:center;padding:22px}
+.tour.on{display:flex}
+.tour-card{background:#fff;border-radius:20px;box-shadow:var(--shadow-lg);max-width:460px;width:100%;
+  overflow:hidden;animation:tourIn .28s ease}
+@keyframes tourIn{from{opacity:0;transform:translateY(14px) scale(.98)}to{opacity:1;transform:none}}
+.tour-top{background:var(--navy);color:#fff;padding:24px 26px 22px;position:relative;overflow:hidden}
+.tour-top::before{content:"";position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.06) 1px,transparent 1px);background-size:22px 22px}
+.tour-top>*{position:relative}
+.tour-ic{font-size:30px;margin-bottom:10px;display:block}
+.tour-top h3{font-family:var(--font-display);font-size:20px;font-weight:700;letter-spacing:-.01em;line-height:1.2}
+.tour-body{padding:22px 26px 8px}
+.tour-body p{font-size:15px;color:var(--text);line-height:1.6;margin-bottom:10px}
+.tour-body b{color:var(--navy)}
+.tour-foot{padding:14px 26px 22px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.tour-dots{display:flex;gap:6px}
+.tour-dot{width:7px;height:7px;border-radius:50%;background:var(--line)}
+.tour-dot.on{background:var(--gold);width:20px;border-radius:100px}
+.tour-btns{display:flex;gap:8px}
+.tour-skip{background:none;color:var(--muted);font-size:13.5px;font-weight:600;padding:9px 6px}
+.tour-skip:hover{color:var(--navy)}
+.help-btn{position:fixed;right:20px;bottom:20px;z-index:180;width:46px;height:46px;border-radius:50%;
+  background:var(--navy);color:#fff;font-family:var(--font-display);font-size:22px;font-weight:700;
+  box-shadow:var(--shadow-md);display:none;align-items:center;justify-content:center;transition:transform .16s,background .16s}
+.help-btn:hover{transform:translateY(-2px);background:var(--navy-deep)}
+body.app-on .help-btn{display:flex}
+@media print{.help-btn{display:none !important}}
 .toast.on{transform:translateX(-50%) translateY(0)}
 @media print{
   body{background:#fff}
@@ -963,6 +992,10 @@ footer{background:var(--navy-ink);color:rgba(255,255,255,.6);padding:44px 0 30px
 
 <!-- ==================== DIALOGUE ==================== -->
 <div id="dlg" class="dlg"><div class="dlg-card" id="dlgCard"></div></div>
+
+<!-- ==================== GUIDE D'USAGER ==================== -->
+<div id="tour" class="tour"><div class="tour-card" id="tourCard"></div></div>
+<button id="helpBtn" class="help-btn" title="Aide et visite guidée" aria-label="Aide">?</button>
 
 <div class="toast" id="toast"></div>
 <script>
@@ -3137,7 +3170,7 @@ async function route(){
       // le webhook Stripe peut prendre quelques secondes : on rafraîchit une 2e fois
       setTimeout(async()=>{await refreshSession();if(location.hash.indexOf('espace')>=0)renderEspace();},3500);
     }
-    show('espace');renderEspace();return;}
+    show('espace');renderEspace();maybeAutoTour();return;}
   if(p[0]==='m'&&p[1]){
     if(!USER){location.hash='#/compte';return;}
     show('work');renderTplWork(p[1]);return;}
@@ -3147,6 +3180,51 @@ async function route(){
   show(null);}
 window.addEventListener('hashchange',route);
 
+/* ============================================================
+   GUIDE D'USAGER (tour guidé + bouton Aide)
+============================================================ */
+const TOUR_STEPS=[
+  {ic:'👋',t:'Bienvenue sur Evenza',
+   p:`Evenza réunit <b>votre plan de salle, vos invitations et vos confirmations</b> au même endroit. Ce petit guide vous montre l'essentiel en 1 minute. Vous pourrez le relancer à tout moment avec le bouton <b>?</b> en bas à droite.`},
+  {ic:'🎉',t:'1. Créez votre événement',
+   p:`Depuis votre espace, cliquez sur <b>Nouvel événement</b>. Choisissez le type (mariage, anniversaire…), la date, la salle et le nombre d'invités. Un plan de salle de départ est généré automatiquement.`},
+  {ic:'🪑',t:'2. Dessinez le plan de salle',
+   p:`Dans l'onglet <b>Plan de salle</b>, choisissez une disposition, ajoutez des tables et des zones (piste, DJ, buffet…), et <b>déplacez tout au doigt</b>. Touchez « Ouvrir en grand » pour l'éditeur plein écran.`},
+  {ic:'👥',t:'3. Ajoutez vos invités',
+   p:`Onglet <b>Invités</b> : ajoutez-les un par un ou collez toute une liste. Mettez leur <b>courriel</b> pour pouvoir leur envoyer l'invitation. Puis touchez un invité et une chaise pour le placer.`},
+  {ic:'📨',t:'4. Envoyez les invitations',
+   p:`Onglet <b>Envois</b> : cliquez sur <b>Envoyer par Evenza</b>. Chaque invité reçoit un courriel avec sa place à table et un lien pour confirmer. Les 2 $ par invitation sont facturés après l'envoi.`},
+  {ic:'✅',t:'5. Suivez les réponses en direct',
+   p:`Onglet <b>Suivi</b> : les confirmations arrivent <b>toutes seules</b> dès qu'un invité répond. Le jour J, l'onglet <b>Arrivées</b> vous sert à pointer les présents. Bon événement !`}
+];
+let tourI=0;
+function renderTour(){
+  const s=TOUR_STEPS[tourI],last=tourI===TOUR_STEPS.length-1,first=tourI===0;
+  $('tourCard').innerHTML=`
+    <div class="tour-top"><span class="tour-ic">${s.ic}</span><h3>${s.t}</h3></div>
+    <div class="tour-body"><p>${s.p}</p></div>
+    <div class="tour-foot">
+      <div class="tour-dots">${TOUR_STEPS.map((_,i)=>`<span class="tour-dot${i===tourI?' on':''}"></span>`).join('')}</div>
+      <div class="tour-btns">
+        ${last?'':'<button class="tour-skip" id="tourSkip">Passer</button>'}
+        ${first?'':'<button class="mini-btn" id="tourPrev">Précédent</button>'}
+        <button class="btn btn-gold btn-sm" id="tourNext">${last?'C\u2019est parti !':'Suivant'}</button>
+      </div>
+    </div>`;
+  if($('tourSkip'))$('tourSkip').onclick=closeTour;
+  if($('tourPrev'))$('tourPrev').onclick=()=>{if(tourI>0){tourI--;renderTour();}};
+  $('tourNext').onclick=()=>{if(last)closeTour();else{tourI++;renderTour();}};
+}
+function openTour(){tourI=0;$('tour').classList.add('on');renderTour();}
+function closeTour(){
+  $('tour').classList.remove('on');
+  try{localStorage.setItem('evz.tourSeen','1');}catch(e){}
+}
+function maybeAutoTour(){
+  let seen=false;try{seen=localStorage.getItem('evz.tourSeen')==='1';}catch(e){}
+  if(!seen)setTimeout(openTour,700);
+}
+
 /* ---------------- Démarrage ---------------- */
 (async function(){
   initSetup();
@@ -3154,6 +3232,8 @@ window.addEventListener('hashchange',route);
     if(b.dataset.plan){authPlan=planKey(b.dataset.plan);if(USER)setPlan(authPlan);}
     location.hash=USER?'#/creer':'#/compte';});
   $('wkPrint').onclick=()=>window.print();
+  if($('helpBtn'))$('helpBtn').onclick=openTour;
+  if($('tour'))$('tour').onclick=e=>{if(e.target===$('tour'))closeTour();};
   $('fsCloseBtn').onclick=fsClose;
   $('fsIn').onclick=()=>fsZoom(1.12);
   $('fsOut').onclick=()=>fsZoom(1/1.12);
