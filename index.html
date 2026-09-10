@@ -7,7 +7,7 @@
 <meta name="description" content="Plan de salle déplaçable au doigt, zones piste de danse, DJ et buffet, placement des invités et invitations personnalisées.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Dancing+Script:wght@500;600&display=swap" rel="stylesheet">
 <style>
 
 :root{
@@ -44,6 +44,7 @@ input,select,textarea{font-family:inherit;font-size:15px;color:var(--text)}
 .mini-btn{border:1px solid var(--line);background:var(--white);border-radius:9px;padding:9px 14px;font-size:13.5px;font-weight:600;color:var(--navy);display:inline-flex;align-items:center;gap:7px}
 .mini-btn:hover{border-color:var(--navy)}
 .logo{display:flex;align-items:center;gap:10px;font-family:var(--font-display);font-weight:700;font-size:20px;color:var(--navy);letter-spacing:-.02em}
+#site header .logo{font-family:'Cormorant Garamond',serif;font-weight:700;font-size:27px;letter-spacing:0}
 .logo-mark{width:32px;height:32px;border-radius:9px;background:var(--navy);display:grid;place-items:center;flex-shrink:0}
 .inp{width:100%;border:1.5px solid var(--line);border-radius:var(--radius-sm);padding:11px 13px;background:var(--white);transition:border-color .16s,box-shadow .16s}
 .inp:focus{outline:none;border-color:var(--navy);box-shadow:0 0 0 3px rgba(15,45,82,.07)}
@@ -58,7 +59,7 @@ textarea.inp{resize:vertical;min-height:70px;line-height:1.5}
 /* ================= LANDING ================= */
 .view{display:none}.view.on{display:block}
 body.app-on #site{display:none}
-header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.88);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+header{position:sticky;top:0;z-index:50;background:rgba(251,247,241,.9);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid #ECE3D5}
 .nav{display:flex;align-items:center;justify-content:space-between;height:66px}
 .nav-links{display:flex;gap:26px;font-size:15px;font-weight:500;color:var(--muted)}
 .nav-links a:hover{color:var(--navy)}
@@ -75,6 +76,70 @@ header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.88);backdro
 .hero-cta{display:flex;gap:13px;flex-wrap:wrap;margin-bottom:28px}
 .hero-tags{display:flex;gap:18px;flex-wrap:wrap;font-size:14px;color:rgba(255,255,255,.6)}
 .hero-tags span{display:inline-flex;align-items:center;gap:8px}
+
+/* ---- Police serif chic (façon maquette) ---- */
+.serif{font-family:'Cormorant Garamond',serif !important;font-weight:600;letter-spacing:0}
+
+/* ---- Hero 3 (exact maquette) ---- */
+.hero3{background:linear-gradient(180deg,#FBF7F1 0%,#F6F0E7 100%);padding:64px 0 72px;overflow:hidden}
+.hero3-in{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center}
+@media(max-width:940px){.hero3-in{grid-template-columns:1fr;gap:36px}}
+.hero3-eyebrow{font-family:var(--font-mono);font-size:12px;letter-spacing:.18em;color:var(--gold);display:block;margin-bottom:22px}
+.hero3 h1{font-family:'Cormorant Garamond',serif;font-weight:600;font-size:clamp(48px,7vw,84px);line-height:.98;letter-spacing:-.01em;color:var(--navy);margin-bottom:24px}
+.hero3 h1 em{font-style:normal;color:#C9A24B}
+.hero3-lead{font-size:18px;color:var(--muted);margin-bottom:30px;line-height:1.6}
+.hero3-cta{padding:15px 28px;font-size:15.5px;border-radius:12px}
+.hero3-trust{display:flex;align-items:center;gap:12px;margin-top:30px}
+.hero3-avatars{display:flex}
+.hero3-avatars img{width:38px;height:38px;border-radius:50%;border:2px solid #fff;object-fit:cover;margin-left:-10px;box-shadow:0 2px 6px rgba(0,0,0,.1)}
+.hero3-avatars img:first-child{margin-left:0}
+.hero3-trust span{font-size:13.5px;color:var(--muted)}
+.hero3-img{position:relative;border-radius:18px;overflow:hidden;box-shadow:var(--shadow-lg);aspect-ratio:9/10}
+.hero3-img img{width:100%;height:100%;object-fit:cover;display:block}
+.hero3-vert{position:absolute;top:24px;right:-38px;transform:rotate(90deg);transform-origin:right top;
+  font-family:var(--font-mono);font-size:11px;letter-spacing:.22em;color:rgba(255,255,255,.9);text-shadow:0 1px 4px rgba(0,0,0,.3)}
+@media(max-width:940px){.hero3-vert{display:none}}
+
+/* ---- Section 3 profils (exact maquette) ---- */
+.profils{padding:84px 0;background:#FBF7F1}
+.profils .kicker{text-align:center;letter-spacing:.16em}
+.profils h2{font-size:clamp(30px,4vw,44px);font-weight:600}
+.prof-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin:44px 0 60px}
+@media(max-width:900px){.prof-grid{grid-template-columns:1fr;max-width:420px;margin:44px auto 48px}}
+.prof-card{background:#fff;border:1px solid #EEE6D9;border-radius:8px;overflow:hidden;transition:transform .2s,box-shadow .2s}
+.prof-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-md)}
+.prof-photo{aspect-ratio:6/5;overflow:hidden}
+.prof-photo img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .4s}
+.prof-card:hover .prof-photo img{transform:scale(1.04)}
+.prof-body{padding:22px 24px 26px}
+.prof-tag{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.14em;color:var(--gold);display:block;margin-bottom:12px}
+.prof-body h3{font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:600;color:var(--navy);margin-bottom:12px;line-height:1.05}
+.prof-body p{font-size:14.5px;color:var(--muted);line-height:1.55;margin-bottom:22px}
+.steps3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;max-width:820px;margin:0 auto;position:relative}
+.steps3-line{position:absolute;top:22px;left:16%;right:16%;height:1px;background:#E0D5C4;z-index:0}
+@media(max-width:700px){.steps3{grid-template-columns:1fr;gap:26px}.steps3-line{display:none}}
+.step3{text-align:center;position:relative;z-index:1}
+.step3-num{width:44px;height:44px;border-radius:50%;background:#F3EADB;border:1px solid #E0D5C4;color:var(--navy);font-family:'Cormorant Garamond',serif;font-weight:700;font-size:20px;display:grid;place-items:center;margin:0 auto 14px}
+.step3 b{display:block;font-family:var(--font-body);font-size:15.5px;font-weight:600;color:var(--navy);margin-bottom:4px}
+.step3 small{font-size:13px;color:var(--muted)}
+
+/* ---- Section histoire (bas de maquette) ---- */
+.story{position:relative;overflow:hidden;padding:0}
+.story-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.28}
+.story::before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,#FBF7F1 0%,rgba(251,247,241,.6) 60%,rgba(251,247,241,.3) 100%)}
+.story-in{position:relative;display:flex;justify-content:space-between;align-items:center;gap:30px;padding:80px 24px;flex-wrap:wrap}
+.story h2{font-family:'Cormorant Garamond',serif;font-size:clamp(32px,4.5vw,52px);font-weight:600;color:var(--navy);line-height:1.05}
+.story-script{font-family:'Dancing Script',cursive;font-size:clamp(22px,3vw,30px);color:var(--muted);line-height:1.4;text-align:right}
+
+/* ---- Harmonisation couleurs landing (façon maquette crème) ---- */
+#site .hero3-eyebrow,#site .profils .kicker,#site .prof-tag{color:#B8933F}
+#site .hero3 h1 em{color:#C29A45}
+#site .nav-links a{color:#6B5D4A}
+#site .nav-links a:hover{color:var(--navy)}
+#site .nav-login{color:var(--navy)}
+#site header .btn-navy{background:var(--navy)}
+.prof-card{border-color:#EBE1D2}
+.step3-num{background:#F5EDE0;border-color:#E4D9C7}
 @media(max-width:940px){.hero-in{grid-template-columns:1fr;gap:48px;padding:56px 0 74px}}
 .shot{background:#fff;border-radius:16px;box-shadow:var(--shadow-lg);overflow:hidden}
 .shot .bar{height:34px;background:var(--gray);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:6px;padding:0 14px}
@@ -567,6 +632,152 @@ footer{background:var(--navy-ink);color:rgba(255,255,255,.6);padding:44px 0 30px
 .paybox .v button{font-size:12px;font-weight:600;color:var(--gold);flex-shrink:0}
 .code-out{background:var(--gray);border:1px solid var(--line);border-radius:10px;padding:12px;font-family:var(--font-mono);font-size:11.5px;color:var(--navy);word-break:break-all;line-height:1.5;margin-top:12px}
 
+/* ---- Hébergements sur l'invitation ---- */
+.iv-lodge .lodge{border:1px solid var(--ivline);border-radius:12px;padding:12px 14px;margin-bottom:9px;display:flex;flex-direction:column;gap:3px}
+.iv-lodge .lodge b{color:var(--ivink);font-size:14.5px}
+.iv-lodge .lodge-price{font-family:var(--font-mono);font-size:12.5px;color:var(--ivacc);font-weight:600}
+.iv-lodge .lodge small{color:var(--ivmut);font-size:12.5px}
+.iv-lodge .lodge-link{color:var(--ivacc);font-weight:600;font-size:13px;margin-top:3px;align-self:flex-start}
+/* ---- Lignes hébergements/prestataires dans les réglages ---- */
+.lodge-row{border:1px solid var(--line);border-radius:12px;padding:13px;margin-bottom:10px;background:var(--gray)}
+
+/* ---- Budget ---- */
+.bud-list{display:flex;flex-direction:column;gap:10px}
+.bud-row{border:1px solid var(--line);border-radius:12px;padding:11px 12px;background:var(--gray);display:flex;flex-direction:column;gap:8px}
+.bud-main{display:grid;grid-template-columns:150px 1fr;gap:8px}
+.bud-cat{font-weight:600;color:var(--navy)}
+.bud-nums{display:flex;gap:8px;align-items:flex-end}
+.bud-nums label{flex:1;font-size:11.5px;font-weight:600;color:var(--muted);display:flex;flex-direction:column;gap:3px}
+.bud-nums .inp{padding:8px 10px;font-size:14px}
+.bud-del{flex-shrink:0;padding:8px 12px;height:38px}
+@media(max-width:560px){.bud-main{grid-template-columns:1fr}}
+.bud-bar-wrap{margin:4px 0 8px}
+.bud-bar{height:12px;background:var(--gray);border:1px solid var(--line);border-radius:100px;overflow:hidden}
+.bud-bar-fill{height:100%;background:linear-gradient(90deg,#D4A017,#E8C25A);border-radius:100px;transition:width .3s}
+.bud-bar-fill.over{background:linear-gradient(90deg,#C74A4A,#E07A7A)}
+.bud-bar-labels{display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted);margin-top:6px;font-weight:600}
+
+/* ---- Accueil / tableau de bord du mariage ---- */
+.ac-hero{background:linear-gradient(135deg,var(--navy),var(--navy-deep));border-radius:20px;padding:32px 30px;margin-bottom:16px;position:relative;overflow:hidden}
+.ac-hero::before{content:"";position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.05) 1px,transparent 1px);background-size:24px 24px}
+.ac-hero::after{content:"";position:absolute;top:-120px;right:-90px;width:340px;height:340px;border-radius:50%;background:radial-gradient(circle,rgba(212,160,23,.16),transparent 62%)}
+.ac-hero-txt{position:relative}
+.ac-eyebrow{font-family:var(--font-mono);font-size:11.5px;letter-spacing:.14em;color:var(--gold);display:block;margin-bottom:10px}
+.ac-hero h1{font-family:var(--font-display);font-size:clamp(28px,4vw,40px);font-weight:700;color:#fff;letter-spacing:-.02em;line-height:1.1;margin-bottom:14px}
+.ac-meta{display:flex;gap:18px;flex-wrap:wrap;color:rgba(255,255,255,.82);font-size:14.5px}
+.ac-stats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:16px}
+@media(max-width:820px){.ac-stats{grid-template-columns:repeat(2,1fr)}}
+.ac-stat{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:2px;transition:transform .16s,box-shadow .16s}
+.ac-stat:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+.ac-stat .ac-ic{font-size:20px;margin-bottom:6px}
+.ac-stat b{font-family:var(--font-mono);font-size:26px;font-weight:600;color:var(--navy);line-height:1}
+.ac-stat small{font-size:12.5px;color:var(--muted)}
+.ac-stat.ok{background:#F1FAF5;border-color:#CDEBDC}.ac-stat.ok b{color:#157A4C}
+.ac-stat.wait{background:#FCF8EC;border-color:#F0E3B8}.ac-stat.wait b{color:#8A6D00}
+.ac-stat.no{background:#FCF3F3;border-color:#F2D5D5}.ac-stat.no b{color:#9C3838}
+.ac-grid{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:16px;align-items:start}
+@media(max-width:1040px){.ac-grid{grid-template-columns:1fr}}
+.ac-progress{height:8px;background:var(--gray);border-radius:100px;overflow:hidden;margin-bottom:14px}
+.ac-progress-fill{height:100%;background:linear-gradient(90deg,#D4A017,#E8C25A);border-radius:100px;transition:width .3s}
+.ac-steps{display:flex;flex-direction:column;gap:9px}
+.ac-step{display:flex;align-items:center;gap:11px;font-size:14.5px;color:var(--text)}
+.ac-step .ac-check{width:22px;height:22px;border-radius:7px;border:1.6px solid var(--line);flex-shrink:0;display:grid;place-items:center;font-size:13px;color:#fff}
+.ac-step.done{color:var(--muted)}
+.ac-step.done .ac-check{background:var(--green);border-color:var(--green)}
+.ac-done-banner{background:#F1FAF5;border:1px solid #CDEBDC;color:#157A4C;border-radius:11px;padding:12px;text-align:center;font-weight:600;font-size:14px;margin-top:14px}
+.ac-budget-total{font-family:var(--font-display);font-size:32px;font-weight:700;color:var(--navy);letter-spacing:-.02em}
+.ac-budget-sub{font-size:13px;color:var(--muted)}
+.ac-send{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line)}
+.ac-send:last-of-type{border-bottom:none}
+.ac-send .av{width:34px;height:34px;border-radius:50%;background:var(--gray);color:var(--navy);display:grid;place-items:center;font-size:12px;font-weight:700;flex-shrink:0}
+.ac-send-nm{flex:1;min-width:0}
+.ac-send-nm b{display:block;font-size:13.5px;font-weight:600;color:var(--navy);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ac-send-nm small{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+/* ---- Accueil : prestataires ---- */
+.ac-vendors{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+@media(max-width:820px){.ac-vendors{grid-template-columns:repeat(2,1fr)}}
+.ac-vcat{border:1px solid var(--line);border-radius:14px;padding:16px 12px;background:var(--gray);display:flex;flex-direction:column;align-items:center;gap:7px;font-size:13.5px;font-weight:600;color:var(--navy);transition:transform .16s,box-shadow .16s,border-color .16s}
+.ac-vcat:hover{transform:translateY(-2px);box-shadow:var(--shadow-sm);border-color:var(--navy);background:#fff}
+.ac-vcat .ac-vic{font-size:24px}
+/* ---- Accueil : inspiration ---- */
+.ac-inspo{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin-top:4px}
+.ac-inspo-item{position:relative;border-radius:12px;overflow:hidden;aspect-ratio:1;border:1px solid var(--line)}
+.ac-inspo-item img{width:100%;height:100%;object-fit:cover;display:block}
+.ac-inspo-x{position:absolute;top:6px;right:6px;width:24px;height:24px;border-radius:50%;background:rgba(8,26,51,.72);color:#fff;font-size:16px;display:grid;place-items:center;backdrop-filter:blur(4px)}
+.ac-inspo-x:hover{background:var(--red)}
+.ac-inspo-add{aspect-ratio:1;border:1.5px dashed var(--line);border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;color:var(--muted);transition:border-color .16s,color .16s}
+.ac-inspo-add:hover{border-color:var(--navy);color:var(--navy)}
+.ac-inspo-plus{font-size:28px;font-weight:300;line-height:1}
+.ac-inspo-add small{font-size:12px;font-weight:600}
+
+/* ---- Espaces : grille de cubes ---- */
+.sp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px}
+.sp-cube{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;text-align:left;transition:transform .18s,box-shadow .18s;display:flex;flex-direction:column}
+.sp-cube:hover{transform:translateY(-4px);box-shadow:var(--shadow-md)}
+.sp-cube-top{height:110px;background:linear-gradient(140deg,#F5EDE0,#EFE4D2);position:relative;display:grid;place-items:center;overflow:hidden}
+.sp-cube-top img{position:absolute;width:100%;height:100%;object-fit:cover;top:0;left:0}
+.sp-cube-top img:nth-child(2){clip-path:inset(0 0 0 66%)}
+.sp-cube-top img:nth-child(3){clip-path:inset(0 0 0 33% 0 66%)}
+.sp-cube-emoji{font-size:40px;filter:drop-shadow(0 3px 8px rgba(0,0,0,.12))}
+.sp-cube-body{padding:14px 16px 16px;display:flex;flex-direction:column;gap:2px;position:relative}
+.sp-cube-emoji-sm{position:absolute;top:-24px;left:14px;width:38px;height:38px;border-radius:11px;background:#fff;box-shadow:var(--shadow-sm);display:grid;place-items:center;font-size:19px}
+.sp-cube-body b{font-family:var(--font-display);font-size:16px;font-weight:600;color:var(--navy);margin-top:6px}
+.sp-cube-body small{font-size:12.5px;color:var(--muted)}
+.sp-cube-add{align-items:center;justify-content:center;gap:6px;border-style:dashed;color:var(--muted);min-height:180px}
+.sp-cube-add:hover{border-color:var(--navy);color:var(--navy)}
+.sp-add-plus{font-size:32px;font-weight:300;line-height:1}
+.sp-cube-add small{font-size:13px;font-weight:600}
+/* ---- Espaces : vue détail (moodboard) ---- */
+.sp-detail-head{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:18px;flex-wrap:wrap}
+.sp-detail-title{display:flex;align-items:center;gap:12px}
+.sp-detail-emoji{font-size:30px}
+.sp-detail-title h2{font-family:var(--font-display);font-size:26px;color:var(--navy);margin:0}
+.sp-add-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.sp-items{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;align-items:start}
+.sp-item{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
+.sp-item-img{aspect-ratio:4/3;overflow:hidden;background:var(--gray)}
+.sp-item-img img{width:100%;height:100%;object-fit:cover;display:block}
+.sp-link{border:none;border-bottom:1px solid var(--line);border-radius:0;font-size:13px;color:var(--navy);padding:10px 13px}
+.sp-note{border:none;border-radius:0;min-height:64px;resize:vertical;font-size:13.5px;padding:12px 13px;line-height:1.5}
+.sp-note:focus,.sp-link:focus{box-shadow:none;background:#FFFCF4}
+.sp-item-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 13px 12px;border-top:1px solid var(--line)}
+.sp-price{display:flex;align-items:center;gap:4px;background:var(--gray);border-radius:8px;padding:2px 8px}
+.sp-price span{font-family:var(--font-mono);font-size:12px;color:var(--muted)}
+.sp-price .inp{border:none;background:transparent;width:70px;padding:5px 2px;font-size:13px;font-family:var(--font-mono)}
+.sp-price .inp:focus{box-shadow:none}
+.sp-item-del{font-size:12px;color:var(--muted);font-weight:600}
+.sp-item-del:hover{color:var(--red)}
+/* ---- Partages prestataires (côté organisateur) ---- */
+.sp-share{border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:10px;background:var(--gray)}
+.sp-share-head{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.sp-share-role{font-size:14px;color:var(--navy)}
+.sp-contribs{margin-top:10px;display:flex;flex-direction:column;gap:8px}
+.sp-contrib{background:#fff;border:1px solid var(--line);border-radius:9px;padding:9px 12px;font-size:13.5px}
+.sp-contrib b{color:var(--navy);display:block;font-size:12.5px;margin-bottom:2px}
+.sp-contrib span{color:var(--text);line-height:1.5}
+.sp-contrib small{display:block;color:var(--muted);font-size:11px;margin-top:4px}
+/* ---- Vue prestataire (espace partagé public) ---- */
+#share{background:var(--gray);min-height:100vh;padding:30px 18px 60px}
+.shr{max-width:600px;margin:0 auto}
+.shr-card{background:#fff;border-radius:20px;box-shadow:var(--shadow-lg);overflow:hidden}
+.shr-top{background:linear-gradient(140deg,var(--navy),#2A5A9B);color:#fff;padding:28px 30px}
+.shr-eyebrow{font-family:var(--font-mono);font-size:11px;letter-spacing:.14em;color:var(--gold);display:block;margin-bottom:10px}
+.shr-top h1{font-family:var(--font-display);font-size:26px;font-weight:700;letter-spacing:-.01em;margin-bottom:6px}
+.shr-top p{color:rgba(255,255,255,.8);font-size:14.5px}
+.shr-body{padding:24px 30px 30px}
+.shr-intro{font-size:14px;color:var(--muted);line-height:1.6;margin-bottom:20px}
+.shr-items{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px}
+@media(max-width:520px){.shr-items{grid-template-columns:1fr}}
+.shr-item{border:1px solid var(--line);border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
+.shr-item img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block}
+.shr-item p{font-size:13.5px;color:var(--text);padding:10px 12px;line-height:1.5}
+.shr-link{font-size:12.5px;color:var(--navy);padding:10px 12px;word-break:break-all;border-bottom:1px solid var(--line)}
+.shr-price{font-family:var(--font-mono);font-size:12.5px;color:var(--gold);font-weight:600;padding:0 12px 10px}
+.shr-h3{font-family:var(--font-display);font-size:16px;color:var(--navy);margin:20px 0 12px}
+.shr-contribs{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
+.shr-contrib{background:var(--gray);border-radius:10px;padding:10px 13px;font-size:13.5px}
+.shr-contrib b{color:var(--navy);display:block;font-size:12.5px;margin-bottom:2px}
+
 
 /* ================= DESIGNS D'INVITATION ================= */
 .iv-card{--ivbg:#fff;--ivtop:linear-gradient(140deg,#0F2D52,#2A5A9B);--ivink:#0F2D52;
@@ -710,9 +921,10 @@ body.app-on .help-btn{display:flex}
   <div class="container nav">
     <a href="#/" class="logo"><span class="logo-mark"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M6 4h12M6 12h9M6 20h12M6 4v16" stroke="#fff" stroke-width="3" stroke-linecap="round"/><path d="M17 9l4 3-4 3" stroke="#D4A017" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Evenza</a>
     <nav class="nav-links">
-      <a href="#quoi">Ce que ça fait</a>
-      <a href="#comparer">Comparer</a>
-      <a href="#prix">Prix</a>
+      <a href="#/">Accueil</a>
+      <a href="#profils">Prestataires</a>
+      <a href="#/compte">Tarifs</a>
+      <a href="#story">À propos</a>
     </nav>
     <div style="display:flex;gap:10px;align-items:center">
       <a href="#/compte" class="nav-login" id="navLogin">Se connecter</a>
@@ -721,148 +933,82 @@ body.app-on .help-btn{display:flex}
   </div>
 </header>
 
-<section class="hero" style="padding:0">
-  <div class="container hero-in">
-    <div>
-      <span class="eyebrow"><i></i>Mariages &amp; anniversaires</span>
-      <h1>Votre plan de salle, vos invitations, <em>tout au même endroit.</em></h1>
-      <p class="lead">Dessinez la disposition des tables, placez chaque invité à sa chaise, envoyez les invitations personnalisées et suivez les confirmations. Sans tableur, sans stress.</p>
-      <div class="hero-cta">
-        <button class="btn btn-gold" data-go="setup">Créer mon compte
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-        <a href="#quoi" class="btn btn-ghost">Ce que ça fait</a>
-      </div>
-      <div class="hero-tags">
-        <span><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="m5 13 4 4L19 7" stroke="#D4A017" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>10 dispositions de tables</span>
-        <span><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="m5 13 4 4L19 7" stroke="#D4A017" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Invitations envoyées par Evenza</span>
-        <span><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="m5 13 4 4L19 7" stroke="#D4A017" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Playlist proposée par les invités</span>
+<section class="hero3">
+  <div class="container hero3-in">
+    <div class="hero3-txt">
+      <span class="hero3-eyebrow">MARIAGES &amp; ÉVÉNEMENTS</span>
+      <h1>Des moments<br><em>qui comptent.</em></h1>
+      <p class="hero3-lead">Planifiez, organisez et vivez votre mariage<br>en toute simplicité avec Evenza.</p>
+      <button class="btn btn-navy hero3-cta" data-go="setup">Commencer maintenant
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <div class="hero3-trust">
+        <div class="hero3-avatars">
+          <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop&crop=faces" alt="">
+          <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80&h=80&fit=crop&crop=faces" alt="">
+          <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=80&h=80&fit=crop&crop=faces" alt="">
+        </div>
+        <span>Déjà plus de 10 000 couples nous font confiance.</span>
       </div>
     </div>
-    <div class="shot">
-      <div class="bar"><i></i><i></i><i></i></div>
-      <div class="pad"><div id="heroPlan"></div></div>
+    <div class="hero3-img">
+      <img src="https://images.unsplash.com/photo-1519741497674-611481863552?w=900&h=1000&fit=crop" alt="Table de mariage élégante">
+      <span class="hero3-vert">PLANIFIER · CÉLÉBRER · PARTAGER</span>
     </div>
   </div>
 </section>
 
-<section id="quoi">
+<section class="profils">
   <div class="container">
     <div class="sec-head">
-      <span class="kicker">Tout le nécessaire</span>
-      <h2>De la première idée au dernier slow</h2>
-      <p>Six outils qui travaillent ensemble, pensés pour une seule soirée réussie.</p>
+      <span class="kicker">VOUS ÊTES ?</span>
+      <h2 class="serif">Une solution pour chaque histoire.</h2>
     </div>
-    <div class="f-grid">
-      <div class="f"><span class="ic"><svg width="21" height="21" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="16" rx="2.5" stroke="#fff" stroke-width="1.8"/><circle cx="9" cy="10" r="2.2" stroke="#fff" stroke-width="1.6"/><circle cx="15.5" cy="14.5" r="2.2" stroke="#fff" stroke-width="1.6"/></svg></span>
-        <h3>Plan de salle interactif</h3><p>Rondes, U, hexagones, impérial, cabaret… choisissez la disposition, les chaises se placent toutes seules.</p></div>
-      <div class="f"><span class="ic"><svg width="21" height="21" viewBox="0 0 24 24" fill="none"><circle cx="9" cy="8" r="3.2" stroke="#fff" stroke-width="1.8"/><path d="M2.5 19c.6-3 3.2-5 6.5-5s5.9 2 6.5 5" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/><path d="M17 8h5M19.5 5.5v5" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg></span>
-        <h3>Placement des invités</h3><p>Un clic sur l'invité, un clic sur la chaise. Chacun connaît sa table et son siège avant d'arriver.</p></div>
-      <div class="f"><span class="ic"><svg width="21" height="21" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2.5" stroke="#fff" stroke-width="1.8"/><path d="m3.5 7 8.5 6 8.5-6" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/></svg></span>
-        <h3>Invitations envoyées par Evenza</h3><p>Toutes les invitations partent du courriel d'Evenza : chaque invité reçoit un lien unique avec son nom, sa place et le déroulé de la soirée.</p></div>
-      <div class="f"><span class="ic"><svg width="21" height="21" viewBox="0 0 24 24" fill="none"><path d="M4 19V9m5.5 10V5M15 19v-7m5.5 7V8" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg></span>
-        <h3>Confirmations en direct</h3><p>Qui vient, qui ne vient pas, qui n'a pas répondu. Le compte se met à jour à chaque confirmation reçue.</p></div>
-      <div class="f"><span class="ic"><svg width="21" height="21" viewBox="0 0 24 24" fill="none"><path d="M9 18V5l11-2v13" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/><circle cx="6.5" cy="18" r="2.6" stroke="#fff" stroke-width="1.8"/><circle cx="17.5" cy="16" r="2.6" stroke="#fff" stroke-width="1.8"/></svg></span>
-        <h3>Playlist collaborative</h3><p>Chaque invité propose une ou deux chansons. Le DJ reçoit la liste complète.</p></div>
-      <div class="f"><span class="ic"><svg width="21" height="21" viewBox="0 0 24 24" fill="none"><path d="M12 3v18m5-14.5C17 4.6 14.8 4 12 4s-5 1-5 3 2 3 5 3 5 1 5 3-2.2 3-5 3-5-.6-5-2.5" stroke="#fff" stroke-width="1.9" stroke-linecap="round"/></svg></span>
-        <h3>Participation aux frais</h3><p>Si les places sont payantes, vos invités virent directement sur votre Interac. Vous suivez qui a payé.</p></div>
-    </div>
-  </div>
-</section>
-
-<section id="prix">
-  <div class="container">
-    <div class="sec-head">
-      <span class="kicker">Formules</span>
-      <h2>Un abonnement, et c'est tout</h2>
-      <p>Le seul montant récurrent est votre abonnement. Tout le reste — les invitations envoyées — est facturé après coup, par avis payable sous 7 jours par Interac.</p>
-    </div>
-    <div class="plans plans2">
-      <div class="plan">
-        <span class="plan-tag">Pour vos propres événements</span>
-        <h3>Personnel</h3>
-        <div class="plan-price"><b>10 $</b><span>/ mois</span></div>
-        <p class="plan-sub">+ 2 $ par invitation, facturés après l'envoi</p>
-        <ul>
-          <li>Jusqu'à 3 événements à la fois</li>
-          <li>Plan de salle complet</li>
-          <li>Les 6 designs d'invitation</li>
-          <li>Confirmations en direct + playlist</li>
-        </ul>
-        <button class="btn btn-outline" data-go="setup" data-plan="perso">Commencer</button>
+    <div class="prof-grid">
+      <div class="prof-card">
+        <div class="prof-photo"><img src="https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=600&h=500&fit=crop" alt=""></div>
+        <div class="prof-body">
+          <span class="prof-tag">FUTURS MARIÉS</span>
+          <h3 class="serif">Je prépare<br>mon mariage</h3>
+          <p>Créez votre événement et vivez chaque étape sereinement.</p>
+          <button class="btn btn-gold btn-sm" data-go="setup" data-plan="perso" style="width:100%">Créer mon mariage →</button>
+        </div>
       </div>
-
-      <div class="plan feature">
-        <span class="plan-tag gold">Pour les professionnels</span>
-        <h3>Event Planner</h3>
-        <div class="plan-price"><b>35 $</b><span>/ mois</span></div>
-        <p class="plan-sub">+ 2 $ par invitation, facturés après l'envoi</p>
-        <ul>
-          <li>Événements illimités</li>
-          <li>Modèles de salle réutilisables et illimités</li>
-          <li>Duplication d'un événement complet</li>
-          <li>Partage du plan avec vos fournisseurs</li>
-          <li>Les 6 designs d'invitation</li>
-        </ul>
-        <button class="btn btn-gold" data-go="setup" data-plan="planner">Commencer</button>
+      <div class="prof-card">
+        <div class="prof-photo"><img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=600&h=500&fit=crop&crop=faces" alt=""></div>
+        <div class="prof-body">
+          <span class="prof-tag">WEDDING PLANNER</span>
+          <h3 class="serif">Je suis<br>wedding planner</h3>
+          <p>Gérez vos mariages et vos clients au même endroit.</p>
+          <button class="btn btn-outline btn-sm" data-go="setup" data-plan="planner" style="width:100%">Voir les offres →</button>
+        </div>
+      </div>
+      <div class="prof-card">
+        <div class="prof-photo"><img src="https://images.unsplash.com/photo-1552334978-5f1649aef15d?w=600&h=500&fit=crop" alt=""></div>
+        <div class="prof-body">
+          <span class="prof-tag">PRESTATAIRES</span>
+          <h3 class="serif">Je suis<br>prestataire</h3>
+          <p>Soyez visible et connectez avec de futurs mariés.</p>
+          <button class="btn btn-outline btn-sm" data-go="setup" data-plan="planner" style="width:100%">Créer mon profil →</button>
+        </div>
       </div>
     </div>
-    <p class="plans-note">Les 2 $ par invitation ne sont jamais payés d'avance : une fois vos invitations parties, Evenza compte les envois réels, vous transmet un avis détaillé et vous avez 7 jours pour le régler par virement Interac.</p>
-  </div>
-</section>
-
-<section class="gray" id="comparer">
-  <div class="container">
-    <div class="sec-head">
-      <span class="kicker">Comparer</span>
-      <h2>Ce que comprend chaque abonnement</h2>
-      <p>La facturation fonctionne pareil dans tous les cas — seul le volume change.</p>
-    </div>
-    <div class="cmp-wrap">
-      <table class="cmp">
-        <thead><tr>
-          <th></th>
-          <th><b>Personnel</b><span>10 $ / mois</span></th>
-          <th class="hi"><b>Event Planner</b><span>35 $ / mois</span></th>
-        </tr></thead>
-        <tbody>
-          <tr class="grp"><td colspan="3">Organisation</td></tr>
-          <tr><td>Événements actifs</td><td>3</td><td class="hi">Illimités</td></tr>
-          <tr><td>Invités et invitations</td><td>Illimités</td><td class="hi">Illimités</td></tr>
-          <tr><td>Duplication d'un événement complet</td><td class="no">—</td><td class="hi ok">✓</td></tr>
-          <tr><td>Modèles de salle réutilisables</td><td class="no">—</td><td class="hi">Illimités</td></tr>
-          <tr><td>Partage du plan avec le traiteur et le DJ</td><td class="no">—</td><td class="hi ok">✓</td></tr>
-
-          <tr class="grp"><td colspan="3">Plan de salle</td></tr>
-          <tr><td>Dispositions et formes de tables</td><td class="ok">✓</td><td class="hi ok">✓</td></tr>
-          <tr><td>Zones : piste, DJ, buffet, bar, photobooth…</td><td class="ok">✓</td><td class="hi ok">✓</td></tr>
-          <tr><td>Éditeur plein écran, déplacement au doigt</td><td class="ok">✓</td><td class="hi ok">✓</td></tr>
-
-          <tr class="grp"><td colspan="3">Invitations</td></tr>
-          <tr><td>Designs d'invitation</td><td>Les 6</td><td class="hi">Les 6</td></tr>
-          <tr><td>Envoi par le courriel d'Evenza</td><td class="ok">✓</td><td class="hi ok">✓</td></tr>
-          <tr><td>Place à table sur chaque invitation</td><td class="ok">✓</td><td class="hi ok">✓</td></tr>
-          <tr><td>Confirmations en direct, playlist, déroulé</td><td class="ok">✓</td><td class="hi ok">✓</td></tr>
-
-          <tr class="grp"><td colspan="3">Facturation</td></tr>
-          <tr><td>Part Evenza par invitation envoyée</td><td>2 $</td><td class="hi">2 $</td></tr>
-          <tr><td>Avis automatique + Interac sous 7 jours</td><td class="ok">✓</td><td class="hi ok">✓</td></tr>
-          <tr><td>Participation des invités versée chez vous</td><td class="ok">✓</td><td class="hi ok">✓</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <p class="plans-note">Vos invités ne paient jamais Evenza : une participation demandée va directement sur votre compte Interac.</p>
-  </div>
-</section>
-
-<section class="gray" style="padding-top:0;padding-bottom:88px">
-  <div class="container">
-    <div class="cta-card">
-      <h2>Votre salle vous attend.</h2>
-      <p>Dix minutes pour tout mettre en place. Vos invités reçoivent leur invitation ce soir.</p>
-      <button class="btn btn-gold" data-go="setup">Commencer maintenant</button>
+    <div class="steps3">
+      <div class="steps3-line"></div>
+      <div class="step3"><span class="step3-num">1</span><b>Créez votre compte</b><small>En quelques secondes.</small></div>
+      <div class="step3"><span class="step3-num">2</span><b>Choisissez votre parcours</b><small>Marié, planner ou prestataire.</small></div>
+      <div class="step3"><span class="step3-num">3</span><b>Commencez à créer</b><small>Tout au même endroit.</small></div>
     </div>
   </div>
 </section>
+
+<section class="story">
+  <img class="story-bg" src="https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=1400&h=500&fit=crop" alt="">
+  <div class="container story-in">
+    <h2 class="serif">Parce que chaque<br>histoire est unique.</h2>
+    <p class="story-script">Plus qu'un outil,<br>une histoire à vos côtés.</p>
+  </div>
+</section>
+
 
 <footer>
   <div class="container foot">
@@ -954,6 +1100,8 @@ body.app-on .help-btn{display:flex}
   </div></div>
   <div class="tabs"><div class="tabs-in" id="wkTabs"></div></div>
   <div class="wk-wrap">
+    <div class="pane" data-pane="accueil" id="paneaccueil"></div>
+    <div class="pane" data-pane="espaces" id="paneespaces"></div>
     <div class="pane" data-pane="plan" id="paneplan"></div>
     <div class="pane" data-pane="invites" id="paneinvites"></div>
     <div class="pane" data-pane="deroule" id="panederoule"></div>
@@ -961,12 +1109,14 @@ body.app-on .help-btn{display:flex}
     <div class="pane" data-pane="invitations" id="paneinvitations"></div>
     <div class="pane" data-pane="suivi" id="panesuivi"></div>
     <div class="pane" data-pane="arrivees" id="panearrivees"></div>
+    <div class="pane" data-pane="budget" id="panebudget"></div>
     <div class="pane" data-pane="reglages" id="panereglages"></div>
   </div>
 </div>
 
 <!-- ==================== INVITATION (invité) ==================== -->
 <div id="invite" class="view"><div class="iv" id="ivWrap"></div></div>
+<div id="share" class="view"><div class="shr" id="shrWrap"></div></div>
 
 
 <!-- ==================== PLAN PLEIN ÉCRAN ==================== -->
@@ -1534,11 +1684,12 @@ function evData(e){
     venueTbd:!!e.venueTbd,venue:e.venue||'',guests:e.guests,budget:e.budget||0,
     layout:e.layout,plan:e.plan,program:e.program||[],
     paid:!!e.paid,price:e.price||0,interac:e.interac||'',contact:e.contact||'',
-    theme:e.theme||'royal',visual:e.visual||'',visualFull:e.visualFull!==false};
+    theme:e.theme||'royal',visual:e.visual||'',visualFull:e.visualFull!==false,
+    hotels:e.hotels||[],vendors:e.vendors||[],budgetItems:e.budgetItems||[],inspo:e.inspo||[],spaces:e.spaces||null};
 }
 function rowToGuest(r){
   return {id:r.id,token:r.token,name:r.name,contact:r.contact||'',seat:r.seat||null,
-    rsvp:r.rsvp||'attente',songs:Array.isArray(r.songs)?r.songs:[],paid:!!r.paid,
+    rsvp:r.rsvp||'attente',songs:Array.isArray(r.songs)?r.songs:[],paid:!!r.paid,allergies:r.allergies||'',
     arrived:!!r.arrived,sent:r.sent_at?Date.parse(r.sent_at):0,sentVia:r.sent_via||''};
 }
 function rowToInvoice(r){
@@ -1603,8 +1754,8 @@ async function dbDelGuest(id){
 /* ---------------- Temps réel : confirmations en direct ---------------- */
 let RT=null;
 function repaint(){
-  ({plan:paintPlan,invites:paintGuests,deroule:paintProgram,design:paintDesign,invitations:paintInvites,
-    suivi:paintFollow,arrivees:paintArrivals,reglages:paintSettings}[TAB]||paintPlan)();
+  ({accueil:paintAccueil,espaces:paintEspaces,plan:paintPlan,invites:paintGuests,deroule:paintProgram,design:paintDesign,invitations:paintInvites,
+    suivi:paintFollow,arrivees:paintArrivals,budget:paintBudget,reglages:paintSettings}[TAB]||paintAccueil)();
 }
 function subGuests(){
   if(!sb||!EV||!EV.id)return;
@@ -1728,15 +1879,15 @@ function initSetup(){
 /* ============================================================
    WORKSPACE
 ============================================================ */
-const TABS=[['plan','Plan de salle'],['invites','Invités'],['deroule','Déroulé'],
-  ['design','Invitation'],['invitations','Envois'],['suivi','Suivi'],['arrivees','Arrivées'],['reglages','Réglages']];
+const TABS=[['accueil','Accueil'],['espaces','Espaces'],['plan','Plan de salle'],['invites','Invités'],['deroule','Déroulé'],
+  ['design','Invitation'],['invitations','Envois'],['suivi','Suivi'],['arrivees','Arrivées'],['budget','Budget'],['reglages','Réglages']];
 async function renderWork(slug,tab){
   if(!EV||EV.slug!==slug||EV.tplId){
     EV=await loadEvent(slug);
     if(!EV){location.hash='#/espace';return;}
     subGuests();
   }
-  TAB=tab||'plan';
+  TAB=tab||'accueil';
   $('wkBackTxt').textContent=JOBS[job()].home;
   $('wkTitle').innerHTML=`${esc(EV.name)}<small>${esc(fmtDate(EV.date))}${EV.time?' · '+esc(fmtTime(EV.time)):''}${EV.venue?' · '+esc(EV.venue):(EV.venueTbd?' · salle à confirmer':'')}</small>`;
   $('wkTabs').innerHTML=TABS.map(([k,l])=>`<a class="tab${k===TAB?' on':''}" href="#/e/${slug}/${k}">${l}</a>`).join('');
@@ -1771,6 +1922,291 @@ async function renderTplWork(id){
         t.name=EV.name;t.venue=EV.venue;
         save();renderTplWork(id);toast('Modèle enregistré');}});
   };
+}
+
+/* ---------- onglet Accueil (tableau de bord du mariage) ---------- */
+function paintAccueil(){
+  const list=EV.list||[];
+  const oui=list.filter(g=>g.rsvp==='oui').length;
+  const non=list.filter(g=>g.rsvp==='non').length;
+  const att=list.filter(g=>g.rsvp!=='oui'&&g.rsvp!=='non').length;
+  const sent=list.filter(g=>g.sent).length;
+  const cap=seatCount(EV),placed=list.filter(g=>g.seat).length;
+  // Prochaines étapes (calculées d'après le vrai état)
+  const steps=[
+    {done:!!(EV.name&&EV.date&&EV.venue),l:'Informations du mariage'},
+    {done:!!(EV.visual||EV.theme),l:'Choisir le design de l\u2019invitation'},
+    {done:list.length>0,l:'Ajouter vos invités'},
+    {done:sent>0,l:'Envoyer les invitations'},
+    {done:cap>0&&placed>=Math.min(list.length,cap)&&list.length>0,l:'Finaliser le plan de salle'},
+    {done:(EV.program||[]).filter(x=>x.l).length>0,l:'Compléter le déroulé de la soirée'}
+  ];
+  const doneN=steps.filter(s=>s.done).length;
+  const nextStep=steps.find(s=>!s.done);
+  // Budget
+  const bt=+EV.budget||0,bp=(EV.budgetItems||[]).reduce((s,it)=>s+(+it.paid||0),0);
+  const bleft=bt-bp,bpct=bt>0?clamp(Math.round(bp/bt*100),0,100):0;
+  // Derniers envois
+  const recent=list.filter(g=>g.sent).sort((a,b)=>b.sent-a.sent).slice(0,4);
+  $('paneaccueil').innerHTML=`
+  <div class="ac-hero">
+    <div class="ac-hero-txt">
+      <span class="ac-eyebrow">MON ${EV.kind==='mariage'?'MARIAGE':'ÉVÉNEMENT'}</span>
+      <h1>${esc(EV.name)}</h1>
+      <div class="ac-meta">
+        <span>📅 ${esc(fmtDate(EV.date))}</span>
+        ${EV.time?`<span>🕒 ${esc(fmtTime(EV.time))}</span>`:''}
+        ${EV.venue?`<span>📍 ${esc(EV.venue)}</span>`:(EV.venueTbd?'<span>📍 salle à confirmer</span>':'')}
+      </div>
+    </div>
+  </div>
+
+  <div class="ac-stats">
+    <a class="ac-stat" href="#/e/${EV.slug}/invites"><span class="ac-ic">👥</span><b>${int(list.length)}</b><small>invités</small></a>
+    <a class="ac-stat" href="#/e/${EV.slug}/invitations"><span class="ac-ic">✉️</span><b>${int(sent)}</b><small>envoyées</small></a>
+    <a class="ac-stat ok" href="#/e/${EV.slug}/suivi"><span class="ac-ic">✅</span><b>${int(oui)}</b><small>confirmés</small></a>
+    <a class="ac-stat wait" href="#/e/${EV.slug}/suivi"><span class="ac-ic">⏳</span><b>${int(att)}</b><small>en attente</small></a>
+    <a class="ac-stat no" href="#/e/${EV.slug}/suivi"><span class="ac-ic">✖️</span><b>${int(non)}</b><small>absents</small></a>
+  </div>
+
+  <div class="ac-grid">
+    <div class="box">
+      <h3>Vos prochaines étapes <em>${doneN} / ${steps.length}</em></h3>
+      <div class="ac-progress"><div class="ac-progress-fill" style="width:${Math.round(doneN/steps.length*100)}%"></div></div>
+      <div class="ac-steps">${steps.map(s=>`
+        <div class="ac-step${s.done?' done':''}"><span class="ac-check">${s.done?'✓':''}</span>${esc(s.l)}</div>`).join('')}</div>
+      ${nextStep?`<a class="btn btn-navy btn-sm" href="#/e/${EV.slug}/${nextStepTab(nextStep.l)}" style="width:100%;margin-top:14px;justify-content:center">Continuer → ${esc(nextStep.l)}</a>`
+        :`<div class="ac-done-banner">🎉 Tout est prêt pour le grand jour !</div>`}
+    </div>
+
+    <div class="box">
+      <h3>Budget</h3>
+      <div class="ac-budget-total">${bt?money(bt):'—'}</div>
+      <div class="ac-budget-sub">Budget total</div>
+      <div class="bud-bar-wrap" style="margin-top:12px">
+        <div class="bud-bar"><div class="bud-bar-fill${bp>bt&&bt>0?' over':''}" style="width:${bt>0?bpct:0}%"></div></div>
+        <div class="bud-bar-labels"><span>${money(bp)} dépensés</span><span>${bt?money(Math.max(0,bleft))+' restants':''}</span></div>
+      </div>
+      <a class="mini-btn" href="#/e/${EV.slug}/budget" style="width:100%;margin-top:12px;justify-content:center">Voir le budget →</a>
+    </div>
+
+    <div class="box">
+      <h3>Derniers envois</h3>
+      ${recent.length?recent.map(g=>`
+        <div class="ac-send"><span class="av">${esc(initials(g.name))}</span>
+          <span class="ac-send-nm"><b>${esc(g.name)}</b><small>${esc(g.contact||'—')}</small></span>
+          <span class="badge ok"><i></i>${ago(g.sent)}</span></div>`).join('')
+        :'<p class="empty">Aucune invitation envoyée pour l\u2019instant.</p>'}
+      <a class="mini-btn" href="#/e/${EV.slug}/invitations" style="width:100%;margin-top:12px;justify-content:center">Gérer les envois →</a>
+    </div>
+  </div>
+
+  <div class="box" style="margin-top:16px">
+    <h3>Trouvez vos prestataires</h3>
+    <p class="empty" style="padding-top:0">Des professionnels pour un événement à votre image. Touchez une catégorie pour lancer votre recherche.</p>
+    <div class="ac-vendors">${VENDOR_CATS.map(c=>`
+      <button class="ac-vcat" data-vcat="${esc(c.q)}"><span class="ac-vic">${c.ic}</span><span>${esc(c.n)}</span></button>`).join('')}</div>
+  </div>
+
+  <div class="box" style="margin-top:16px">
+    <h3>Inspiration <em>${int((EV.inspo||[]).length)}</em></h3>
+    <p class="empty" style="padding-top:0">Rassemblez vos idées : déco, gâteau, ambiance… Importez des images qui vous inspirent pour cet événement.</p>
+    <div class="ac-inspo">
+      ${(EV.inspo||[]).map((src,i)=>`<div class="ac-inspo-item"><img src="${src}" alt=""><button class="ac-inspo-x" data-inspodel="${i}">×</button></div>`).join('')}
+      <label class="ac-inspo-add"><input type="file" id="inspoFile" accept="image/*" hidden>
+        <span class="ac-inspo-plus">+</span><small>Ajouter</small></label>
+    </div>
+  </div>`;
+  // Prestataires → recherche Google
+  document.querySelectorAll('[data-vcat]').forEach(b=>b.onclick=()=>{
+    const q=b.dataset.vcat+(EV.venue?' '+EV.venue.split(',').pop().trim():' Québec');
+    window.open('https://www.google.com/search?q='+encodeURIComponent(q),'_blank','noopener');});
+  // Inspiration → import image
+  if($('inspoFile'))$('inspoFile').onchange=e=>{
+    const f=e.target.files&&e.target.files[0];if(!f)return;
+    toast('Traitement de l\u2019image…');
+    compressImage(f,720,90000).then(url=>{(EV.inspo=EV.inspo||[]).push(url);save();paintAccueil();toast('Inspiration ajoutée');})
+      .catch(()=>toast('Image illisible'));};
+  document.querySelectorAll('[data-inspodel]').forEach(b=>b.onclick=()=>{
+    EV.inspo.splice(+b.dataset.inspodel,1);save();paintAccueil();});
+}
+const VENDOR_CATS=[
+  {n:'Salles',ic:'🏛️',q:'salle de réception mariage'},
+  {n:'Traiteurs',ic:'🍽️',q:'traiteur mariage'},
+  {n:'Photographes',ic:'📸',q:'photographe mariage'},
+  {n:'Vidéastes',ic:'🎥',q:'vidéaste mariage'},
+  {n:'DJ & Musique',ic:'🎵',q:'DJ mariage'},
+  {n:'Décoration',ic:'💐',q:'décoration mariage'},
+  {n:'Fleuristes',ic:'🌸',q:'fleuriste mariage'},
+  {n:'Gâteau',ic:'🎂',q:'gâteau de mariage pâtisserie'}
+];
+function nextStepTab(label){
+  if(/invités/i.test(label))return 'invites';
+  if(/design|invitation/i.test(label))return 'design';
+  if(/envoyer/i.test(label))return 'invitations';
+  if(/plan de salle/i.test(label))return 'plan';
+  if(/déroulé/i.test(label))return 'deroule';
+  return 'reglages';
+}
+
+/* ---------- onglet Espaces (moodboard collaboratif) ---------- */
+const SPACE_DEFAULTS=[
+  {id:'deco',name:'Décoration',icon:'💐'},
+  {id:'photo',name:'Photographie',icon:'📸'},
+  {id:'musique',name:'Musique',icon:'🎵'},
+  {id:'traiteur',name:'Traiteur',icon:'🍽️'},
+  {id:'gateau',name:'Gâteau',icon:'🎂'},
+  {id:'robe',name:'Robe & beauté',icon:'👗'},
+  {id:'salle',name:'Salle',icon:'🏛️'},
+  {id:'fleurs',name:'Fleurs',icon:'🌸'}
+];
+let openSpace=null; // id de l'espace ouvert, ou null pour la grille
+function ensureSpaces(){
+  if(!EV.spaces){EV.spaces=SPACE_DEFAULTS.map(s=>({...s,items:[]}));save();}
+  return EV.spaces;
+}
+function paintEspaces(){
+  const spaces=ensureSpaces();
+  if(openSpace){const sp=spaces.find(s=>s.id===openSpace);if(sp)return paintSpaceDetail(sp);openSpace=null;}
+  $('paneespaces').innerHTML=`
+  <div class="box" style="margin-bottom:16px">
+    <h3>Mes espaces <em>vos idées, au même endroit</em></h3>
+    <p class="empty" style="padding-top:0">Rassemblez vos inspirations par thème : images, notes, liens et prix. Cliquez sur un espace pour l'ouvrir.</p>
+  </div>
+  <div class="sp-grid">
+    ${spaces.map(s=>{
+      const imgs=s.items.filter(it=>it.img).slice(0,3);
+      const notes=s.items.filter(it=>it.note).length;
+      return `<button class="sp-cube" data-openspace="${s.id}">
+        <div class="sp-cube-top">
+          ${imgs.length?imgs.map((it,i)=>`<img src="${it.img}" alt="" style="z-index:${3-i}">`).join(''):`<span class="sp-cube-emoji">${s.icon}</span>`}
+        </div>
+        <div class="sp-cube-body">
+          <span class="sp-cube-emoji-sm">${s.icon}</span>
+          <b>${esc(s.name)}</b>
+          <small>${int(s.items.length)} idée${s.items.length>1?'s':''}${notes?' · '+int(notes)+' note'+(notes>1?'s':''):''}</small>
+        </div>
+      </button>`;}).join('')}
+    <button class="sp-cube sp-cube-add" id="spAdd">
+      <span class="sp-add-plus">+</span><small>Créer un espace</small></button>
+  </div>`;
+  document.querySelectorAll('[data-openspace]').forEach(b=>b.onclick=()=>{openSpace=b.dataset.openspace;paintEspaces();});
+  $('spAdd').onclick=()=>{
+    dialog({title:'Nouvel espace',
+      body:`<div class="field"><label>Nom de l'espace</label><input class="inp" id="nsName" placeholder="Ex : Lune de miel, Cadeaux, Transport…"></div>
+        <div class="field" style="margin-bottom:0"><label>Emoji <span class="hint">facultatif</span></label><input class="inp" id="nsIcon" placeholder="✨" maxlength="2"></div>`,
+      ok:'Créer l\u2019espace',
+      onOk:()=>{const nm=($('nsName')?$('nsName').value:'').trim();if(!nm)return;
+        EV.spaces.push({id:'x'+uid(),name:nm,icon:($('nsIcon')&&$('nsIcon').value.trim())||'✨',items:[],custom:true});
+        save();paintEspaces();toast('Espace « '+nm+' » créé');}});
+  };
+}
+function paintSpaceDetail(sp){
+  $('paneespaces').innerHTML=`
+  <div class="sp-detail-head">
+    <button class="wk-back" id="spBack"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M15 6l-6 6 6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Mes espaces</span></button>
+    <div class="sp-detail-title"><span class="sp-detail-emoji">${sp.icon}</span><h2>${esc(sp.name)}</h2></div>
+    <div style="display:flex;gap:8px">
+      <button class="mini-btn" id="spShare">🔗 Partager avec un prestataire</button>
+      ${sp.custom?`<button class="mini-btn danger" id="spDel">Supprimer</button>`:''}
+    </div>
+  </div>
+  <div id="spSharesBox"></div>
+  <div class="sp-add-bar">
+    <button class="mini-btn" id="spAddImg">📷 Ajouter une image</button>
+    <button class="mini-btn" id="spAddNote">📝 Ajouter une note</button>
+    <button class="mini-btn" id="spAddLink">🔗 Ajouter un lien</button>
+    <input type="file" id="spImgFile" accept="image/*" hidden>
+  </div>
+  <div class="sp-items">
+    ${sp.items.length?sp.items.map((it,i)=>spaceItemCard(it,i)).join(''):'<p class="empty" style="grid-column:1/-1">Cet espace est vide. Ajoutez vos premières idées avec les boutons ci-dessus.</p>'}
+  </div>`;
+  $('spBack').onclick=()=>{openSpace=null;paintEspaces();};
+  if($('spDel'))$('spDel').onclick=()=>{
+    dialog({title:'Supprimer « '+sp.name+' » ?',body:'<p class="dlg-p">Toutes les idées de cet espace seront supprimées.</p>',
+      ok:'Supprimer',danger:true,onOk:()=>{EV.spaces=EV.spaces.filter(s=>s.id!==sp.id);openSpace=null;save();paintEspaces();toast('Espace supprimé');}});};
+  $('spShare').onclick=()=>shareSpaceDialog(sp);
+  $('spAddImg').onclick=()=>$('spImgFile').click();
+  $('spImgFile').onchange=e=>{const f=e.target.files&&e.target.files[0];if(!f)return;
+    toast('Traitement de l\u2019image…');
+    compressImage(f,720,90000).then(url=>{sp.items.unshift({type:'img',img:url,note:'',price:''});save();paintSpaceDetail(sp);toast('Image ajoutée');})
+      .catch(()=>toast('Image illisible'));};
+  $('spAddNote').onclick=()=>{sp.items.unshift({type:'note',img:'',note:'',price:''});save();paintSpaceDetail(sp);
+    setTimeout(()=>{const t=document.querySelector('[data-sf="0:note"]');if(t)t.focus();},50);};
+  $('spAddLink').onclick=()=>{sp.items.unshift({type:'link',img:'',note:'',url:'',price:''});save();paintSpaceDetail(sp);
+    setTimeout(()=>{const t=document.querySelector('[data-sf="0:url"]');if(t)t.focus();},50);};
+  bindSpaceItems(sp);
+  loadSpaceShares(sp);
+}
+async function loadSpaceShares(sp){
+  if(!sb||!EV.id)return;
+  const {data:shares}=await sb.from('space_shares').select('*').eq('event_id',EV.id).eq('space_id',sp.id).eq('active',true).order('created_at');
+  const box=$('spSharesBox');if(!box)return;
+  if(!shares||!shares.length){box.innerHTML='';return;}
+  // charger les contributions de chaque partage
+  const ids=shares.map(s=>s.id);
+  const {data:contribs}=await sb.from('space_contributions').select('*').in('share_id',ids).order('created_at');
+  const byShare={};(contribs||[]).forEach(c=>{(byShare[c.share_id]=byShare[c.share_id]||[]).push(c);});
+  box.innerHTML=`<div class="box" style="margin-bottom:16px">
+    <h3>Partagé avec <em>${int(shares.length)} prestataire${shares.length>1?'s':''}</em></h3>
+    ${shares.map(s=>{const cs=byShare[s.id]||[];
+      return `<div class="sp-share">
+        <div class="sp-share-head">
+          <span class="sp-share-role"><b>${esc(s.vendor_role||'Prestataire')}</b>${s.vendor_name?' · '+esc(s.vendor_name):''}</span>
+          <span style="display:flex;gap:6px">
+            <button class="mini-btn" data-copyshare="${s.token}">Copier le lien</button>
+            <button class="mini-btn danger" data-revoke="${s.id}">Révoquer</button>
+          </span>
+        </div>
+        ${cs.length?`<div class="sp-contribs">${cs.map(c=>`
+          <div class="sp-contrib"><b>${esc(c.author||'Prestataire')}</b><span>${esc(c.body)}</span><small>${ago(Date.parse(c.created_at))}</small></div>`).join('')}</div>`
+          :'<p class="empty" style="padding:6px 0 0">En attente d\u2019une réponse du prestataire…</p>'}
+      </div>`;}).join('')}
+  </div>`;
+  box.querySelectorAll('[data-copyshare]').forEach(b=>b.onclick=()=>{
+    copyText(baseURL()+'#/s/'+b.dataset.copyshare,b,'Copier le lien');});
+  box.querySelectorAll('[data-revoke]').forEach(b=>b.onclick=()=>{
+    dialog({title:'Révoquer ce partage ?',body:'<p class="dlg-p">Le prestataire n\u2019aura plus accès à cet espace via son lien.</p>',
+      ok:'Révoquer',danger:true,onOk:async()=>{await sb.from('space_shares').update({active:false}).eq('id',b.dataset.revoke);
+        loadSpaceShares(sp);toast('Partage révoqué');}});});
+}
+function shareSpaceDialog(sp){
+  dialog({title:'Partager « '+sp.name+' » avec un prestataire',
+    body:`<p class="dlg-p">Créez un lien que vous enverrez au prestataire. Il pourra voir cet espace et vous laisser ses commentaires et recommandations — <b>sans créer de compte</b>.</p>
+      <div class="field"><label>Rôle du prestataire</label><input class="inp" id="shRole" placeholder="Ex : Photographe, Traiteur, DJ…"></div>
+      <div class="field" style="margin-bottom:0"><label>Nom <span class="hint">facultatif</span></label><input class="inp" id="shName" placeholder="Ex : Studio Lumen"></div>`,
+    ok:'Créer le lien de partage',
+    onOk:async()=>{
+      const role=($('shRole')?$('shRole').value:'').trim()||'Prestataire';
+      const name=($('shName')?$('shName').value:'').trim();
+      const {data,error}=await sb.from('space_shares').insert({event_id:EV.id,space_id:sp.id,vendor_role:role,vendor_name:name}).select().single();
+      if(error){toast('Erreur : '+error.message);return;}
+      const link=baseURL()+'#/s/'+data.token;
+      dialog({title:'Lien créé ✓',
+        body:`<p class="dlg-p">Envoyez ce lien à <b>${esc(role)}</b>${name?' ('+esc(name)+')':''}. Il pourra consulter l'espace et y répondre.</p>
+          <div class="code-out">${esc(link)}</div>`,
+        ok:'Copier le lien',cancel:'Fermer',
+        onOk:()=>{copyText(link);}});
+      if(openSpace)loadSpaceShares(sp);
+    }});
+}
+function spaceItemCard(it,i){
+  return `<div class="sp-item" data-si="${i}">
+    ${it.img?`<div class="sp-item-img"><img src="${it.img}" alt=""></div>`:''}
+    ${it.type==='link'||it.url?`<input class="inp sp-link" data-sf="${i}:url" value="${esc(it.url||'')}" placeholder="Coller un lien (https://…)">`:''}
+    <textarea class="inp sp-note" data-sf="${i}:note" placeholder="Votre note, idée, description…">${esc(it.note||'')}</textarea>
+    <div class="sp-item-foot">
+      <div class="sp-price"><span>$</span><input class="inp" type="number" min="0" data-sf="${i}:price" value="${it.price||''}" placeholder="Prix"></div>
+      <button class="sp-item-del" data-sdel="${i}">Supprimer</button>
+    </div>
+  </div>`;
+}
+function bindSpaceItems(sp){
+  document.querySelectorAll('[data-sf]').forEach(el=>el.oninput=e=>{
+    const[i,f]=el.dataset.sf.split(':');if(sp.items[+i]){sp.items[+i][f]=e.target.value;save();}});
+  document.querySelectorAll('[data-sdel]').forEach(b=>b.onclick=()=>{
+    sp.items.splice(+b.dataset.sdel,1);save();paintSpaceDetail(sp);});
+  document.querySelectorAll('.sp-link[data-sf]').forEach(el=>el.onchange=()=>paintSpaceDetail(sp));
 }
 
 /* ---------- onglet Plan ---------- */
@@ -2703,7 +3139,8 @@ function invPayload(g){
   const sl=seatLabel(EV,g.seat);
   return {g:g.name,n:EV.name,k:EV.kind,d:EV.date,t:EV.time,v:EV.venue||'',
     tb:sl?sl.t:'',s:sl?sl.s:'',p:(EV.program||[]).filter(x=>x.l).map(x=>[x.t,x.l]),
-    a:EV.paid?EV.price:0,ia:EV.interac||'',th:EV.theme||'royal',im:EV.visual||'',nf:EV.visualFull!==false?1:0};
+    a:EV.paid?EV.price:0,ia:EV.interac||'',th:EV.theme||'royal',im:EV.visual||'',nf:EV.visualFull!==false?1:0,
+    ho:(EV.hotels||[]).filter(h=>(h.name||'').trim())};
 }
 function inviteLink(g){return baseURL()+'#/i/'+g.token;}
 function sentCount(){return (EV.list||[]).filter(g=>g.sent).length;}
@@ -2857,27 +3294,34 @@ function paintFollow(){
   const oui=list.filter(g=>g.rsvp==='oui'),non=list.filter(g=>g.rsvp==='non');
   const att=list.filter(g=>g.rsvp!=='oui'&&g.rsvp!=='non');
   const songs=[];list.forEach(g=>(g.songs||[]).forEach(s=>{if(s)songs.push({s,by:g.name});}));
+  const allerg=list.filter(g=>(g.allergies||'').trim());
   $('panesuivi').innerHTML=`
   <div class="kpis">
     <div class="kpi"><span>Confirmés</span><b>${int(oui.length)}</b></div>
     <div class="kpi"><span>Absents</span><b>${int(non.length)}</b></div>
     <div class="kpi"><span>En attente</span><b>${int(att.length)}</b></div>
-    <div class="kpi"><span>${EV.paid?'Ont payé':'Placés'}</span><b>${int(EV.paid?list.filter(g=>g.paid).length:list.filter(g=>g.seat).length)}</b></div>
+    <div class="kpi"><span>Allergies signalées</span><b>${int(allerg.length)}</b></div>
   </div>
   <div class="cols2">
     <div class="box"><h3>Réponses <em>mises à jour en direct</em></h3>
       <p class="empty" style="padding-top:0">Les confirmations des invités arrivent toutes seules. Vous pouvez aussi corriger une réponse à la main (ex. confirmation reçue de vive voix).</p>
       ${list.length?list.map(g=>`<div class="sendrow">
-        <span class="nm"><b>${esc(g.name)}</b><small>${esc(g.contact||'—')}</small></span>
+        <span class="nm"><b>${esc(g.name)}</b><small>${esc(g.contact||'—')}${(g.allergies||'').trim()?' · ⚠️ '+esc(g.allergies):''}</small></span>
         <span class="acts">
           <button class="ico-btn" data-r="${g.id}:oui" style="${g.rsvp==='oui'?'border-color:#1DA968;color:#157A4C':''}">Présent</button>
           <button class="ico-btn" data-r="${g.id}:non" style="${g.rsvp==='non'?'border-color:#C74A4A;color:#9C3838':''}">Absent</button>
           ${EV.paid?`<button class="ico-btn" data-p="${g.id}" style="${g.paid?'border-color:#D4A017;color:#8A6D00':''}">${g.paid?'Payé ✓':'Marquer payé'}</button>`:''}
         </span></div>`).join(''):'<p class="empty">Aucun invité.</p>'}</div>
-    <div class="box"><h3>Playlist proposée <em>${int(songs.length)} titres</em></h3>
-      ${songs.length?songs.map(x=>`<div class="song"><span><b>${esc(x.s)}</b><small>proposé par ${esc(x.by)}</small></span></div>`).join('')
-        :'<p class="empty">Les chansons proposées par vos invités apparaîtront ici pour le DJ.</p>'}
-      ${songs.length?'<button class="mini-btn" id="copySongs" style="margin-top:12px;width:100%;justify-content:center">Copier la liste pour le DJ</button>':''}</div>
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <div class="box"><h3>Allergies &amp; restrictions <em>${int(allerg.length)} invité${allerg.length>1?'s':''}</em></h3>
+        ${allerg.length?allerg.map(g=>`<div class="song"><span><b>${esc(g.name)}</b><small>${esc(g.allergies)}</small></span></div>`).join('')
+          :'<p class="empty">Les allergies et restrictions alimentaires signalées par vos invités apparaîtront ici, à transmettre au traiteur.</p>'}
+        ${allerg.length?'<button class="mini-btn" id="copyAllerg" style="margin-top:12px;width:100%;justify-content:center">Copier la liste pour le traiteur</button>':''}</div>
+      <div class="box"><h3>Playlist proposée <em>${int(songs.length)} titres</em></h3>
+        ${songs.length?songs.map(x=>`<div class="song"><span><b>${esc(x.s)}</b><small>proposé par ${esc(x.by)}</small></span></div>`).join('')
+          :'<p class="empty">Les chansons proposées par vos invités apparaîtront ici pour le DJ.</p>'}
+        ${songs.length?'<button class="mini-btn" id="copySongs" style="margin-top:12px;width:100%;justify-content:center">Copier la liste pour le DJ</button>':''}</div>
+    </div>
   </div>`;
   document.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{
     const[id,v]=b.dataset.r.split(':');const g=(EV.list||[]).find(x=>x.id===id);
@@ -2885,6 +3329,7 @@ function paintFollow(){
   document.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{
     const g=(EV.list||[]).find(x=>x.id===b.dataset.p);if(g){g.paid=!g.paid;save();paintFollow();}});
   if($('copySongs'))$('copySongs').onclick=()=>copyText(songs.map(x=>'• '+x.s+' — '+x.by).join('\n'),$('copySongs'),'Copier la liste pour le DJ');
+  if($('copyAllerg'))$('copyAllerg').onclick=()=>copyText(allerg.map(g=>'• '+g.name+' : '+g.allergies).join('\n'),$('copyAllerg'),'Copier la liste pour le traiteur');
 }
 
 /* ---------- onglet Arrivées ---------- */
@@ -2965,6 +3410,84 @@ function paintArrivals(){
   $('arrFs').onclick=()=>fsOpen('arr');
 }
 
+/* ---------- Budget ---------- */
+const BUDGET_CATS=['Salle','Traiteur','Décoration','Musique / DJ','Photographe','Vidéaste',
+  'Fleurs','Robe','Costume','Gâteau','Transport','Invitations','Autres'];
+function paintBudget(){
+  const items=EV.budgetItems||[];
+  const total=+EV.budget||0;
+  const planned=items.reduce((s,it)=>s+(+it.planned||0),0);
+  const spent=items.reduce((s,it)=>s+(+it.paid||0),0);
+  const left=total-spent;
+  const pct=total>0?clamp(Math.round(spent/total*100),0,100):0;
+  const perGuest=EV.guests>0?total/EV.guests:0;
+  $('panebudget').innerHTML=`
+  <div class="kpis">
+    <div class="kpi"><span>Budget total</span><b>${total?money(total):'—'}</b></div>
+    <div class="kpi"><span>Dépensé</span><b>${money(spent)}</b></div>
+    <div class="kpi"><span>Restant</span><b class="${left<0?'':'ok'}" style="${left<0?'color:var(--red)':''}">${money(left)}</b></div>
+    <div class="kpi"><span>Par invité (${int(EV.guests)})</span><b>${total?money(perGuest):'—'}</b></div>
+  </div>
+  <div class="cols2">
+    <div class="box">
+      <h3>Postes de dépense <em>${int(items.length)}</em></h3>
+      <div class="field" style="margin-bottom:14px"><label>Budget total prévu pour le mariage</label>
+        <input class="inp" id="bTotal" type="number" min="0" step="100" value="${total||''}" placeholder="Ex : 14 600"></div>
+      <div class="bud-list">${items.length?items.map((it,i)=>`
+        <div class="bud-row" data-bi="${i}">
+          <div class="bud-main">
+            <select class="inp bud-cat" data-bf="${i}:cat">${BUDGET_CATS.map(c=>`<option${c===it.cat?' selected':''}>${c}</option>`).join('')}</select>
+            <input class="inp" data-bf="${i}:label" value="${esc(it.label||'')}" placeholder="Détail (ex : Salle Motard)">
+          </div>
+          <div class="bud-nums">
+            <label>Prévu <input class="inp" type="number" min="0" step="50" data-bf="${i}:planned" value="${it.planned||''}" placeholder="0"></label>
+            <label>Payé <input class="inp" type="number" min="0" step="50" data-bf="${i}:paid" value="${it.paid||''}" placeholder="0"></label>
+            <button class="mini-btn danger bud-del" data-bdel="${i}">×</button>
+          </div>
+        </div>`).join(''):'<p class="empty">Aucun poste de dépense. Ajoutez-en pour suivre où va votre budget.</p>'}</div>
+      <button class="mini-btn" id="budAdd" style="margin-top:12px;width:100%;justify-content:center">+ Ajouter un poste de dépense</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <div class="box">
+        <h3>Vue d'ensemble</h3>
+        <div class="bud-bar-wrap">
+          <div class="bud-bar"><div class="bud-bar-fill${spent>total&&total>0?' over':''}" style="width:${total>0?pct:0}%"></div></div>
+          <div class="bud-bar-labels"><span>${money(spent)} dépensés</span><span>${pct}%</span></div>
+        </div>
+        <div class="cap" style="border:none;padding:10px 0 0"><span>Total prévu (postes)</span><b>${money(planned)}</b></div>
+        <div class="cap"><span>Total payé</span><b>${money(spent)}</b></div>
+        <div class="cap"><span>Reste à payer</span><b>${money(Math.max(0,planned-spent))}</b></div>
+        ${total>0&&planned>total?`<p class="empty" style="color:var(--red)">⚠️ Vos postes prévus (${money(planned)}) dépassent votre budget total (${money(total)}).</p>`:''}
+      </div>
+      <div class="box">
+        <h3>Répartition par catégorie</h3>
+        ${(()=>{const byCat={};items.forEach(it=>{const c=it.cat||'Autres';byCat[c]=(byCat[c]||0)+(+it.paid||0);});
+          const cats=Object.keys(byCat).filter(c=>byCat[c]>0).sort((a,b)=>byCat[b]-byCat[a]);
+          return cats.length?cats.map(c=>`<div class="cap" style="border-bottom:1px solid var(--line)"><span>${esc(c)}</span><b>${money(byCat[c])}</b></div>`).join('')
+            :'<p class="empty">La répartition de vos dépenses payées apparaîtra ici.</p>';})()}
+        ${items.length?'<button class="mini-btn" id="budExport" style="margin-top:12px;width:100%;justify-content:center">Exporter le budget (CSV)</button>':''}
+      </div>
+    </div>
+  </div>`;
+  const el=$('bTotal');if(el)el.oninput=e=>{EV.budget=+e.target.value||0;save();
+    // maj légère des KPI sans tout redessiner serait mieux, mais on garde simple :
+    clearTimeout(el._t);el._t=setTimeout(paintBudget,500);};
+  if($('budAdd'))$('budAdd').onclick=()=>{(EV.budgetItems=EV.budgetItems||[]).push({cat:'Salle',label:'',planned:'',paid:''});save();paintBudget();};
+  document.querySelectorAll('[data-bf]').forEach(inp=>{
+    const ev=inp.tagName==='SELECT'?'onchange':'oninput';
+    inp[ev]=e=>{const[i,f]=inp.dataset.bf.split(':');
+      if(EV.budgetItems&&EV.budgetItems[+i]){EV.budgetItems[+i][f]=e.target.value;save();
+        if(f==='planned'||f==='paid'||f==='cat'){clearTimeout(inp._t);inp._t=setTimeout(paintBudget,500);}}};});
+  document.querySelectorAll('[data-bdel]').forEach(b=>b.onclick=()=>{EV.budgetItems.splice(+b.dataset.bdel,1);save();paintBudget();});
+  if($('budExport'))$('budExport').onclick=()=>{
+    const rows=[['Catégorie','Détail','Prévu','Payé']];
+    items.forEach(it=>rows.push([it.cat||'',it.label||'',it.planned||0,it.paid||0]));
+    rows.push(['','TOTAL',planned,spent]);
+    const csv='\ufeff'+rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(';')).join('\n');
+    const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+    a.download='budget-'+EV.slug+'.csv';a.click();URL.revokeObjectURL(a.href);};
+}
+
 /* ---------- Réglages ---------- */
 function paintSettings(){
   $('panereglages').innerHTML=`
@@ -3000,6 +3523,38 @@ function paintSettings(){
         <div class="cap"><span>Abonnement Evenza</span><b>${esc(planPrice(plan()))}</b></div>
         <p class="empty">Les invitations sont facturées après l'envoi, par avis payable sous ${AVIS_DELAI} jours par Interac — voir l'onglet Envois.</p></div>
     </div>
+  </div>
+
+  <div class="box" style="margin-top:16px">
+    <h3>Hébergements proches <em>affichés sur l'invitation</em></h3>
+    <p class="empty" style="padding-top:0">Ajoutez des hôtels ou Airbnb près de la salle pour vos invités qui viennent de loin. Ils apparaîtront directement sur chaque invitation.</p>
+    <div id="hotelList">${(EV.hotels||[]).map((h,i)=>`
+      <div class="lodge-row" data-hi="${i}">
+        <div class="row2">
+          <input class="inp" data-hf="${i}:name" value="${esc(h.name||'')}" placeholder="Nom (ex : Hôtel Le Windsor)">
+          <input class="inp" data-hf="${i}:price" value="${esc(h.price||'')}" placeholder="Prix (ex : dès 120 $/nuit)"></div>
+        <div class="row2" style="margin-top:8px">
+          <input class="inp" data-hf="${i}:addr" value="${esc(h.addr||'')}" placeholder="Adresse">
+          <input class="inp" data-hf="${i}:url" value="${esc(h.url||'')}" placeholder="Lien de réservation (facultatif)"></div>
+        <button class="mini-btn danger" data-hdel="${i}" style="margin-top:8px">Retirer cet hébergement</button>
+      </div>`).join('')||'<p class="empty">Aucun hébergement pour l\u2019instant.</p>'}</div>
+    <button class="mini-btn" id="hotelAdd" style="margin-top:12px">+ Ajouter un hébergement</button>
+  </div>
+
+  <div class="box" style="margin-top:16px">
+    <h3>Mes prestataires <em>carnet privé — jamais visible par les invités</em></h3>
+    <p class="empty" style="padding-top:0">Votre carnet d'adresses pour cet événement : traiteur, DJ, photographe, fleuriste… Visible par vous seul, pratique pour tout retrouver au même endroit.</p>
+    <div id="vendorList">${(EV.vendors||[]).map((v,i)=>`
+      <div class="lodge-row" data-vi="${i}">
+        <div class="row2">
+          <input class="inp" data-vf="${i}:role" value="${esc(v.role||'')}" placeholder="Rôle (ex : Traiteur, DJ, Photographe)">
+          <input class="inp" data-vf="${i}:name" value="${esc(v.name||'')}" placeholder="Nom / entreprise"></div>
+        <div class="row2" style="margin-top:8px">
+          <input class="inp" data-vf="${i}:contact" value="${esc(v.contact||'')}" placeholder="Téléphone ou courriel">
+          <input class="inp" data-vf="${i}:note" value="${esc(v.note||'')}" placeholder="Note (ex : acompte versé, à rappeler…)"></div>
+        <button class="mini-btn danger" data-vdel="${i}" style="margin-top:8px">Retirer ce prestataire</button>
+      </div>`).join('')||'<p class="empty">Aucun prestataire pour l\u2019instant.</p>'}</div>
+    <button class="mini-btn" id="vendorAdd" style="margin-top:12px">+ Ajouter un prestataire</button>
   </div>`;
   $('rSave').onclick=()=>{
     EV.name=($('rName').value||'').trim()||EV.name;EV.date=$('rDate').value;EV.time=$('rTime').value;
@@ -3011,6 +3566,18 @@ function paintSettings(){
     if(id==='rPrice')EV.price=+e.target.value||0;
     if(id==='rInterac')EV.interac=e.target.value.trim();
     if(id==='rContact')EV.contact=e.target.value.trim();save();};});
+  // Hébergements
+  if($('hotelAdd'))$('hotelAdd').onclick=()=>{(EV.hotels=EV.hotels||[]).push({name:'',price:'',addr:'',url:''});save();paintSettings();};
+  document.querySelectorAll('[data-hf]').forEach(el=>el.oninput=e=>{
+    const[i,f]=el.dataset.hf.split(':');if(EV.hotels&&EV.hotels[+i]){EV.hotels[+i][f]=e.target.value;save();}});
+  document.querySelectorAll('[data-hdel]').forEach(b=>b.onclick=()=>{
+    EV.hotels.splice(+b.dataset.hdel,1);save();paintSettings();});
+  // Prestataires
+  if($('vendorAdd'))$('vendorAdd').onclick=()=>{(EV.vendors=EV.vendors||[]).push({role:'',name:'',contact:'',note:''});save();paintSettings();};
+  document.querySelectorAll('[data-vf]').forEach(el=>el.oninput=e=>{
+    const[i,f]=el.dataset.vf.split(':');if(EV.vendors&&EV.vendors[+i]){EV.vendors[+i][f]=e.target.value;save();}});
+  document.querySelectorAll('[data-vdel]').forEach(b=>b.onclick=()=>{
+    EV.vendors.splice(+b.dataset.vdel,1);save();paintSettings();});
 }
 
 /* ---------------- Visuel personnalisé ---------------- */
@@ -3081,6 +3648,12 @@ function inviteHTML(d,opts){
       ${d.tb?`<div class="iv-seat"><span>Votre place</span><b>${esc(d.tb)} · ${esc(d.s)}</b></div>`:''}
       ${(d.p&&d.p.length)?`<div class="iv-prog"><h3 style="font-family:var(--font-display);font-size:14px;margin-bottom:8px">Déroulé de la soirée</h3>
         ${d.p.map(x=>`<div class="p"><b>${esc(x[0])}</b><span>${esc(x[1])}</span></div>`).join('')}</div>`:''}
+      ${(d.ho&&d.ho.length)?`<div class="iv-lodge"><h3 style="font-family:var(--font-display);font-size:14px;margin:18px 0 10px">Où loger&nbsp;?</h3>
+        ${d.ho.map(h=>`<div class="lodge">
+          <b>${esc(h.name)}</b>${h.price?`<span class="lodge-price">${esc(h.price)}</span>`:''}
+          ${h.addr?`<small>${esc(h.addr)}</small>`:''}
+          ${h.url?`<a href="${esc(h.url)}" target="_blank" rel="noopener" class="lodge-link">Réserver →</a>`:''}
+        </div>`).join('')}</div>`:''}
       ${d.a>0?`<div class="paybox">Une participation de <b>${money(d.a)}</b> est demandée par personne.
         <div class="v"><b>${esc(d.ia||'—')}</b>${opts.preview?'':'<button id="cpIa">Copier</button>'}</div>
         Envoyez-la par virement Interac en indiquant votre nom dans le message.</div>`:''}
@@ -3088,6 +3661,8 @@ function inviteHTML(d,opts){
       <h3 style="font-family:var(--font-display);font-size:15px;margin:20px 0 10px">Serez-vous des nôtres&nbsp;?</h3>
       <div class="rsvp"><button id="rYes">Je serai là</button><button id="rNo">Je ne pourrai pas</button></div>
       <div id="songWrap" style="display:none">
+        <div class="field"><label>Avez-vous des allergies ou restrictions alimentaires&nbsp;? <span class="hint">facultatif</span></label>
+          <input class="inp" id="alrg" placeholder="Ex : arachides, sans gluten, végétarien…"></div>
         <div class="field"><label>Une chanson pour le DJ <span class="hint">facultatif</span></label><input class="inp" id="m1" placeholder="Artiste — Titre"></div>
         <div class="field"><label>Une deuxième&nbsp;?</label><input class="inp" id="m2" placeholder="Artiste — Titre"></div></div>
       <button class="btn btn-navy" id="sendReply" style="width:100%;margin-top:6px" disabled>Envoyer ma réponse</button>
@@ -3119,18 +3694,21 @@ async function renderInvite(token){
   const d={g:gst.name,n:evd.name,k:evd.kind,d:evd.date,t:evd.time,v:evd.venue||'',
     tb:sl?sl.t:'',s:sl?sl.s:'',p:(evd.program||[]).filter(x=>x.l).map(x=>[x.t,x.l]),
     a:evd.paid?evd.price:0,ia:evd.interac||'',th:evd.theme||'royal',
-    im:evd.visual||'',nf:evd.visualFull!==false?1:0};
+    im:evd.visual||'',nf:evd.visualFull!==false?1:0,
+    ho:(evd.hotels||[]).filter(h=>(h.name||'').trim())};
   w.innerHTML=inviteHTML(d,{});
   if($('cpIa'))$('cpIa').onclick=()=>copyText(d.ia,$('cpIa'),'Copier');
   if(gst.rsvp==='oui'||gst.rsvp==='non')showDone(gst.rsvp,true);
   const setR=v=>{ivR=v;$('rYes').className=v==='oui'?'sel-yes':'';$('rNo').className=v==='non'?'sel-no':'';
-    $('songWrap').style.display=v==='oui'?'block':'none';$('sendReply').disabled=false;};
+    $('songWrap').style.display=v==='oui'?'block':'none';$('sendReply').disabled=false;
+    if(v==='oui'&&$('alrg')&&gst.allergies&&!$('alrg').value)$('alrg').value=gst.allergies;};
   $('rYes').onclick=()=>setR('oui');$('rNo').onclick=()=>setR('non');
   $('sendReply').onclick=async()=>{
     if(!ivR)return;
     $('sendReply').disabled=true;$('sendReply').textContent='Envoi…';
     const m=[($('m1')?$('m1').value:'').trim(),($('m2')?$('m2').value:'').trim()].filter(Boolean);
-    const {error}=await sb.rpc('submit_rsvp',{p_token:token,p_rsvp:ivR,p_songs:m});
+    const alrg=($('alrg')?$('alrg').value:'').trim();
+    const {error}=await sb.rpc('submit_rsvp',{p_token:token,p_rsvp:ivR,p_songs:m,p_allergies:alrg});
     if(error){$('sendReply').disabled=false;$('sendReply').textContent='Envoyer ma réponse';
       toast('Envoi impossible — réessayez');return;}
     showDone(ivR,false);
@@ -3146,9 +3724,63 @@ async function renderInvite(token){
 }
 
 /* ============================================================
+   VUE PRESTATAIRE (espace partagé, sans compte)
+============================================================ */
+async function renderSharedSpace(token){
+  const w=$('shrWrap');
+  w.innerHTML='<div class="shr-card"><p class="empty" style="padding:30px">Chargement de l\u2019espace partagé…</p></div>';
+  if(!sb){w.innerHTML='<div class="shr-card"><p class="empty" style="padding:30px">Service non configuré.</p></div>';return;}
+  let d=null;
+  try{const {data,error}=await sb.rpc('get_shared_space',{p_token:token});if(error)throw error;d=data;}catch(e){}
+  if(!d||!d.space){
+    w.innerHTML='<div class="shr-card"><div class="shr-top"><b>Evenza</b></div><div style="padding:26px"><p class="empty">Ce lien de partage est invalide ou a été retiré par l\u2019organisateur.</p></div></div>';
+    return;
+  }
+  const sp=d.space,items=sp.items||[],contribs=d.contributions||[];
+  w.innerHTML=`
+  <div class="shr-card">
+    <div class="shr-top">
+      <span class="shr-eyebrow">ESPACE PARTAGÉ · ${esc(d.vendor_role||'PRESTATAIRE')}</span>
+      <h1>${esc(sp.icon||'')} ${esc(sp.name||'Espace')}</h1>
+      <p>${esc(d.event_name||'')}</p>
+    </div>
+    <div class="shr-body">
+      <p class="shr-intro">L'organisateur a partagé cet espace avec vous. Consultez ses idées ci-dessous, puis laissez vos commentaires et recommandations en bas — <b>aucun compte nécessaire</b>.</p>
+      <div class="shr-items">
+        ${items.length?items.map(it=>`<div class="shr-item">
+          ${it.img?`<img src="${it.img}" alt="">`:''}
+          ${it.url?`<a href="${esc(it.url)}" target="_blank" rel="noopener" class="shr-link">${esc(it.url)}</a>`:''}
+          ${it.note?`<p>${esc(it.note)}</p>`:''}
+          ${it.price?`<span class="shr-price">${money(+it.price)}</span>`:''}
+        </div>`).join(''):'<p class="empty">L\u2019organisateur n\u2019a pas encore ajouté d\u2019idées.</p>'}
+      </div>
+      <h3 class="shr-h3">Vos recommandations</h3>
+      ${contribs.length?`<div class="shr-contribs">${contribs.map(c=>`
+        <div class="shr-contrib"><b>${esc(c.author||'Vous')}</b><span>${esc(c.body)}</span></div>`).join('')}</div>`:''}
+      <div class="field"><label>Votre nom</label><input class="inp" id="shrAuthor" placeholder="Ex : Studio Lumen"></div>
+      <div class="field"><label>Votre message, recommandation ou question</label>
+        <textarea class="inp" id="shrBody" placeholder="Ex : Je recommande un shooting en extérieur à l'heure dorée…"></textarea></div>
+      <button class="btn btn-navy" id="shrSend" style="width:100%">Envoyer à l'organisateur</button>
+      <div id="shrOut"></div>
+    </div>
+  </div>`;
+  $('shrSend').onclick=async()=>{
+    const author=($('shrAuthor')?$('shrAuthor').value:'').trim();
+    const body=($('shrBody')?$('shrBody').value:'').trim();
+    if(!body){toast('Écrivez un message');return;}
+    $('shrSend').disabled=true;$('shrSend').textContent='Envoi…';
+    const {error}=await sb.rpc('add_contribution',{p_token:token,p_author:author,p_body:body});
+    if(error){$('shrSend').disabled=false;$('shrSend').textContent='Envoyer à l\u2019organisateur';toast('Envoi impossible');return;}
+    $('shrOut').innerHTML='<div class="badge ok" style="margin-top:12px"><i></i>Message envoyé à l\u2019organisateur</div>';
+    $('shrBody').value='';$('shrSend').textContent='Envoyé ✓';
+    setTimeout(()=>{$('shrSend').disabled=false;$('shrSend').textContent='Envoyer un autre message';},1500);
+  };
+}
+
+/* ============================================================
    ROUTEUR
 ============================================================ */
-const VIEWS=['setup','compte','espace','work','invite'];
+const VIEWS=['setup','compte','espace','work','invite','share'];
 function show(v){VIEWS.forEach(x=>$(x).classList.toggle('on',x===v));
   document.body.classList.toggle('app-on',!!v);window.scrollTo({top:0});}
 async function route(){
@@ -3156,6 +3788,7 @@ async function route(){
   const p=h.split('/').filter(Boolean);
   if(!CONFIGURED){show(null);return;}
   if(p[0]==='i'&&p[1]){show('invite');renderInvite(p[1]);return;}
+  if(p[0]==='s'&&p[1]){show('share');renderSharedSpace(p[1]);return;}
   if(p[0]==='compte'){show('compte');renderAuth();return;}
   if(p[0]==='creer'){
     if(!USER){location.hash='#/compte';return;}
