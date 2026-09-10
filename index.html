@@ -727,6 +727,18 @@ footer{background:var(--navy-ink);color:rgba(255,255,255,.6);padding:44px 0 30px
 .ac-vcat{border:1px solid var(--line);border-radius:14px;padding:16px 12px;background:var(--gray);display:flex;flex-direction:column;align-items:center;gap:7px;font-size:13.5px;font-weight:600;color:var(--navy);transition:transform .16s,box-shadow .16s,border-color .16s}
 .ac-vcat:hover{transform:translateY(-2px);box-shadow:var(--shadow-sm);border-color:var(--navy);background:#fff}
 .ac-vcat .ac-vic{font-size:24px}
+/* ---- Prestataires Evenza (annuaire) ---- */
+.ac-provs{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+.ac-prov{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#fff;display:flex;flex-direction:column;transition:transform .16s,box-shadow .16s}
+.ac-prov:hover{transform:translateY(-3px);box-shadow:var(--shadow-md)}
+.ac-prov-img{width:100%;aspect-ratio:16/10;object-fit:cover;display:block;background:var(--gray)}
+.ac-prov-ph{display:grid;place-items:center;font-size:34px}
+.ac-prov-body{padding:14px 15px 16px;display:flex;flex-direction:column;gap:3px}
+.ac-prov-cat{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.06em;color:var(--gold);text-transform:uppercase}
+.ac-prov-body b{font-family:var(--font-display);font-size:16px;color:var(--navy)}
+.ac-prov-body small{font-size:12.5px;color:var(--muted)}
+.ac-prov-body p{font-size:13px;color:var(--text);line-height:1.5;margin-top:6px}
+.ac-prov-acts{display:flex;gap:7px;margin-top:11px}
 /* ---- Accueil : inspiration ---- */
 .ac-inspo{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin-top:4px}
 .ac-inspo-item{position:relative;border-radius:12px;overflow:hidden;aspect-ratio:1;border:1px solid var(--line)}
@@ -2053,10 +2065,9 @@ function paintAccueil(){
   </div>
 
   <div class="box" style="margin-top:16px">
-    <h3>Trouvez vos prestataires</h3>
-    <p class="empty" style="padding-top:0">Des professionnels pour un événement à votre image. Touchez une catégorie pour lancer votre recherche.</p>
-    <div class="ac-vendors">${VENDOR_CATS.map(c=>`
-      <button class="ac-vcat" data-vcat="${esc(c.q)}"><span class="ac-vic">${c.ic}</span><span>${esc(c.n)}</span></button>`).join('')}</div>
+    <h3>Prestataires recommandés <em>par Evenza</em></h3>
+    <p class="empty" style="padding-top:0" id="provIntro">Chargement des professionnels référencés…</p>
+    <div class="ac-provs" id="provList"></div>
   </div>
 
   <div class="box" style="margin-top:16px">
@@ -2068,10 +2079,8 @@ function paintAccueil(){
         <span class="ac-inspo-plus">+</span><small>Ajouter</small></label>
     </div>
   </div>`;
-  // Prestataires → recherche Google
-  document.querySelectorAll('[data-vcat]').forEach(b=>b.onclick=()=>{
-    const q=b.dataset.vcat+(EV.venue?' '+EV.venue.split(',').pop().trim():' Québec');
-    window.open('https://www.google.com/search?q='+encodeURIComponent(q),'_blank','noopener');});
+  // Prestataires → charger depuis l'annuaire Evenza (Supabase)
+  loadFeaturedProviders();
   // Inspiration → import image
   if($('inspoFile'))$('inspoFile').onchange=e=>{
     const f=e.target.files&&e.target.files[0];if(!f)return;
@@ -2080,6 +2089,30 @@ function paintAccueil(){
       .catch(()=>toast('Image illisible'));};
   document.querySelectorAll('[data-inspodel]').forEach(b=>b.onclick=()=>{
     EV.inspo.splice(+b.dataset.inspodel,1);save();paintAccueil();});
+}
+async function loadFeaturedProviders(){
+  const box=$('provList'),intro=$('provIntro');if(!box||!sb)return;
+  const {data}=await sb.from('providers').select('*').eq('active',true).order('featured',{ascending:false}).order('created_at',{ascending:false}).limit(8);
+  const provs=data||[];
+  if(!provs.length){
+    if(intro)intro.textContent='Aucun prestataire référencé pour l\u2019instant. Revenez bientôt : Evenza ajoute régulièrement des professionnels de confiance.';
+    box.innerHTML='';return;
+  }
+  if(intro)intro.textContent='Des professionnels de confiance sélectionnés par Evenza.';
+  box.innerHTML=provs.map(p=>`
+    <div class="ac-prov">
+      ${p.photo?`<img class="ac-prov-img" src="${esc(p.photo)}" alt="">`:`<div class="ac-prov-img ac-prov-ph">${p.kind==='salle'?'🏛️':'📸'}</div>`}
+      <div class="ac-prov-body">
+        <span class="ac-prov-cat">${esc(p.category)}${p.featured?' ⭐':''}</span>
+        <b>${esc(p.name)}</b>
+        <small>${esc(p.city||'')}${p.price_from?' · '+esc(p.price_from):''}</small>
+        ${p.description?`<p>${esc(p.description)}</p>`:''}
+        <div class="ac-prov-acts">
+          ${p.website?`<a class="mini-btn" href="${esc(p.website)}" target="_blank" rel="noopener">Voir le site</a>`:''}
+          ${p.contact?`<a class="mini-btn" href="${p.contact.includes('@')?'mailto:'+esc(p.contact):'tel:'+esc(p.contact)}">Contacter</a>`:''}
+        </div>
+      </div>
+    </div>`).join('');
 }
 const VENDOR_CATS=[
   {n:'Salles',ic:'🏛️',q:'salle de réception mariage'},
