@@ -1281,7 +1281,9 @@ async function setJob(jb){if(PROFILE)PROFILE.job=jb;
 function subStatus(){return (PROFILE&&PROFILE.sub_status)||'inactive';}
 function subActive(){
   const st=subStatus();
-  if(st==='active'||st==='trialing')return true;
+  // 'incomplete' = abonnement créé et paiement lancé ; Stripe confirme avec un léger délai.
+  // On considère le compte actif dès qu'un abonnement payant existe.
+  if(st==='active'||st==='trialing'||st==='incomplete')return true;
   // encore dans la période déjà payée (annulé mais pas expiré)
   if((st==='canceled'||st==='past_due')&&PROFILE&&PROFILE.sub_current_period_end){
     return Date.parse(PROFILE.sub_current_period_end)>Date.now();
