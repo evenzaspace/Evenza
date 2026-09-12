@@ -493,6 +493,8 @@ footer{background:var(--navy-ink);color:rgba(255,255,255,.6);padding:44px 0 30px
 .plans2{max-width:760px;margin:0 auto;grid-template-columns:1fr 1fr}
 @media(max-width:760px){.plans2{grid-template-columns:1fr}}
 .mode2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.mode3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+@media(max-width:640px){.mode3{grid-template-columns:1fr}}
 @media(max-width:560px){.mode2{grid-template-columns:1fr}}
 .modepick{border:1.5px solid var(--line);border-radius:14px;padding:16px 15px;text-align:left;background:#fff;transition:all .18s;display:flex;flex-direction:column;gap:3px}
 .modepick:hover{border-color:#C9D3E0;transform:translateY(-2px)}
@@ -817,6 +819,33 @@ footer{background:var(--navy-ink);color:rgba(255,255,255,.6);padding:44px 0 30px
 .shr-contribs{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
 .shr-contrib{background:var(--gray);border-radius:10px;padding:10px 13px;font-size:13.5px}
 .shr-contrib b{color:var(--navy);display:block;font-size:12.5px;margin-bottom:2px}
+/* ---- Fil de nouvelles (côté couple) ---- */
+.nw-compose{border:1px solid var(--line);border-radius:12px;padding:13px;background:var(--gray)}
+.nw-actions{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:10px}
+.nw-img-prev{position:relative;margin-top:10px;display:inline-block}
+.nw-img-prev img{max-width:220px;border-radius:10px;display:block}
+.nw-img-prev button{position:absolute;top:6px;right:6px;width:26px;height:26px;border-radius:50%;background:rgba(8,26,51,.72);color:#fff;font-size:16px}
+.nw-list{display:flex;flex-direction:column;gap:12px}
+.nw-post{background:#fff;border:1px solid var(--line);border-radius:13px;overflow:hidden;padding:15px}
+.nw-post-img{width:100%;border-radius:10px;margin-bottom:10px;display:block}
+.nw-post p{font-size:14.5px;color:var(--text);line-height:1.55}
+.nw-post-foot{display:flex;justify-content:space-between;align-items:center;margin-top:10px}
+.nw-post-foot small{color:var(--muted);font-size:12px}
+.nw-del{font-size:12px;color:var(--muted);font-weight:600}.nw-del:hover{color:var(--red)}
+/* ---- Fil de nouvelles (vue invité publique) ---- */
+#feed{background:var(--gray);min-height:100vh;padding:30px 18px 60px}
+.fd{max-width:560px;margin:0 auto}
+.fd-card{background:#fff;border-radius:20px;box-shadow:var(--shadow-lg);overflow:hidden}
+.fd-top{background:linear-gradient(140deg,var(--navy),#2A5A9B);color:#fff;padding:28px 30px;text-align:center}
+.fd-eyebrow{font-family:var(--font-mono);font-size:11px;letter-spacing:.14em;color:var(--gold);display:block;margin-bottom:10px}
+.fd-top h1{font-family:var(--font-display);font-size:26px;font-weight:700;margin-bottom:6px}
+.fd-top p{color:rgba(255,255,255,.82);font-size:14px}
+.fd-body{padding:20px 24px;display:flex;flex-direction:column;gap:14px}
+.fd-post{border:1px solid var(--line);border-radius:13px;overflow:hidden;padding:15px}
+.fd-post img{width:100%;border-radius:10px;margin-bottom:10px;display:block}
+.fd-post p{font-size:14.5px;color:var(--text);line-height:1.6}
+.fd-post small{display:block;color:var(--muted);font-size:12px;margin-top:8px}
+.fd-foot{padding:16px 24px 24px;text-align:center;font-size:12px;color:var(--muted)}
 
 
 /* ================= DESIGNS D'INVITATION ================= */
@@ -1019,7 +1048,7 @@ body.app-on .help-btn{display:flex}
           <span class="prof-tag">WEDDING PLANNER</span>
           <h3 class="serif">Je suis<br>wedding planner</h3>
           <p>Gérez vos mariages et vos clients au même endroit.</p>
-          <button class="btn btn-outline btn-sm" data-go="setup" data-plan="planner" style="width:100%">Voir les offres →</button>
+          <button class="btn btn-outline btn-sm" data-go="setup" data-plan="pro" style="width:100%">Voir les offres →</button>
         </div>
       </div>
       <div class="prof-card">
@@ -1028,7 +1057,7 @@ body.app-on .help-btn{display:flex}
           <span class="prof-tag">PRESTATAIRES</span>
           <h3 class="serif">Je suis<br>prestataire</h3>
           <p>Soyez visible et connectez avec de futurs mariés.</p>
-          <button class="btn btn-outline btn-sm" data-go="setup" data-plan="planner" style="width:100%">Créer mon profil →</button>
+          <button class="btn btn-outline btn-sm" data-go="setup" data-plan="pro" style="width:100%">Créer mon profil →</button>
         </div>
       </div>
     </div>
@@ -1141,6 +1170,7 @@ body.app-on .help-btn{display:flex}
   <div class="tabs"><div class="tabs-in" id="wkTabs"></div></div>
   <div class="wk-wrap">
     <div class="pane" data-pane="accueil" id="paneaccueil"></div>
+    <div class="pane" data-pane="nouvelles" id="panenouvelles"></div>
     <div class="pane" data-pane="espaces" id="paneespaces"></div>
     <div class="pane" data-pane="plan" id="paneplan"></div>
     <div class="pane" data-pane="invites" id="paneinvites"></div>
@@ -1157,6 +1187,7 @@ body.app-on .help-btn{display:flex}
 <!-- ==================== INVITATION (invité) ==================== -->
 <div id="invite" class="view"><div class="iv" id="ivWrap"></div></div>
 <div id="share" class="view"><div class="shr" id="shrWrap"></div></div>
+<div id="feed" class="view"><div class="fd" id="fdWrap"></div></div>
 
 
 <!-- ==================== PLAN PLEIN ÉCRAN ==================== -->
@@ -1280,9 +1311,10 @@ async function setJob(jb){if(PROFILE)PROFILE.job=jb;
 /* ---------------- Abonnement Stripe ---------------- */
 function subStatus(){return (PROFILE&&PROFILE.sub_status)||'inactive';}
 function subActive(){
+  // Le forfait Personnel est gratuit : toujours actif, sans paiement.
+  if(plan()==='perso')return true;
   const st=subStatus();
   // 'incomplete' = abonnement créé et paiement lancé ; Stripe confirme avec un léger délai.
-  // On considère le compte actif dès qu'un abonnement payant existe.
   if(st==='active'||st==='trialing'||st==='incomplete')return true;
   // encore dans la période déjà payée (annulé mais pas expiré)
   if((st==='canceled'||st==='past_due')&&PROFILE&&PROFILE.sub_current_period_end){
@@ -1295,7 +1327,7 @@ async function startCheckout(planKeyWanted,cycle){
   if(!sb||!USER){location.hash='#/compte';return;}
   toast('Ouverture du paiement sécurisé…');
   try{
-    const {data,error}=await sb.functions.invoke('create-checkout',{body:{plan:planKeyWanted,cycle:cycle||'month'}});
+    const {data,error}=await sb.functions.invoke('create-checkout',{body:{plan:planKeyWanted,cycle:'year'}});
     if(error||!data||data.error||!data.url)throw new Error((data&&data.error)||(error&&error.message)||'indisponible');
     location.href=data.url;
   }catch(e){
@@ -1485,28 +1517,33 @@ const JOBS={
   autre:{n:'Traiteur ou autre',d:'J\u2019organise des réceptions',home:'Mes événements',cta:'Nouvel événement'}
 };
 const PLANS={
-  perso:{n:'Personnel',sub:10,mode:'perso',d:'Pour vos propres événements',
-    caps:{events:3,templates:0,duplicate:false,themes:6}},
-  planner:{n:'Event Planner',sub:35,mode:'pro',d:'Pour les professionnels de l\u2019événement',
-    caps:{events:Infinity,templates:Infinity,duplicate:true,themes:6,share:true}}
+  perso:{n:'Personnel',sub:0,mode:'perso',d:'Pour organiser votre propre événement',
+    caps:{events:1,templates:0,duplicate:false,themes:6,share:false}},
+  pro:{n:'Pro',sub:50,mode:'pro',d:'Pour les planners qui démarrent',
+    caps:{events:6,templates:5,duplicate:true,themes:6,share:true}},
+  studio:{n:'Studio',sub:100,mode:'pro',d:'Pour les agences et planners établis',
+    caps:{events:Infinity,templates:Infinity,duplicate:true,themes:6,share:true,priority:true}}
 };
-const PLAN_ORDER=['perso','planner'];
-/* compatibilité anciens comptes : essentiel/pro/illimite → perso/planner */
-const PLAN_MIGRATE={essentiel:'perso',pro:'planner',illimite:'planner',perso:'perso',planner:'planner'};
+const PLAN_ORDER=['perso','pro','studio'];
+/* compatibilité anciens comptes : anciens noms → nouveaux */
+const PLAN_MIGRATE={essentiel:'perso',particulier:'perso',perso:'perso',
+  planner:'pro',pro:'pro',illimite:'studio',studio:'studio'};
 function planKey(k){return PLANS[k]?k:(PLAN_MIGRATE[k]||'perso');}
-function planPrice(k){return money(PLANS[planKey(k)].sub)+' / mois + '+money(EVZ_FEE)+' par invitation envoyée';}
+function planPrice(k){const P=PLANS[planKey(k)];
+  return (P.sub===0?'Gratuit':money(P.sub)+' / an')+' + '+money(EVZ_FEE)+' par invitation envoyée';}
 function caps(){return PLANS[planKey(plan())].caps;}
 function upTo(feat){
-  // fonctionnalités pro → Event Planner ; sinon rester sur Personnel
-  if(feat==='templates'||feat==='events'||feat==='duplicate'||feat==='share')return 'planner';
+  // fonctionnalités → premier forfait qui les débloque
   return PLAN_ORDER.find(k=>{const c=PLANS[k].caps;
+    if(feat==='templates')return c.templates>0;
+    if(feat==='events')return c.events>1;
     if(feat==='themes')return c.themes>=6;
-    return !!c[feat];})||'planner';
+    return !!c[feat];})||'pro';
 }
 function lockBox(feat,txt){
   const k=upTo(feat),P=PLANS[k];
   return `<div class="lock"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><rect x="4" y="10" width="16" height="10" rx="2.5" stroke="currentColor" stroke-width="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3" stroke="currentColor" stroke-width="2"/></svg>
-    <span>${esc(txt)} <b>${esc(P.n)}</b> — ${money(P.sub)} / mois.
+    <span>${esc(txt)} <b>${esc(P.n)}</b> — ${P.sub===0?'gratuit':money(P.sub)+' / an'}.
     <button class="lk-btn" data-up="${k}">Passer à ${esc(P.n)}</button></span></div>`;
 }
 function bindLocks(after){
@@ -1819,7 +1856,7 @@ async function dbDelGuest(id){
 /* ---------------- Temps réel : confirmations en direct ---------------- */
 let RT=null;
 function repaint(){
-  ({accueil:paintAccueil,espaces:paintEspaces,plan:paintPlan,invites:paintGuests,deroule:paintProgram,design:paintDesign,invitations:paintInvites,
+  ({accueil:paintAccueil,nouvelles:paintNouvelles,espaces:paintEspaces,plan:paintPlan,invites:paintGuests,deroule:paintProgram,design:paintDesign,invitations:paintInvites,
     suivi:paintFollow,arrivees:paintArrivals,budget:paintBudget,reglages:paintSettings}[TAB]||paintAccueil)();
 }
 function subGuests(){
@@ -1944,7 +1981,7 @@ function initSetup(){
 /* ============================================================
    WORKSPACE
 ============================================================ */
-const TABS=[['accueil','Accueil'],['espaces','Espaces'],['plan','Plan de salle'],['invites','Invités'],['deroule','Déroulé'],
+const TABS=[['accueil','Accueil'],['nouvelles','Nouvelles'],['espaces','Espaces'],['plan','Plan de salle'],['invites','Invités'],['deroule','Déroulé'],
   ['design','Invitation'],['invitations','Envois'],['suivi','Suivi'],['arrivees','Arrivées'],['budget','Budget'],['reglages','Réglages']];
 async function renderWork(slug,tab){
   if(!EV||EV.slug!==slug||EV.tplId){
@@ -2500,25 +2537,30 @@ function renderAuth(){
     $('liPass').onkeydown=e=>{if(e.key==='Enter')$('liGo').click();};
     return;
   }
-  const isProMode=authPlan==='planner';
+  const isProMode=authPlan==='pro'||authPlan==='studio';
   if(!isProMode)authJob='autre';
   b.innerHTML=`
     <h1>Créez votre compte</h1>
     <p class="sub">Vos données sont enregistrées en ligne et vous suivent sur tous vos appareils.</p>
-    <div class="field"><label>Vous organisez…</label>
-      <div class="mode2">
+    <div class="field"><label>Choisissez votre formule</label>
+      <div class="mode3">
         <button class="modepick${authPlan==='perso'?' sel':''}" data-aplan="perso">
           <span class="mp-ic">🎉</span>
-          <b>Mes propres événements</b>
-          <span class="mp-price">${money(10)} / mois</span>
-          <small>Mariage, anniversaire, fête… jusqu'à 3 événements, les 6 designs.</small></button>
-        <button class="modepick${authPlan==='planner'?' sel':''}" data-aplan="planner">
+          <b>Personnel</b>
+          <span class="mp-price">Gratuit</span>
+          <small>Votre propre événement. 1 événement, tout l'essentiel.</small></button>
+        <button class="modepick${authPlan==='pro'?' sel':''}" data-aplan="pro">
           <span class="mp-ic">💼</span>
-          <b>Je suis un pro de l'événement</b>
-          <span class="mp-price">${money(35)} / mois</span>
-          <small>Planificateur, salle, traiteur… événements et modèles illimités.</small></button>
+          <b>Pro</b>
+          <span class="mp-price">50 $ / an</span>
+          <small>Pour les planners. 6 événements, collaboration prestataires, dashboard pro.</small></button>
+        <button class="modepick${authPlan==='studio'?' sel':''}" data-aplan="studio">
+          <span class="mp-ic">🚀</span>
+          <b>Studio</b>
+          <span class="mp-price">100 $ / an</span>
+          <small>Pour les agences. Événements illimités, tout Pro + support prioritaire.</small></button>
       </div>
-      <p class="empty" style="padding:6px 0 0">+ ${money(EVZ_FEE)} par invitation envoyée, facturés par avis après l'envoi.</p></div>
+      <p class="empty" style="padding:6px 0 0">+ ${money(EVZ_FEE)} par invitation envoyée, facturés après l'envoi.</p></div>
     ${isProMode?`<div class="field"><label>Votre métier</label>
       <div class="seg" id="auJobSeg">${Object.keys(JOBS).map(k=>
         `<button class="${k===authJob?'sel':''}" data-ajob="${k}">${JOBS[k].n}</button>`).join('')}</div></div>`:''}
@@ -2595,14 +2637,10 @@ async function renderEspace(){
       <div style="display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap">
         <div>
           <h3 style="margin-bottom:4px">Activez votre abonnement ${esc(P.n)}</h3>
-          <p class="empty" style="padding:0">Choisissez votre rythme de paiement. L'abonnement est requis pour créer des événements et envoyer des invitations.</p>
+          <p class="empty" style="padding:0">L'abonnement <b>${money(P.sub)} / an</b> est requis pour créer des événements et envoyer des invitations.</p>
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-          <div class="seg" id="cycleSeg">
-            <button class="${authCycle==='month'?'sel':''}" data-cycle="month">Mensuel — ${money(P.sub)}</button>
-            <button class="${authCycle==='year'?'sel':''}" data-cycle="year">Annuel — ${money(P.sub*12)}</button>
-          </div>
-          <button class="btn btn-gold btn-sm" id="subActivate">Payer et activer</button>
+          <button class="btn btn-gold btn-sm" id="subActivate">Payer ${money(P.sub)} / an et activer</button>
         </div>
       </div>
     </div>`:''}
@@ -3855,6 +3893,94 @@ async function renderInvite(token){
 }
 
 /* ============================================================
+   FIL DE NOUVELLES DU MARIAGE
+============================================================ */
+async function paintNouvelles(){
+  const pane=$('panenouvelles');
+  pane.innerHTML=`
+  <div class="box" style="margin-bottom:16px">
+    <h3>Fil de nouvelles <em>vos annonces aux invités</em></h3>
+    <p class="empty" style="padding-top:0">Publiez des nouvelles pour vos invités (plan d'accès, dress code, navette…). Partagez le lien du fil : il se met à jour tout seul à chaque message.</p>
+    <div class="nw-compose">
+      <textarea class="inp" id="nwBody" placeholder="Écrivez une nouvelle pour vos invités…" style="min-height:80px"></textarea>
+      <div id="nwImgPrev"></div>
+      <div class="nw-actions">
+        <label class="mini-btn">📷 Image<input type="file" id="nwImg" accept="image/*" hidden></label>
+        <button class="btn btn-gold btn-sm" id="nwPost">Publier</button>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+      <button class="mini-btn" id="nwShare">🔗 Copier le lien du fil (pour les invités)</button>
+      <a class="mini-btn" href="#/f/${EV.slug}" target="_blank" rel="noopener">Aperçu invité</a>
+    </div>
+  </div>
+  <div class="nw-list" id="nwList"><p class="empty">Chargement…</p></div>`;
+  let nwImage='';
+  $('nwImg').onchange=e=>{const f=e.target.files&&e.target.files[0];if(!f)return;
+    toast('Traitement de l\u2019image…');
+    compressImage(f,860,110000).then(url=>{nwImage=url;
+      $('nwImgPrev').innerHTML=`<div class="nw-img-prev"><img src="${url}" alt=""><button id="nwImgX">×</button></div>`;
+      $('nwImgX').onclick=()=>{nwImage='';$('nwImgPrev').innerHTML='';};}).catch(()=>toast('Image illisible'));};
+  $('nwPost').onclick=async()=>{
+    const body=($('nwBody').value||'').trim();
+    if(!body&&!nwImage){toast('Écrivez un message');return;}
+    $('nwPost').disabled=true;
+    const {error}=await sb.from('wedding_news').insert({event_id:EV.id,body,image:nwImage});
+    $('nwPost').disabled=false;
+    if(error){toast('Erreur : '+error.message);return;}
+    $('nwBody').value='';nwImage='';$('nwImgPrev').innerHTML='';
+    toast('Nouvelle publiée');loadNews();};
+  $('nwShare').onclick=()=>copyText(baseURL()+'#/f/'+EV.slug,$('nwShare'),'🔗 Copier le lien du fil (pour les invités)');
+  loadNews();
+}
+async function loadNews(){
+  if(!sb||!EV.id)return;
+  const {data}=await sb.from('wedding_news').select('*').eq('event_id',EV.id).order('created_at',{ascending:false});
+  const list=data||[];const box=$('nwList');if(!box)return;
+  box.innerHTML=list.length?list.map(n=>`
+    <div class="nw-post">
+      ${n.image?`<img class="nw-post-img" src="${n.image}" alt="">`:''}
+      ${n.body?`<p>${esc(n.body).replace(/\n/g,'<br>')}</p>`:''}
+      <div class="nw-post-foot"><small>${ago(Date.parse(n.created_at))}</small>
+        <button class="nw-del" data-nwdel="${n.id}">Supprimer</button></div>
+    </div>`).join(''):'<p class="empty">Aucune nouvelle pour l\u2019instant. Publiez la première ci-dessus.</p>';
+  box.querySelectorAll('[data-nwdel]').forEach(b=>b.onclick=async()=>{
+    await sb.from('wedding_news').delete().eq('id',b.dataset.nwdel);loadNews();toast('Supprimé');});
+}
+async function renderFeed(slug){
+  const w=$('fdWrap');
+  w.innerHTML='<div class="fd-card"><p class="empty" style="padding:30px">Chargement…</p></div>';
+  if(!sb){w.innerHTML='<div class="fd-card"><p class="empty" style="padding:30px">Service non configuré.</p></div>';return;}
+  let d=null;
+  try{const {data,error}=await sb.rpc('get_wedding_feed',{p_slug:slug});if(error)throw error;d=data;}catch(e){}
+  if(!d||!d.event_name){w.innerHTML='<div class="fd-card"><div class="fd-top"><b>Evenza</b></div><div style="padding:26px"><p class="empty">Ce fil est introuvable.</p></div></div>';return;}
+  const paint=news=>{
+    w.innerHTML=`
+    <div class="fd-card">
+      <div class="fd-top">
+        <span class="fd-eyebrow">NOUVELLES DU MARIAGE</span>
+        <h1>${esc(d.event_name)}</h1>
+        <p>${esc(fmtDate(d.event_date))}${d.venue?' · '+esc(d.venue):''}</p>
+      </div>
+      <div class="fd-body">
+        ${(news&&news.length)?news.map(n=>`<div class="fd-post">
+          ${n.image?`<img src="${n.image}" alt="">`:''}
+          ${n.body?`<p>${esc(n.body).replace(/\n/g,'<br>')}</p>`:''}
+          <small>${ago(Date.parse(n.at))}</small></div>`).join(''):'<p class="empty" style="padding:20px">Aucune nouvelle pour l\u2019instant. Revenez bientôt !</p>'}
+      </div>
+      <div class="fd-foot">Ce fil se met à jour automatiquement · propulsé par Evenza</div>
+    </div>`;
+  };
+  paint(d.news||[]);
+  // temps réel : nouvelles en direct (on recharge le fil à chaque changement)
+  try{
+    const {data:ev}=await sb.from('events').select('id').eq('slug',slug).maybeSingle();
+    if(ev)sb.channel('feed-'+ev.id).on('postgres_changes',{event:'*',schema:'public',table:'wedding_news',filter:'event_id=eq.'+ev.id},
+      async()=>{const {data}=await sb.rpc('get_wedding_feed',{p_slug:slug});if(data)paint(data.news||[]);}).subscribe();
+  }catch(e){}
+}
+
+/* ============================================================
    VUE PRESTATAIRE (espace partagé, sans compte)
 ============================================================ */
 async function renderSharedSpace(token){
@@ -3911,7 +4037,7 @@ async function renderSharedSpace(token){
 /* ============================================================
    ROUTEUR
 ============================================================ */
-const VIEWS=['setup','compte','espace','work','invite','share'];
+const VIEWS=['setup','compte','espace','work','invite','share','feed'];
 function show(v){VIEWS.forEach(x=>$(x).classList.toggle('on',x===v));
   document.body.classList.toggle('app-on',!!v);window.scrollTo({top:0});}
 async function route(){
@@ -3920,6 +4046,7 @@ async function route(){
   if(!CONFIGURED){show(null);return;}
   if(p[0]==='i'&&p[1]){show('invite');renderInvite(p[1]);return;}
   if(p[0]==='s'&&p[1]){show('share');renderSharedSpace(p[1]);return;}
+  if(p[0]==='f'&&p[1]){show('feed');renderFeed(p[1]);return;}
   if(p[0]==='compte'){show('compte');renderAuth();return;}
   if(p[0]==='creer'){
     if(!USER){location.hash='#/compte';return;}
