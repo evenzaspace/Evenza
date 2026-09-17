@@ -2104,12 +2104,6 @@ function paintAccueil(){
   </div>
 
   <div class="box" style="margin-top:16px">
-    <h3>Prestataires recommandés <em>par Evenza</em></h3>
-    <p class="empty" style="padding-top:0" id="provIntro">Chargement des professionnels référencés…</p>
-    <div class="ac-provs" id="provList"></div>
-  </div>
-
-  <div class="box" style="margin-top:16px">
     <h3>Inspiration <em>${int((EV.inspo||[]).length)}</em></h3>
     <p class="empty" style="padding-top:0">Rassemblez vos idées : déco, gâteau, ambiance… Importez des images qui vous inspirent pour cet événement.</p>
     <div class="ac-inspo">
@@ -2118,8 +2112,6 @@ function paintAccueil(){
         <span class="ac-inspo-plus">+</span><small>Ajouter</small></label>
     </div>
   </div>`;
-  // Prestataires → charger depuis l'annuaire Evenza (Supabase)
-  loadFeaturedProviders();
   // Inspiration → import image
   if($('inspoFile'))$('inspoFile').onchange=e=>{
     const f=e.target.files&&e.target.files[0];if(!f)return;
@@ -2128,30 +2120,6 @@ function paintAccueil(){
       .catch(()=>toast('Image illisible'));};
   document.querySelectorAll('[data-inspodel]').forEach(b=>b.onclick=()=>{
     EV.inspo.splice(+b.dataset.inspodel,1);save();paintAccueil();});
-}
-async function loadFeaturedProviders(){
-  const box=$('provList'),intro=$('provIntro');if(!box||!sb)return;
-  const {data}=await sb.from('providers').select('*').eq('active',true).order('featured',{ascending:false}).order('created_at',{ascending:false}).limit(8);
-  const provs=data||[];
-  if(!provs.length){
-    if(intro)intro.textContent='Aucun prestataire référencé pour l\u2019instant. Revenez bientôt : Evenza ajoute régulièrement des professionnels de confiance.';
-    box.innerHTML='';return;
-  }
-  if(intro)intro.textContent='Des professionnels de confiance sélectionnés par Evenza.';
-  box.innerHTML=provs.map(p=>`
-    <div class="ac-prov">
-      ${p.photo?`<img class="ac-prov-img" src="${esc(p.photo)}" alt="">`:`<div class="ac-prov-img ac-prov-ph">${p.kind==='salle'?'🏛️':'📸'}</div>`}
-      <div class="ac-prov-body">
-        <span class="ac-prov-cat">${esc(p.category)}${p.featured?' ⭐':''}</span>
-        <b>${esc(p.name)}</b>
-        <small>${esc(p.city||'')}${p.price_from?' · '+esc(p.price_from):''}</small>
-        ${p.description?`<p>${esc(p.description)}</p>`:''}
-        <div class="ac-prov-acts">
-          ${p.website?`<a class="mini-btn" href="${esc(p.website)}" target="_blank" rel="noopener">Voir le site</a>`:''}
-          ${p.contact?`<a class="mini-btn" href="${p.contact.includes('@')?'mailto:'+esc(p.contact):'tel:'+esc(p.contact)}">Contacter</a>`:''}
-        </div>
-      </div>
-    </div>`).join('');
 }
 const VENDOR_CATS=[
   {n:'Salles',ic:'🏛️',q:'salle de réception mariage'},
