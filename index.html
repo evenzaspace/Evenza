@@ -668,6 +668,40 @@ footer{background:var(--navy-ink);color:rgba(255,255,255,.6);padding:44px 0 30px
 .iv-lodge .lodge-price{font-family:var(--font-mono);font-size:12.5px;color:var(--ivacc);font-weight:600}
 .iv-lodge .lodge small{color:var(--ivmut);font-size:12.5px}
 .iv-lodge .lodge-link{color:var(--ivacc);font-weight:600;font-size:13px;margin-top:3px;align-self:flex-start}
+/* ---- Invitation format « mini site » ---- */
+.ms-site{padding-bottom:6px}
+.ms-hero{position:relative;min-height:300px;display:flex;align-items:flex-end;background:var(--ivtop)}
+.ms-hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.ms-hero::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0) 35%,rgba(0,0,0,.6) 100%)}
+.ms-hero-txt{position:relative;z-index:1;padding:26px 26px 22px;color:#fff;width:100%}
+.ms-hero-txt .ms-eyebrow{font-size:11.5px;letter-spacing:.13em;text-transform:uppercase;opacity:.9}
+.ms-hero-txt h1{font-family:var(--font-display);font-size:26px;margin:6px 0;line-height:1.15}
+.ms-hero-txt p{font-size:13.5px;opacity:.92}
+.ms-nohero{padding:30px 26px 4px;text-align:center}
+.ms-site .who{font-family:var(--font-display);font-weight:600;font-size:17px}
+.ms-site .who.big{font-size:21px}
+.ms-sec{padding:24px 26px}
+.ms-sec+.ms-sec{border-top:1px solid var(--ivline)}
+.ms-sec h2{font-family:var(--font-display);font-size:18px;color:var(--ivink);margin-bottom:12px}
+.ms-story p{font-size:14.5px;line-height:1.7;color:var(--ivink);white-space:pre-wrap}
+.ms-cd{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center}
+.ms-cd div{background:var(--ivbg);border:1px solid var(--ivline);border-radius:12px;padding:11px 3px}
+.ms-cd b{display:block;font-family:var(--font-mono);font-size:20px;color:var(--ivacc)}
+.ms-cd span{font-size:10.5px;color:var(--ivmut);text-transform:uppercase;letter-spacing:.05em}
+.ms-gal{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.ms-gal img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px}
+.ms-map{border:1px solid var(--ivline);border-radius:12px;padding:15px;display:flex;flex-direction:column;gap:10px}
+.ms-map a{align-self:flex-start;background:var(--ivink);color:var(--ivbg);border-radius:9px;padding:9px 16px;font-size:13.5px;font-weight:600}
+.ms-gift{border:1px solid var(--ivline);border-radius:12px;padding:15px;font-size:14px;color:var(--ivink);line-height:1.6}
+.ms-gift a{display:inline-block;margin-top:10px;background:var(--ivacc);color:#fff;border-radius:9px;padding:9px 16px;font-size:13.5px;font-weight:600}
+.ms-info{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.ms-info div{background:var(--ivbg);border:1px solid var(--ivline);border-radius:12px;padding:12px 13px}
+.ms-info b{display:block;font-size:11.5px;color:var(--ivacc);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+.ms-info span{font-size:13.5px;color:var(--ivink)}
+.ms-faq details{border-bottom:1px solid var(--ivline);padding:11px 0}
+.ms-faq details:last-child{border-bottom:none}
+.ms-faq summary{font-size:14.5px;font-weight:600;color:var(--ivink);cursor:pointer}
+.ms-faq p{font-size:13.5px;color:var(--ivmut);margin-top:8px;line-height:1.6}
 /* ---- Lignes hébergements/prestataires dans les réglages ---- */
 .lodge-row{border:1px solid var(--line);border-radius:12px;padding:13px;margin-bottom:10px;background:var(--gray)}
 
@@ -1793,7 +1827,9 @@ function evData(e){
     layout:e.layout,plan:e.plan,program:e.program||[],
     paid:!!e.paid,price:e.price||0,interac:e.interac||'',contact:e.contact||'',
     theme:e.theme||'royal',visual:e.visual||'',visualFull:e.visualFull!==false,
-    hotels:e.hotels||[],vendors:e.vendors||[],budgetItems:e.budgetItems||[],inspo:e.inspo||[],spaces:e.spaces||null};
+    hotels:e.hotels||[],vendors:e.vendors||[],budgetItems:e.budgetItems||[],inspo:e.inspo||[],spaces:e.spaces||null,
+    format:e.format||'carte',story:e.story||'',gallery:e.gallery||[],venueAddress:e.venueAddress||'',
+    gift:e.gift||{text:'',link:''},faq:e.faq||[],dresscode:e.dresscode||'',menu:e.menu||'',showCountdown:e.showCountdown!==false};
 }
 function rowToGuest(r){
   return {id:r.id,token:r.token,name:r.name,contact:r.contact||'',seat:r.seat||null,
@@ -3175,9 +3211,21 @@ function paintProgram(){
 /* ---------- onglet Invitation (design) ---------- */
 function paintDesign(){
   const cur=EV.theme||'royal';
+  const fmt=EV.format||'carte';
   const sample=(EV.list||[])[0]||{name:EV.kind==='mariage'?'Jean-Sébastien Roy':'Marie Lambert',seat:null};
   const d=Object.assign(invPayload(sample),{th:cur});
+  const gal=EV.gallery||[];
+  const faq=EV.faq||[];
+  const gift=EV.gift||{text:'',link:''};
   $('panedesign').innerHTML=`
+  <div class="box" style="margin-bottom:16px">
+    <h3>Format de l'invitation</h3>
+    <p class="empty" style="padding-top:0">La carte classique tient sur un écran. Le mini site déroule plusieurs sections (histoire, galerie, lieu, cadeaux…) — plus riche, un peu plus long à remplir.</p>
+    <div class="seg" style="margin-top:10px">
+      <button class="${fmt==='carte'?'sel':''}" data-fmt="carte">Carte classique</button>
+      <button class="${fmt==='site'?'sel':''}" data-fmt="site">Mini site</button>
+    </div>
+  </div>
   <div class="cols2">
     <div class="box">
       <h3>Design de l'invitation <em>${int(Object.keys(IVTHEMES).length)} modèles</em></h3>
@@ -3192,37 +3240,114 @@ function paintDesign(){
             <div class="t2" style="color:${t.acc}">${esc(fmtDate(EV.date).split(' ').slice(1,3).join(' '))}</div>
           </div>
           <div class="th-name">${t.n}${locked?' <span class="lk">verrouillé</span>':''}</div></button>`;}).join('')}</div>
-      ${caps().themes<Object.keys(IVTHEMES).length?lockBox('themes','Les 6 designs sont inclus dans l\u2019abonnement'):''}
+      ${caps().themes<Object.keys(IVTHEMES).length?lockBox('themes','Les 6 designs sont inclus dans l’abonnement'):''}
       <div class="upl">
-        <div class="upl-head"><b>Votre propre visuel</b>
+        <div class="upl-head"><b>${fmt==='site'?'Photo d’en-tête':'Votre propre visuel'}</b>
           ${EV.visual?`<button class="mini-btn danger" id="visDel">Retirer</button>`:''}</div>
-        <p class="empty" style="padding:0 0 10px">Importez l'invitation que vous avez déjà fait dessiner. Evenza l'utilise en bandeau et ajoute dessous le nom de l'invité, sa place, le déroulé et la confirmation de présence.</p>
+        <p class="empty" style="padding:0 0 10px">${fmt==='site'
+          ?'Une grande photo en haut de la page (le couple, le lieu…). Facultatif, mais ça a beaucoup plus d’impact.'
+          :'Importez l’invitation que vous avez déjà fait dessiner. Evenza l’utilise en bandeau et ajoute dessous le nom de l’invité, sa place, le déroulé et la confirmation de présence.'}</p>
         ${EV.visual?`<img class="upl-prev" src="${EV.visual}" alt="">
-          <label class="chkline"><input type="checkbox" id="visFull" ${EV.visualFull!==false?'checked':''}>
+          ${fmt==='site'?'':`<label class="chkline"><input type="checkbox" id="visFull" ${EV.visualFull!==false?'checked':''}>
             <span>Mon visuel contient déjà le nom des mariés, la date et le lieu</span></label>
-          <p class="empty" style="padding:2px 0 0">Dans ce cas, l'invitation n'affiche en dessous que le nom de l'invité, sa place et le nécessaire.</p>`
+          <p class="empty" style="padding:2px 0 0">Dans ce cas, l’invitation n’affiche en dessous que le nom de l’invité, sa place et le nécessaire.</p>`}`
          :`<label class="upl-btn"><input type="file" id="visFile" accept="image/*" hidden>Choisir une image…</label>`}
       </div>
     </div>
     <div class="box">
       <h3>Aperçu <em>tel que vos invités le verront</em></h3>
-      <div id="thPrev" style="max-width:400px;margin:0 auto">${inviteHTML(d,{preview:true})}</div>
+      <div id="thPrev" style="max-width:400px;margin:0 auto;max-height:640px;overflow-y:auto">${inviteBody(d,{preview:true})}</div>
     </div>
-  </div>`;
+  </div>
+  ${fmt==='site'?`
+  <div class="inv-grid" style="margin-top:16px">
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <div class="box">
+        <h3>Notre histoire</h3>
+        <p class="empty" style="padding-top:0">Racontez en quelques lignes comment vous vous êtes rencontrés — ça personnalise beaucoup la page.</p>
+        <textarea class="inp" id="msStory" placeholder="Ex : Tout a commencé en 2019, dans une file d'attente..." style="min-height:110px">${esc(EV.story||'')}</textarea>
+      </div>
+      <div class="box">
+        <h3>Lieu &amp; itinéraire</h3>
+        <p class="empty" style="padding-top:0">Le nom du lieu vient de l'onglet Réglages. Ajoutez l'adresse complète ici pour que le bouton « Ouvrir dans Maps » fonctionne bien.</p>
+        <div class="field"><label>Adresse complète</label>
+          <input class="inp" id="msAddr" value="${esc(EV.venueAddress||'')}" placeholder="1234 rue Principale, Laval, QC"></div>
+      </div>
+      <div class="box">
+        <h3>Galerie photo <em>${int(gal.length)}/6</em></h3>
+        <p class="empty" style="padding-top:0">Jusqu'à 6 photos du couple, affichées en grille.</p>
+        <div class="ms-gal" style="margin-bottom:10px">${gal.map((u,i)=>`<div style="position:relative"><img src="${u}" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px">
+          <button class="mini-btn danger" data-galdel="${i}" style="position:absolute;top:4px;right:4px;padding:3px 7px;font-size:11px">×</button></div>`).join('')}</div>
+        ${gal.length<6?`<label class="upl-btn"><input type="file" id="msGalFile" accept="image/*" hidden>Ajouter une photo…</label>`
+          :`<p class="empty" style="padding-top:0">Limite de 6 photos atteinte.</p>`}
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <div class="box">
+        <h3>Liste de cadeaux / cagnotte</h3>
+        <p class="empty" style="padding-top:0">Un mot pour vos invités, et un lien facultatif (Nuptias, PayPal, votre propre page…).</p>
+        <textarea class="inp" id="msGiftTxt" placeholder="Ex : Votre présence est le plus beau des cadeaux. Si vous souhaitez tout de même contribuer à notre voyage de noces..." style="min-height:80px">${esc(gift.text||'')}</textarea>
+        <div class="field" style="margin-top:8px"><label>Lien (facultatif)</label>
+          <input class="inp" id="msGiftLink" value="${esc(gift.link||'')}" placeholder="https://..."></div>
+      </div>
+      <div class="box">
+        <h3>Bon à savoir</h3>
+        <div class="field"><label>Code vestimentaire</label>
+          <input class="inp" id="msDress" value="${esc(EV.dresscode||'')}" placeholder="Ex : Tenue de soirée, couleurs terre"></div>
+        <div class="field" style="margin-top:8px;margin-bottom:0"><label>Menu</label>
+          <input class="inp" id="msMenu" value="${esc(EV.menu||'')}" placeholder="Ex : Trio de menus au choix, avisez-nous de vos allergies"></div>
+      </div>
+      <div class="box">
+        <h3>Compte à rebours</h3>
+        <label class="chkline"><input type="checkbox" id="msCdOn" ${EV.showCountdown!==false?'checked':''}>
+          <span>Afficher un compte à rebours jusqu'au jour J</span></label>
+      </div>
+      <div class="box">
+        <h3>Questions fréquentes <em>${int(faq.length)}</em></h3>
+        <div id="msFaqList">${faq.map((f,i)=>`
+          <div class="field" style="border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:10px">
+            <input class="inp" data-faqq="${i}" value="${esc(f.q)}" placeholder="Question (ex : Puis-je venir avec mes enfants ?)" style="margin-bottom:6px">
+            <textarea class="inp" data-faqa="${i}" placeholder="Réponse" style="min-height:50px">${esc(f.a||'')}</textarea>
+            <button class="mini-btn danger" data-faqdel="${i}" style="margin-top:6px">Supprimer</button>
+          </div>`).join('')}</div>
+        <button class="mini-btn" id="msFaqAdd">+ Ajouter une question</button>
+      </div>
+    </div>
+  </div>`:''}`;
   bindLocks(paintDesign);
+  startCountdown(d);
+  document.querySelectorAll('[data-fmt]').forEach(b=>b.onclick=()=>{EV.format=b.dataset.fmt;save();paintDesign();});
   if($('visFile'))$('visFile').onchange=e=>{
     const f=e.target.files&&e.target.files[0];if(!f)return;
-    toast('Traitement de l\u2019image…');
+    toast('Traitement de l’image…');
     compressImage(f,860,120000).then(url=>{EV.visual=url;save();paintDesign();toast('Visuel importé');})
       .catch(()=>toast('Image illisible'));};
   if($('visDel'))$('visDel').onclick=()=>{EV.visual='';save();paintDesign();toast('Visuel retiré');};
   if($('visFull'))$('visFull').onchange=e=>{EV.visualFull=e.target.checked;save();paintDesign();};
   document.querySelectorAll('[data-th]').forEach(b=>b.onclick=()=>{
-    if(b.dataset.lockth){toast('Ce design fait partie de l\u2019abonnement '+PLANS[upTo('themes')].n);return;}
+    if(b.dataset.lockth){toast('Ce design fait partie de l’abonnement '+PLANS[upTo('themes')].n);return;}
     EV.theme=b.dataset.th;save();paintDesign();toast('Design « '+IVTHEMES[EV.theme].n+' » appliqué');});
+  if($('msStory'))$('msStory').oninput=e=>{EV.story=e.target.value;save();};
+  if($('msAddr'))$('msAddr').oninput=e=>{EV.venueAddress=e.target.value;save();};
+  if($('msGalFile'))$('msGalFile').onchange=e=>{
+    const f=e.target.files&&e.target.files[0];if(!f)return;
+    if((EV.gallery||[]).length>=6){toast('Limite de 6 photos atteinte');return;}
+    toast('Traitement de l’image…');
+    compressImage(f,640,70000).then(url=>{EV.gallery=(EV.gallery||[]);EV.gallery.push(url);save();paintDesign();toast('Photo ajoutée');})
+      .catch(()=>toast('Image illisible'));};
+  document.querySelectorAll('[data-galdel]').forEach(b=>b.onclick=()=>{
+    EV.gallery.splice(+b.dataset.galdel,1);save();paintDesign();});
+  if($('msGiftTxt'))$('msGiftTxt').oninput=e=>{EV.gift=Object.assign({},EV.gift,{text:e.target.value});save();};
+  if($('msGiftLink'))$('msGiftLink').oninput=e=>{EV.gift=Object.assign({},EV.gift,{link:e.target.value});save();};
+  if($('msDress'))$('msDress').oninput=e=>{EV.dresscode=e.target.value;save();};
+  if($('msMenu'))$('msMenu').oninput=e=>{EV.menu=e.target.value;save();};
+  if($('msCdOn'))$('msCdOn').onchange=e=>{EV.showCountdown=e.target.checked;save();paintDesign();};
+  if($('msFaqAdd'))$('msFaqAdd').onclick=()=>{(EV.faq=EV.faq||[]).push({q:'',a:''});save();paintDesign();};
+  document.querySelectorAll('[data-faqq]').forEach(i=>i.oninput=e=>{EV.faq[+i.dataset.faqq].q=e.target.value;save();});
+  document.querySelectorAll('[data-faqa]').forEach(i=>i.oninput=e=>{EV.faq[+i.dataset.faqa].a=e.target.value;save();});
+  document.querySelectorAll('[data-faqdel]').forEach(b=>b.onclick=()=>{EV.faq.splice(+b.dataset.faqdel,1);save();paintDesign();});
 }
-
-/* ---------- Invitations & facturation par avis ---------- */
+/* ---------- Invitations & paliers ---------- */
 function invPayload(g){
   const ks=Object.keys(IVTHEMES);
   if(ks.indexOf(EV.theme||'royal')>=caps().themes)EV.theme=ks[0];
@@ -3230,7 +3355,9 @@ function invPayload(g){
   return {g:g.name,n:EV.name,k:EV.kind,d:EV.date,t:EV.time,v:EV.venue||'',
     tb:sl?sl.t:'',s:sl?sl.s:'',p:(EV.program||[]).filter(x=>x.l).map(x=>[x.t,x.l]),
     a:EV.paid?EV.price:0,ia:EV.interac||'',th:EV.theme||'royal',im:EV.visual||'',nf:EV.visualFull!==false?1:0,
-    ho:(EV.hotels||[]).filter(h=>(h.name||'').trim())};
+    ho:(EV.hotels||[]).filter(h=>(h.name||'').trim()),
+    fmt:EV.format||'carte',story:EV.story||'',gal:EV.gallery||[],va:EV.venueAddress||'',
+    gift:EV.gift||{text:'',link:''},faq:(EV.faq||[]).filter(x=>x.q),dc:EV.dresscode||'',mn:EV.menu||'',cd:EV.showCountdown!==false};
 }
 function inviteLink(g){return baseURL()+'#/i/'+g.token;}
 function sentCount(){return (EV.list||[]).filter(g=>g.sent).length;}
@@ -3782,6 +3909,95 @@ function inviteHTML(d,opts){
       <div id="replyOut"></div>`}
     </div></div>`;
 }
+// Choisit le rendu selon le format de l'invitation (carte classique ou mini site)
+function inviteBody(d,opts){return d.fmt==='site'?miniSiteHTML(d,opts):inviteHTML(d,opts);}
+function msMapURL(addr){return 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(addr);}
+let msCdTimer=null;
+function startCountdown(d){
+  if(msCdTimer){clearInterval(msCdTimer);msCdTimer=null;}
+  if(!d.d||!d.cd)return;
+  const target=new Date(d.d+'T'+(d.t||'17:00')+':00').getTime();
+  if(!target||isNaN(target))return;
+  const tick=()=>{
+    const el=document.getElementById('msCd');if(!el)return; // page changée : on arrête
+    let diff=Math.max(0,target-Date.now());
+    const days=Math.floor(diff/86400000);diff-=days*86400000;
+    const hrs=Math.floor(diff/3600000);diff-=hrs*3600000;
+    const min=Math.floor(diff/60000);diff-=min*60000;
+    const sec=Math.floor(diff/1000);
+    const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=String(v).padStart(2,'0');};
+    set('msCdD',days);set('msCdH',hrs);set('msCdM',min);set('msCdS',sec);
+  };
+  tick();msCdTimer=setInterval(tick,1000);
+}
+function miniSiteHTML(d,opts){
+  opts=opts||{};
+  const th=d.th&&IVTHEMES[d.th]?d.th:'royal';
+  const when=fmtDate(d.d)+(d.t?' · '+fmtTime(d.t):'');
+  const isCeleb=d.k==='anniversaire';
+  const gal=(d.gal||[]).slice(0,6);
+  const faq=(d.faq||[]).filter(x=>x.q);
+  const gift=d.gift||{};
+  return `<div class="iv-card ms-site th-${th}">
+    ${d.im?`<div class="ms-hero"><img src="${d.im}" alt=""><div class="ms-hero-txt">
+        <div class="ms-eyebrow">${isCeleb?'Invitation':'Vous êtes convié·e'}</div>
+        <h1>${esc(d.n||'Votre événement')}</h1>
+        <p>${esc(when)}${d.v?' · '+esc(d.v):''}</p></div></div>`
+      :`<div class="ms-nohero">
+        <div class="ms-eyebrow" style="color:var(--ivacc)">${isCeleb?'Invitation':'Vous êtes convié·e'}</div>
+        <h1 style="font-family:var(--font-display);font-size:26px;color:var(--ivink);margin:8px 0">${esc(d.n||'Votre événement')}</h1>
+        <p style="color:var(--ivmut);font-size:14px">${esc(when)}${d.v?' · '+esc(d.v):''}</p></div>`}
+    <div class="ms-sec" style="text-align:center;border-top:none;padding-top:20px">
+      <p style="color:var(--ivmut);font-size:13px;text-transform:uppercase;letter-spacing:.06em">Invitation pour</p>
+      <div class="who big" style="color:var(--ivink)">${esc(d.g||'Votre invité')}</div>
+      ${d.tb?`<div class="iv-seat" style="display:inline-block;margin-top:10px"><span>Votre place</span><b>${esc(d.tb)} · ${esc(d.s)}</b></div>`:''}
+    </div>
+    ${(d.cd&&d.d)?`<div class="ms-sec" style="border-top:none;padding-top:0">
+      <div class="ms-cd" id="msCd">
+        <div><b id="msCdD">00</b><span>jours</span></div>
+        <div><b id="msCdH">00</b><span>heures</span></div>
+        <div><b id="msCdM">00</b><span>min</span></div>
+        <div><b id="msCdS">00</b><span>sec</span></div>
+      </div></div>`:''}
+    ${d.story?`<div class="ms-sec ms-story"><h2>Notre histoire</h2><p>${esc(d.story)}</p></div>`:''}
+    ${(d.p&&d.p.length)?`<div class="ms-sec"><h2>Déroulé de la soirée</h2>
+      <div class="iv-prog" style="margin:0">${d.p.map(x=>`<div class="p"><b>${esc(x[0])}</b><span>${esc(x[1])}</span></div>`).join('')}</div></div>`:''}
+    ${(d.v||d.va)?`<div class="ms-sec"><h2>Lieu &amp; itinéraire</h2>
+      <div class="ms-map"><div><b style="display:block;color:var(--ivink);font-size:15px;margin-bottom:3px">${esc(d.v||'')}</b>
+        ${d.va?`<span style="color:var(--ivmut);font-size:13.5px">${esc(d.va)}</span>`:''}</div>
+        <a href="${msMapURL(d.va||d.v)}" target="_blank" rel="noopener">Ouvrir dans Maps →</a></div></div>`:''}
+    ${(d.ho&&d.ho.length)?`<div class="ms-sec"><h2>Où loger&nbsp;?</h2>
+      <div class="iv-lodge">${d.ho.map(h=>`<div class="lodge">
+        <b>${esc(h.name)}</b>${h.price?`<span class="lodge-price">${esc(h.price)}</span>`:''}
+        ${h.addr?`<small>${esc(h.addr)}</small>`:''}
+        ${h.url?`<a href="${esc(h.url)}" target="_blank" rel="noopener" class="lodge-link">Réserver →</a>`:''}
+      </div>`).join('')}</div></div>`:''}
+    ${gal.length?`<div class="ms-sec"><h2>Galerie</h2><div class="ms-gal">${gal.map(u=>`<img src="${u}" alt="">`).join('')}</div></div>`:''}
+    ${(gift.text||gift.link)?`<div class="ms-sec"><h2>Liste de cadeaux</h2>
+      <div class="ms-gift">${gift.text?esc(gift.text).replace(/\n/g,'<br>'):''}
+        ${gift.link?`<a href="${esc(gift.link)}" target="_blank" rel="noopener">Voir la liste →</a>`:''}</div></div>`:''}
+    ${(d.dc||d.mn)?`<div class="ms-sec"><h2>Bon à savoir</h2>
+      <div class="ms-info">
+        ${d.dc?`<div><b>Code vestimentaire</b><span>${esc(d.dc)}</span></div>`:''}
+        ${d.mn?`<div><b>Menu</b><span>${esc(d.mn)}</span></div>`:''}
+      </div></div>`:''}
+    ${faq.length?`<div class="ms-sec ms-faq"><h2>Questions fréquentes</h2>
+      ${faq.map(x=>`<details><summary>${esc(x.q)}</summary><p>${esc(x.a||'')}</p></details>`).join('')}</div>`:''}
+    ${d.a>0?`<div class="ms-sec"><div class="paybox">Une participation de <b>${money(d.a)}</b> est demandée par personne.
+      <div class="v"><b>${esc(d.ia||'—')}</b>${opts.preview?'':'<button id="cpIa">Copier</button>'}</div>
+      Envoyez-la par virement Interac en indiquant votre nom dans le message.</div></div>`:''}
+    ${opts.preview?'':`<div class="ms-sec">
+      <h2 style="margin-bottom:12px">Serez-vous des nôtres&nbsp;?</h2>
+      <div class="rsvp"><button id="rYes">Je serai là</button><button id="rNo">Je ne pourrai pas</button></div>
+      <div id="songWrap" style="display:none">
+        <div class="field"><label>Avez-vous des allergies ou restrictions alimentaires&nbsp;? <span class="hint">facultatif</span></label>
+          <input class="inp" id="alrg" placeholder="Ex : arachides, sans gluten, végétarien…"></div>
+        <div class="field"><label>Une chanson pour le DJ <span class="hint">facultatif</span></label><input class="inp" id="m1" placeholder="Artiste — Titre"></div>
+        <div class="field"><label>Une deuxième&nbsp;?</label><input class="inp" id="m2" placeholder="Artiste — Titre"></div></div>
+      <button class="btn btn-navy" id="sendReply" style="width:100%;margin-top:6px" disabled>Envoyer ma réponse</button>
+      <div id="replyOut"></div></div>`}
+    </div>`;
+}
 
 /* ============================================================
    VUE INVITÉ (publique — lit et écrit dans la vraie base)
@@ -3808,8 +4024,11 @@ async function renderInvite(token){
     tb:sl?sl.t:'',s:sl?sl.s:'',p:(evd.program||[]).filter(x=>x.l).map(x=>[x.t,x.l]),
     a:evd.paid?evd.price:0,ia:evd.interac||'',th:evd.theme||'royal',
     im:evd.visual||'',nf:evd.visualFull!==false?1:0,
-    ho:(evd.hotels||[]).filter(h=>(h.name||'').trim())};
-  w.innerHTML=inviteHTML(d,{});
+    ho:(evd.hotels||[]).filter(h=>(h.name||'').trim()),
+    fmt:evd.format||'carte',story:evd.story||'',gal:evd.gallery||[],va:evd.venueAddress||'',
+    gift:evd.gift||{text:'',link:''},faq:(evd.faq||[]).filter(x=>x.q),dc:evd.dresscode||'',mn:evd.menu||'',cd:evd.showCountdown!==false};
+  w.innerHTML=inviteBody(d,{});
+  startCountdown(d);
   if($('cpIa'))$('cpIa').onclick=()=>copyText(d.ia,$('cpIa'),'Copier');
   if(gst.rsvp==='oui'||gst.rsvp==='non')showDone(gst.rsvp,true);
   const setR=v=>{ivR=v;$('rYes').className=v==='oui'?'sel-yes':'';$('rNo').className=v==='non'?'sel-no':'';
