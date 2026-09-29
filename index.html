@@ -3284,10 +3284,13 @@ function paintInvites(){
   const sent=list.filter(g=>g.sent),pending=list.filter(g=>!g.sent);
   const pendMail=pending.filter(g=>(g.contact||'').includes('@'));
   const pendNoMail=pending.filter(g=>!(g.contact||'').includes('@'));
-  const needed=sentCount()+pendMail.length;
-  const neededTierIdx=tierIdxFor(needed);
-  const blocked=pendMail.length>0&&neededTierIdx>inviteTierIdx();
-  const singleBlocked=sentCount()+1>inviteCap();
+  // Le palier couvre le NOMBRE TOTAL d'invités de la liste, peu importe le canal
+  // utilisé pour transmettre le lien (Evenza, ou copié/collé ailleurs) — sinon
+  // il suffirait de ne jamais cliquer "Envoyer" et de copier les liens à la main
+  // pour contourner complètement le palier.
+  const total=list.length;
+  const neededTierIdx=tierIdxFor(total);
+  const blocked=total>inviteCap();
   $('paneinvitations').innerHTML=`
   <div class="inv-grid">
     <div class="box">
@@ -3295,23 +3298,22 @@ function paintInvites(){
       <p class="empty" style="padding-top:0">Toutes les invitations partent du courriel d'Evenza (<b>${EVZ_MAIL}</b>), chacune avec le lien personnel de l'invité. Chaque confirmation reçue met le suivi à jour automatiquement, en direct.</p>
       ${EV.paid?`<p class="empty" style="padding-top:0">Participation : <b>${money(EV.price)}</b> par personne, virée à <b>${esc(EV.interac||'— adresse Interac non réglée —')}</b>.</p>`:''}
       ${blocked?`<div class="lock" style="margin:0 0 14px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><rect x="4" y="10" width="16" height="10" rx="2.5" stroke="currentColor" stroke-width="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3" stroke="currentColor" stroke-width="2"/></svg>
-        <span>Votre palier actuel (${esc(inviteTier().n)}) ne couvre pas ces ${int(pendMail.length)} invitations. Débloquez un palier plus grand ci-contre pour continuer.</span></div>`:''}
+        <span>Votre palier actuel (${esc(inviteTier().n)}) couvre ${inviteCap()===Infinity?'un nombre illimité':int(inviteCap())} invités — votre liste en compte ${int(total)}. Débloquez un palier plus grand ci-contre pour envoyer ou copier des liens.</span></div>`:''}
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
         <button class="btn btn-gold btn-sm" id="sendAll" ${(!pendMail.length||blocked)?'disabled':''}>Envoyer ${int(pendMail.length)} invitation${pendMail.length>1?'s':''} par Evenza</button>
-        <button class="mini-btn" id="allLinks">Copier tous les liens</button>
+        <button class="mini-btn" id="allLinks" ${blocked?'disabled':''}>Copier tous les liens</button>
       </div>
       ${pendNoMail.length?`<p class="empty" style="padding-top:0">${int(pendNoMail.length)} invité${pendNoMail.length>1?'s':''} sans courriel — ajoutez leur adresse dans l'onglet Invités, ou remettez-leur le lien copié à la main.</p>`:''}
       ${list.length?list.map(g=>{
         const sl=seatLabel(EV,g.seat),isMail=(g.contact||'').includes('@');
-        const rowBlocked=!g.sent&&singleBlocked;
         return `<div class="sendrow${g.sent?' done':''}">
           <span class="nm"><b>${esc(g.name)}</b><small>${sl?esc(sl.t+' · '+sl.s):'non placé'} · ${esc(g.contact||'aucun contact')}</small></span>
           <span class="sendst">${g.sent
             ? `<span class="badge ok"><i></i>${esc(g.sentVia||'envoyée')} · ${ago(g.sent)}</span>`
             : `<span class="badge wait"><i></i>à envoyer</span>`}</span>
           <span class="acts">
-            ${isMail?`<button class="ico-btn" data-one="${g.id}" ${rowBlocked?'disabled':''}>${g.sent?'Renvoyer':'Envoyer'} par Evenza</button>`:''}
-            <button class="ico-btn" data-cp="${g.id}">Copier le lien</button>
+            ${isMail?`<button class="ico-btn" data-one="${g.id}" ${blocked?'disabled':''}>${g.sent?'Renvoyer':'Envoyer'} par Evenza</button>`:''}
+            <button class="ico-btn" data-cp="${g.id}" ${blocked?'disabled':''}>Copier le lien</button>
             <a class="ico-btn" href="#/i/${g.token}" target="_blank" rel="noopener">Aperçu</a>
           </span></div>`;}).join('')
         :'<p class="empty">Ajoutez vos invités dans l’onglet Invités.</p>'}
@@ -3320,7 +3322,7 @@ function paintInvites(){
       <div class="box">
         <h3>Palier d'invitations <em>${esc(inviteTier().n)}</em></h3>
         <div class="split" style="margin-top:0">
-          <div class="sp"><span>Invitations envoyées</span><b>${int(sentCount())}</b><small>${inviteCap()===Infinity?'illimité':'sur '+int(inviteCap())}</small></div>
+          <div class="sp"><span>Invités dans la liste</span><b>${int(total)}</b><small>${inviteCap()===Infinity?'illimité':'sur '+int(inviteCap())}</small></div>
           <div class="sp"><span>Payé pour ce palier</span><b>${money(inviteTier().price)}</b><small>paiement unique</small></div>
         </div>
         ${blocked?`<button class="btn btn-navy btn-sm" id="buyTier" style="width:100%;margin:10px 0 4px">Débloquer « ${esc(INVITE_TIERS[neededTierIdx].n)} » — ${money(inviteUpgradePrice(neededTierIdx))}</button>`:''}
@@ -3329,7 +3331,7 @@ function paintInvites(){
           <div style="display:flex;flex-direction:column;gap:6px;margin-top:8px">
             ${INVITE_TIERS.map((t,i)=>i<=inviteTierIdx()?'':`<button class="mini-btn" data-buytier="${i}" style="justify-content:space-between;width:100%">${esc(t.n)}<b>${money(inviteUpgradePrice(i))}</b></button>`).join('')}
           </div></details>`:''}
-        <p class="empty" style="padding-top:10px">Seul votre abonnement (${money(PLANS[plan()].sub)} / an) est récurrent. Les paliers d'invitations sont des achats uniques, sans renouvellement automatique — 10 premières invitations toujours gratuites.</p>
+        <p class="empty" style="padding-top:10px">Seul votre abonnement (${money(PLANS[plan()].sub)} / an) est récurrent. Les paliers d'invitations sont des achats uniques, sans renouvellement automatique — 10 premiers invités toujours gratuits. Le palier couvre le nombre total d'invités de la liste, envoyés par Evenza ou par un lien copié ailleurs (Instagram, texto, etc.).</p>
       </div>
       <div class="box">
         <h3>Réponses en direct</h3>
@@ -3348,12 +3350,15 @@ function paintInvites(){
   if($('buyTier'))$('buyTier').onclick=()=>buyInviteTier(neededTierIdx);
   document.querySelectorAll('[data-buytier]').forEach(b=>b.onclick=()=>buyInviteTier(+b.dataset.buytier));
   document.querySelectorAll('[data-one]').forEach(b=>b.onclick=()=>{
-    if(singleBlocked){toast('Débloquez un palier plus grand pour continuer');return;}
+    if(blocked){toast('Débloquez un palier plus grand pour continuer');return;}
     sendByEvenza(b.dataset.one);});
   document.querySelectorAll('[data-cp]').forEach(b=>b.onclick=()=>{
+    if(blocked){toast('Débloquez un palier plus grand pour continuer');return;}
     const g=(EV.list||[]).find(x=>x.id===b.dataset.cp);
     if(g)copyText(inviteLink(g),b,'Copier le lien');});
-  $('allLinks').onclick=()=>copyText((EV.list||[]).map(g=>g.name+' : '+inviteLink(g)).join('\n'),$('allLinks'),'Copier tous les liens');
+  $('allLinks').onclick=()=>{
+    if(blocked){toast('Débloquez un palier plus grand pour continuer');return;}
+    copyText((EV.list||[]).map(g=>g.name+' : '+inviteLink(g)).join('\n'),$('allLinks'),'Copier tous les liens');};
 }
 /* ---------- Suivi ---------- */
 function paintFollow(){
@@ -3627,9 +3632,9 @@ function paintSettings(){
       <div class="box"><h3>Budget</h3>
         <div class="cap" style="border:none;padding:0"><span>Budget total</span><b>${EV.budget?money(EV.budget):'—'}</b></div>
         <div class="cap"><span>Par invité (${int(EV.guests)})</span><b>${EV.budget?money(EV.budget/Math.max(1,EV.guests)):'—'}</b></div>
-        <div class="cap"><span>Invitations envoyées (${int(sentCount())})</span><b>${money(inviteTier().price)}</b></div>
+        <div class="cap"><span>Invités dans la liste (${int((EV.list||[]).length)})</span><b>${money(inviteTier().price)}</b></div>
         <div class="cap"><span>Abonnement Evenza</span><b>${esc(planPrice(plan()))}</b></div>
-        <p class="empty">10 premières invitations gratuites, puis un palier payé une seule fois par Stripe — voir l'onglet Envois.</p></div>
+        <p class="empty">10 premiers invités gratuits, puis un palier payé une seule fois par Stripe — voir l'onglet Envois.</p></div>
     </div>
   </div>
 
