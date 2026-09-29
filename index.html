@@ -946,6 +946,36 @@ footer{background:var(--navy-ink);color:rgba(255,255,255,.6);padding:44px 0 30px
 .th-nuit .empty,.th-nuit .code-out{color:#8FA0BC}
 .th-nuit .code-out{background:#12203A;border-color:rgba(232,200,121,.2)}
 
+/* Terracotta bohème */
+.iv-card.th-terracotta{--ivbg:#FBF5EF;--ivtop:linear-gradient(140deg,#B5573A,#D98B5F);--ivink:#6B3A28;
+  --ivacc:#C97B4A;--ivmut:#9C8577;--ivline:#EDDDD0}
+.th-terracotta .iv-body{background:#FBF5EF}
+
+/* Ivoire & sauge */
+.iv-card.th-sauge{--ivbg:#FAF9F4;--ivtop:linear-gradient(140deg,#5B7461,#8FA68C);--ivink:#3E4F41;
+  --ivacc:#7C9478;--ivmut:#8B9488;--ivline:#E3E6DD}
+.th-sauge .iv-body{background:#FAF9F4}
+
+/* Lavande de Provence */
+.iv-card.th-lavande{--ivbg:#FAF8FC;--ivtop:linear-gradient(140deg,#6B5B95,#A594C2);--ivink:#4A3E63;
+  --ivacc:#8B76AD;--ivmut:#8D839B;--ivline:#E8E2F0}
+.th-lavande .iv-body{background:#FAF8FC}
+
+/* Or rose */
+.iv-card.th-orrose{--ivbg:#FDF6F3;--ivtop:linear-gradient(140deg,#C98A76,#E8B8A6);--ivink:#7A4A3D;
+  --ivacc:#CB8E76;--ivmut:#A9897E;--ivline:#F2E0D8}
+.th-orrose .iv-body{background:#FDF6F3}
+
+/* Champagne doré */
+.iv-card.th-champagne{--ivbg:#FDFBF5;--ivtop:linear-gradient(140deg,#B8925A,#E4C88A);--ivink:#5C4A2A;
+  --ivacc:#B4913F;--ivmut:#9C8E6E;--ivline:#EFE5CE}
+.th-champagne .iv-body{background:#FDFBF5}
+
+/* Fête & confettis */
+.iv-card.th-confetti{--ivbg:#FFFDF7;--ivtop:linear-gradient(120deg,#FF6B6B,#FFD166,#4ECDC4);--ivink:#2E2A4A;
+  --ivacc:#FF6B6B;--ivmut:#7A7690;--ivline:#F0EAD6}
+.th-confetti .iv-body{background:#FFFDF7}
+
 /* sélecteur */
 .th-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:13px}
 .th-pick{border:1.5px solid var(--line);border-radius:14px;overflow:hidden;background:#fff;text-align:left;transition:all .18s;padding:0}
@@ -1558,11 +1588,11 @@ const JOBS={
 };
 const PLANS={
   perso:{n:'Personnel',sub:0,mode:'perso',d:'Pour organiser votre propre événement',
-    caps:{events:1,templates:0,duplicate:false,themes:6,share:false}},
+    caps:{events:1,templates:0,duplicate:false,themes:12,share:false}},
   pro:{n:'Pro',sub:50,mode:'pro',d:'Pour les planners qui démarrent',
-    caps:{events:6,templates:5,duplicate:true,themes:6,share:true}},
+    caps:{events:6,templates:5,duplicate:true,themes:12,share:true}},
   studio:{n:'Studio',sub:100,mode:'pro',d:'Pour les agences et planners établis',
-    caps:{events:Infinity,templates:Infinity,duplicate:true,themes:6,share:true,priority:true}}
+    caps:{events:Infinity,templates:Infinity,duplicate:true,themes:12,share:true,priority:true}}
 };
 const PLAN_ORDER=['perso','pro','studio'];
 /* compatibilité anciens comptes : anciens noms → nouveaux */
@@ -3212,24 +3242,16 @@ function paintProgram(){
 function paintDesign(){
   const cur=EV.theme||'royal';
   const fmt=EV.format||'carte';
+  const isSite=fmt==='site';
   const sample=(EV.list||[])[0]||{name:EV.kind==='mariage'?'Jean-Sébastien Roy':'Marie Lambert',seat:null};
   const d=Object.assign(invPayload(sample),{th:cur});
   const gal=EV.gallery||[];
   const faq=EV.faq||[];
   const gift=EV.gift||{text:'',link:''};
-  $('panedesign').innerHTML=`
-  <div class="box" style="margin-bottom:16px">
-    <h3>Format de l'invitation</h3>
-    <p class="empty" style="padding-top:0">La carte classique tient sur un écran. Le mini site déroule plusieurs sections (histoire, galerie, lieu, cadeaux…) — plus riche, un peu plus long à remplir.</p>
-    <div class="seg" style="margin-top:10px">
-      <button class="${fmt==='carte'?'sel':''}" data-fmt="carte">Carte classique</button>
-      <button class="${fmt==='site'?'sel':''}" data-fmt="site">Mini site</button>
-    </div>
-  </div>
-  <div class="cols2">
+  const paletteBox=`
     <div class="box">
-      <h3>Design de l'invitation <em>${int(Object.keys(IVTHEMES).length)} modèles</em></h3>
-      <p class="empty" style="padding-top:0">Chaque invité recevra ce design, avec son nom et sa place.</p>
+      <h3>${isSite?'Palette de couleurs':'Design de l’invitation'} <em>${int(Object.keys(IVTHEMES).length)} palettes</em></h3>
+      <p class="empty" style="padding-top:0">${isSite?'La couleur s’applique à toutes les sections de votre mini site.':'Chaque invité recevra ce design, avec son nom et sa place.'}</p>
       <div class="th-grid">${Object.keys(IVTHEMES).map((k,idx)=>{
         const t=IVTHEMES[k];const locked=idx>=caps().themes;
         return `<button class="th-pick${k===cur?' sel':''}${locked?' th-lock':''}" data-th="${k}"${locked?' data-lockth="1"':''}>
@@ -3240,28 +3262,38 @@ function paintDesign(){
             <div class="t2" style="color:${t.acc}">${esc(fmtDate(EV.date).split(' ').slice(1,3).join(' '))}</div>
           </div>
           <div class="th-name">${t.n}${locked?' <span class="lk">verrouillé</span>':''}</div></button>`;}).join('')}</div>
-      ${caps().themes<Object.keys(IVTHEMES).length?lockBox('themes','Les 6 designs sont inclus dans l’abonnement'):''}
+      ${caps().themes<Object.keys(IVTHEMES).length?lockBox('themes','Toutes les palettes sont incluses dans l’abonnement'):''}
       <div class="upl">
-        <div class="upl-head"><b>${fmt==='site'?'Photo d’en-tête':'Votre propre visuel'}</b>
+        <div class="upl-head"><b>${isSite?'Photo d’en-tête':'Votre propre visuel'}</b>
           ${EV.visual?`<button class="mini-btn danger" id="visDel">Retirer</button>`:''}</div>
-        <p class="empty" style="padding:0 0 10px">${fmt==='site'
+        <p class="empty" style="padding:0 0 10px">${isSite
           ?'Une grande photo en haut de la page (le couple, le lieu…). Facultatif, mais ça a beaucoup plus d’impact.'
           :'Importez l’invitation que vous avez déjà fait dessiner. Evenza l’utilise en bandeau et ajoute dessous le nom de l’invité, sa place, le déroulé et la confirmation de présence.'}</p>
         ${EV.visual?`<img class="upl-prev" src="${EV.visual}" alt="">
-          ${fmt==='site'?'':`<label class="chkline"><input type="checkbox" id="visFull" ${EV.visualFull!==false?'checked':''}>
+          ${isSite?'':`<label class="chkline"><input type="checkbox" id="visFull" ${EV.visualFull!==false?'checked':''}>
             <span>Mon visuel contient déjà le nom des mariés, la date et le lieu</span></label>
           <p class="empty" style="padding:2px 0 0">Dans ce cas, l’invitation n’affiche en dessous que le nom de l’invité, sa place et le nécessaire.</p>`}`
          :`<label class="upl-btn"><input type="file" id="visFile" accept="image/*" hidden>Choisir une image…</label>`}
       </div>
-    </div>
-    <div class="box">
+    </div>`;
+  const previewBox=`
+    <div class="box" style="position:sticky;top:16px;align-self:flex-start">
       <h3>Aperçu <em>tel que vos invités le verront</em></h3>
-      <div id="thPrev" style="max-width:400px;margin:0 auto;max-height:640px;overflow-y:auto">${inviteBody(d,{preview:true})}</div>
+      <div id="thPrev" style="max-width:400px;margin:0 auto;max-height:calc(100vh - 160px);overflow-y:auto">${inviteBody(d,{preview:true})}</div>
+    </div>`;
+  $('panedesign').innerHTML=`
+  <div class="box" style="margin-bottom:16px">
+    <h3>Format de l'invitation</h3>
+    <p class="empty" style="padding-top:0">La carte classique tient sur un écran. Le mini site déroule plusieurs sections (histoire, galerie, lieu, cadeaux…) — plus riche, un peu plus long à remplir.</p>
+    <div class="seg" style="margin-top:10px">
+      <button class="${fmt==='carte'?'sel':''}" data-fmt="carte">Carte classique</button>
+      <button class="${fmt==='site'?'sel':''}" data-fmt="site">Mini site</button>
     </div>
   </div>
-  ${fmt==='site'?`
-  <div class="inv-grid" style="margin-top:16px">
+  <div class="cols2">
+    ${isSite?`
     <div style="display:flex;flex-direction:column;gap:16px">
+      ${paletteBox}
       <div class="box">
         <h3>Notre histoire</h3>
         <p class="empty" style="padding-top:0">Racontez en quelques lignes comment vous vous êtes rencontrés — ça personnalise beaucoup la page.</p>
@@ -3281,8 +3313,6 @@ function paintDesign(){
         ${gal.length<6?`<label class="upl-btn"><input type="file" id="msGalFile" accept="image/*" hidden>Ajouter une photo…</label>`
           :`<p class="empty" style="padding-top:0">Limite de 6 photos atteinte.</p>`}
       </div>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:16px">
       <div class="box">
         <h3>Liste de cadeaux / cagnotte</h3>
         <p class="empty" style="padding-top:0">Un mot pour vos invités, et un lien facultatif (Nuptias, PayPal, votre propre page…).</p>
@@ -3313,7 +3343,9 @@ function paintDesign(){
         <button class="mini-btn" id="msFaqAdd">+ Ajouter une question</button>
       </div>
     </div>
-  </div>`:''}`;
+    ${previewBox}`
+    :`${paletteBox}${previewBox}`}
+  </div>`;
   bindLocks(paintDesign);
   startCountdown(d);
   document.querySelectorAll('[data-fmt]').forEach(b=>b.onclick=()=>{EV.format=b.dataset.fmt;save();paintDesign();});
@@ -3325,8 +3357,8 @@ function paintDesign(){
   if($('visDel'))$('visDel').onclick=()=>{EV.visual='';save();paintDesign();toast('Visuel retiré');};
   if($('visFull'))$('visFull').onchange=e=>{EV.visualFull=e.target.checked;save();paintDesign();};
   document.querySelectorAll('[data-th]').forEach(b=>b.onclick=()=>{
-    if(b.dataset.lockth){toast('Ce design fait partie de l’abonnement '+PLANS[upTo('themes')].n);return;}
-    EV.theme=b.dataset.th;save();paintDesign();toast('Design « '+IVTHEMES[EV.theme].n+' » appliqué');});
+    if(b.dataset.lockth){toast('Cette palette fait partie de l’abonnement '+PLANS[upTo('themes')].n);return;}
+    EV.theme=b.dataset.th;save();paintDesign();toast('Palette « '+IVTHEMES[EV.theme].n+' » appliquée');});
   if($('msStory'))$('msStory').oninput=e=>{EV.story=e.target.value;save();};
   if($('msAddr'))$('msAddr').oninput=e=>{EV.venueAddress=e.target.value;save();};
   if($('msGalFile'))$('msGalFile').onchange=e=>{
@@ -3857,7 +3889,13 @@ const IVTHEMES={
   botanique:{n:'Botanique',bg:'linear-gradient(140deg,#33513F,#6E8B6B)',ink:'#fff',acc:'#E8DCC0'},
   blush:{n:'Romantique',bg:'linear-gradient(140deg,#B3707A,#E4B7B2)',ink:'#fff',acc:'#FFF1EC'},
   epure:{n:'Épuré',bg:'#fff',ink:'#14161A',acc:'#8A8F96'},
-  nuit:{n:'Nuit étoilée',bg:'linear-gradient(160deg,#0A1428,#16305C)',ink:'#E7ECF5',acc:'#E8C879'}
+  nuit:{n:'Nuit étoilée',bg:'linear-gradient(160deg,#0A1428,#16305C)',ink:'#E7ECF5',acc:'#E8C879'},
+  terracotta:{n:'Terracotta bohème',bg:'linear-gradient(140deg,#B5573A,#D98B5F)',ink:'#fff',acc:'#F2D2B8'},
+  sauge:{n:'Ivoire & sauge',bg:'linear-gradient(140deg,#5B7461,#8FA68C)',ink:'#fff',acc:'#F2F0E6'},
+  lavande:{n:'Lavande de Provence',bg:'linear-gradient(140deg,#6B5B95,#A594C2)',ink:'#fff',acc:'#F0EAF7'},
+  orrose:{n:'Or rose',bg:'linear-gradient(140deg,#C98A76,#E8B8A6)',ink:'#fff',acc:'#FBEDE6'},
+  champagne:{n:'Champagne doré',bg:'linear-gradient(140deg,#B8925A,#E4C88A)',ink:'#fff',acc:'#FCF6E8'},
+  confetti:{n:'Fête & confettis',bg:'linear-gradient(120deg,#FF6B6B,#FFD166,#4ECDC4)',ink:'#fff',acc:'#fff'}
 };
 function ornament(th,c){
   c=c||'currentColor';
@@ -3866,6 +3904,7 @@ function ornament(th,c){
   if(th==='blush')return `<svg width="70" height="20" viewBox="0 0 70 20" fill="none"><path d="M4 10h20M46 10h20" stroke="${c}" stroke-width="1.1" stroke-linecap="round"/><path d="M35 16s-6-3.7-7.4-7.2C26.6 6 28.3 3.6 31 3.6c1.5 0 2.9.9 4 2.4 1.1-1.5 2.5-2.4 4-2.4 2.7 0 4.4 2.4 3.4 5.2C41 12.3 35 16 35 16Z" fill="${c}"/></svg>`;
   if(th==='epure')return `<svg width="60" height="6" viewBox="0 0 60 6" fill="none"><path d="M0 3h60" stroke="${c}" stroke-width="1"/></svg>`;
   if(th==='nuit')return `<svg width="84" height="20" viewBox="0 0 84 20" fill="none"><path d="M4 10h24M56 10h24" stroke="${c}" stroke-width="1" opacity=".55"/><path d="m42 2 1.9 5.6L49 9.5l-5.1 1.9L42 17l-1.9-5.6L35 9.5l5.1-1.9L42 2Z" fill="${c}"/><circle cx="32" cy="5" r="1" fill="${c}"/><circle cx="52" cy="15" r="1" fill="${c}"/></svg>`;
+  if(th==='confetti')return `<svg width="80" height="20" viewBox="0 0 80 20" fill="none"><circle cx="8" cy="10" r="3" fill="#FF6B6B"/><rect x="20" y="6" width="6" height="6" rx="1.5" fill="#FFD166" transform="rotate(20 23 9)"/><circle cx="40" cy="8" r="2.5" fill="#4ECDC4"/><rect x="52" y="7" width="6" height="6" rx="1.5" fill="#FF6B6B" transform="rotate(-15 55 10)"/><circle cx="70" cy="11" r="3" fill="#FFD166"/></svg>`;
   return `<svg width="78" height="18" viewBox="0 0 78 18" fill="none"><path d="M4 9h24M50 9h24" stroke="${c}" stroke-width="1.1" stroke-linecap="round"/><path d="M39 2.5 41 7l4.5 2-4.5 2-2 4.5-2-4.5L32.5 9 37 7l2-4.5Z" fill="${c}"/></svg>`;
 }
 function inviteHTML(d,opts){
