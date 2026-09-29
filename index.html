@@ -1230,11 +1230,17 @@ body.app-on .help-btn{display:flex}
 /* ⚙️ CONFIGURATION — À REMPLIR (voir GUIDE-MISE-EN-LIGNE.md, étape 3) */
 const SUPABASE_URL='https://fojcevzpbumfjndggjen.supabase.co';
 const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZvamNldnpwYnVtZmpuZGdnamVuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg3MTMwNzAsImV4cCI6MjEwNDI4OTA3MH0.rNdxDInhRM5WhJPOxnJTYJ4Re4s8STp-hKGLNjK_K8w';
-const EVZ_INTERAC='facturation@evenza.ca';  // ⬅ TON adresse Interac (où les organisateurs te paient les avis)
 const EVZ_MAIL='invitations@evenza.ca';     // adresse d'envoi des invitations (configurée dans Resend)
 
-const EVZ_FEE=2;      // part d'Evenza par invitation envoyée
-const AVIS_DELAI=7;   // jours pour payer un avis
+// Paliers d'invitations — achetés à l'avance (Stripe, paiement unique) avant de pouvoir
+// envoyer au-delà du plafond courant. "price" est le montant TOTAL pour atteindre ce palier ;
+// passer d'un palier à un autre ne coûte que la différence (voir buyInviteTier()).
+const INVITE_TIERS=[
+  {cap:10,  price:0,  n:'Gratuit'},
+  {cap:50,  price:15, n:"Jusqu'à 50 invitations"},
+  {cap:120, price:20, n:"Jusqu'à 120 invitations"},
+  {cap:Infinity, price:35, n:'Invitations illimitées'},
+];
 
 const CONFIGURED=!SUPABASE_URL.includes('COLLE_ICI');
 const sb=CONFIGURED?window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY):null;
@@ -1530,7 +1536,7 @@ const PLAN_MIGRATE={essentiel:'perso',particulier:'perso',perso:'perso',
   planner:'pro',pro:'pro',illimite:'studio',studio:'studio'};
 function planKey(k){return PLANS[k]?k:(PLAN_MIGRATE[k]||'perso');}
 function planPrice(k){const P=PLANS[planKey(k)];
-  return (P.sub===0?'Gratuit':money(P.sub)+' / an')+' + '+money(EVZ_FEE)+' par invitation envoyée';}
+  return (P.sub===0?'Gratuit':money(P.sub)+' / an')+' + 10 invitations gratuites, paliers dès 15 $';}
 function caps(){return PLANS[planKey(plan())].caps;}
 function upTo(feat){
   // fonctionnalités → premier forfait qui les débloque
@@ -1794,11 +1800,6 @@ function rowToGuest(r){
     rsvp:r.rsvp||'attente',songs:Array.isArray(r.songs)?r.songs:[],paid:!!r.paid,allergies:r.allergies||'',
     arrived:!!r.arrived,sent:r.sent_at?Date.parse(r.sent_at):0,sentVia:r.sent_via||''};
 }
-function rowToInvoice(r){
-  return {id:r.id,ref:r.ref,count:r.count,unit:+r.unit,total:+r.total,
-    date:Date.parse(r.created_at),due:Date.parse(r.due_at),
-    paid:!!r.paid,paidAt:r.paid_at?Date.parse(r.paid_at):0};
-}
 function save(){clearTimeout(saveT);saveT=setTimeout(doSave,600);}
 async function doSave(){
   if(!EV||!sb)return;
@@ -1809,7 +1810,7 @@ async function doSave(){
         layout:EV.layout,guests:EV.guests,plan:EV.plan}).eq('id',EV.tplId);
       return;
     }
-    await sb.from('events').update({data:evData(EV),billed:EV.billed||0}).eq('id',EV.id);
+    await sb.from('events').update({data:evData(EV),billed:EV.billed||0,invite_tier:EV.inviteTier||0}).eq('id',EV.id);
     const rows=(EV.list||[]).map(g=>({id:g.id,event_id:EV.id,name:g.name,contact:g.contact||'',
       seat:g.seat||null,rsvp:g.rsvp||'attente',songs:g.songs||[],paid:!!g.paid,arrived:!!g.arrived,
       sent_at:g.sent?new Date(g.sent).toISOString():null,sent_via:g.sentVia||''}));
@@ -1820,11 +1821,9 @@ async function loadEvent(slug){
   const {data:ev}=await sb.from('events').select('*').eq('slug',slug).maybeSingle();
   if(!ev)return null;
   const {data:gs}=await sb.from('guests').select('*').eq('event_id',ev.id).order('created_at');
-  const {data:inv}=await sb.from('invoices').select('*').eq('event_id',ev.id).order('created_at');
-  const e=Object.assign({id:ev.id,billed:ev.billed||0},ev.data||{});
+  const e=Object.assign({id:ev.id,billed:ev.billed||0,inviteTier:ev.invite_tier||0},ev.data||{});
   e.slug=ev.slug;
   e.list=(gs||[]).map(rowToGuest);
-  e.invoices=(inv||[]).map(rowToInvoice);
   if(!e.plan)e.plan=genPlan(e.layout||'rondes',e.guests||80);
   return e;
 }
@@ -2006,7 +2005,7 @@ async function renderTplWork(id){
   EV={tplId:id,slug:'tpl-'+id,name:t.name,kind:'mariage',date:'',time:'',
       venue:t.venue||'',venueTbd:false,guests:t.guests||120,budget:0,
       layout:t.layout||'rondes',plan:t.plan,program:[],paid:false,price:0,
-      interac:'',contact:'',theme:'royal',invoices:[],billed:0,list:[]};
+      interac:'',contact:'',theme:'royal',billed:0,inviteTier:0,list:[]};
   TAB='plan';selObj=null;
   $('wkBackTxt').textContent='Mes modèles';
   $('wkTitle').innerHTML=`Modèle · ${esc(t.name)}<small>${int(seatCount(EV))} places${t.venue?' · '+esc(t.venue):''}</small>`;
@@ -2528,7 +2527,7 @@ function renderAuth(){
           <span class="mp-price">100 $ / an</span>
           <small>Pour les agences. Événements illimités, tout Pro + support prioritaire.</small></button>
       </div>
-      <p class="empty" style="padding:6px 0 0">+ ${money(EVZ_FEE)} par invitation envoyée, facturés après l'envoi.</p></div>
+      <p class="empty" style="padding:6px 0 0">10 premières invitations gratuites par événement, puis paliers dès 15 $.</p></div>
     ${isProMode?`<div class="field"><label>Votre métier</label>
       <div class="seg" id="auJobSeg">${Object.keys(JOBS).map(k=>
         `<button class="${k===authJob?'sel':''}" data-ajob="${k}">${JOBS[k].n}</button>`).join('')}</div></div>`:''}
@@ -2575,22 +2574,18 @@ async function renderEspace(){
   const J=JOBS[job()],P=PLANS[plan()],C=caps();
   $('espWrap').innerHTML='<p class="empty">Chargement…</p>';
   const [{data:rows},]=await Promise.all([
-    sb.from('events').select('id,slug,data,billed,created_at,guests(id,rsvp,sent_at),invoices(id,ref,total,due_at,paid)').order('created_at',{ascending:false}),
+    sb.from('events').select('id,slug,data,billed,invite_tier,created_at,guests(id,rsvp,sent_at)').order('created_at',{ascending:false}),
     fetchTemplates()
   ]);
-  const evs=(rows||[]).map(r=>({id:r.id,slug:r.slug,billed:r.billed,created:Date.parse(r.created_at),
+  const evs=(rows||[]).map(r=>({id:r.id,slug:r.slug,billed:r.billed,tier:r.invite_tier||0,created:Date.parse(r.created_at),
     name:(r.data||{}).name||r.slug,kind:(r.data||{}).kind||'mariage',date:(r.data||{}).date||'',
     venue:(r.data||{}).venue||'',nGuests:(r.guests||[]).length,
-    sent:(r.guests||[]).filter(g=>g.sent_at).length,
-    invoices:(r.invoices||[]).map(a=>({total:+a.total,due:Date.parse(a.due_at),paid:a.paid}))}));
+    sent:(r.guests||[]).filter(g=>g.sent_at).length}));
   $('espCta').textContent=J.cta;
   $('espCta').classList.toggle('locked',evs.length>=C.events);
 
-  const allInv=[];evs.forEach(e=>e.invoices.forEach(a=>allInv.push(a)));
-  const unpaid=allInv.filter(a=>!a.paid);
-  const due=unpaid.reduce((s,a)=>s+a.total,0);
-  const late=unpaid.filter(a=>Date.now()>a.due).length;
   const sentAll=evs.reduce((s,e)=>s+e.sent,0);
+  const tierSpend=evs.reduce((s,e)=>s+(INVITE_TIERS[e.tier]?INVITE_TIERS[e.tier].price:0),0);
 
   $('espWrap').innerHTML=`
     <div class="esp-head">
@@ -2642,14 +2637,13 @@ async function renderEspace(){
     </div>
 
     <div class="box" style="margin-bottom:16px">
-      <h3>Facturation <em>abonnement + avis à l'usage</em></h3>
+      <h3>Facturation <em>abonnement + paliers d'invitations</em></h3>
       <div class="kpis" style="margin-bottom:0">
-        <div class="kpi"><span>Abonnement mensuel</span><b>${money(P.sub)}</b></div>
+        <div class="kpi"><span>Abonnement annuel</span><b>${money(P.sub)}</b></div>
         <div class="kpi"><span>Invitations envoyées</span><b>${int(sentAll)}</b></div>
-        <div class="kpi"><span>Avis à payer</span><b>${int(unpaid.length)}${late?' <span style="font-family:var(--font-body);font-size:12px;color:var(--red)">('+int(late)+' en retard)</span>':''}</b></div>
-        <div class="kpi"><span>Dû par Interac</span><b>${money(due)}</b></div>
+        <div class="kpi"><span>Paliers achetés</span><b>${money(tierSpend)}</b></div>
       </div>
-      <p class="empty">Seul l'abonnement est récurrent. Chaque envoi d'invitations génère un avis automatique, payable par virement Interac à <b>${EVZ_INTERAC}</b> sous ${AVIS_DELAI} jours. Le détail de chaque avis est dans l'onglet Envois de l'événement concerné.</p>
+      <p class="empty">Seul l'abonnement est récurrent. Chaque événement profite de 10 invitations gratuites, puis débloque un palier payant en un seul paiement Stripe (15 $, 20 $ ou 35 $) — aucun renouvellement automatique. Le détail est dans l'onglet Envois de l'événement concerné.</p>
     </div>
 
     <div class="box" style="margin-bottom:16px">
@@ -3240,37 +3234,26 @@ function invPayload(g){
 }
 function inviteLink(g){return baseURL()+'#/i/'+g.token;}
 function sentCount(){return (EV.list||[]).filter(g=>g.sent).length;}
-function unbilled(){return Math.max(0,sentCount()-(EV.billed||0));}
-async function genAvis(){
-  const n=unbilled();if(!n)return null;
-  const now=Date.now();
-  const rec={event_id:EV.id,ref:'EVZ-'+String(now).slice(-6),count:n,unit:EVZ_FEE,
-    total:n*EVZ_FEE,due_at:new Date(now+AVIS_DELAI*86400000).toISOString()};
-  const {data,error}=await sb.from('invoices').insert(rec).select().single();
-  if(error){toast('Erreur avis : '+error.message);return null;}
-  const a=rowToInvoice(data);
-  (EV.invoices=EV.invoices||[]).push(a);
-  EV.billed=(EV.billed||0)+n;
-  await sb.from('events').update({billed:EV.billed}).eq('id',EV.id);
-  return a;
-}
-function avisState(a){return a.paid?'paye':(Date.now()>a.due?'retard':'attente');}
-function avisDays(a){return Math.ceil((a.due-Date.now())/86400000);}
-function hasOverdue(){return (EV.invoices||[]).some(a=>!a.paid&&Date.now()>a.due);}
-function avisCard(a){
-  const st=avisState(a),dl=avisDays(a);
-  return `<div class="avis ${st}">
-    <div class="avis-head"><b>${esc(a.ref)} · ${new Date(a.date).toLocaleDateString('fr-CA',{day:'numeric',month:'short'})}</b>
-      <span class="badge ${st==='paye'?'ok':st==='retard'?'no':'wait'}"><i></i>${st==='paye'?'Payé':st==='retard'?('En retard de '+int(Math.abs(dl))+' j'):('À payer · reste '+int(Math.max(0,dl))+' j')}</span></div>
-    <div class="avis-body">
-      <div class="cap" style="border:none;padding-top:8px;margin-top:0"><span>${int(a.count)} invitations × ${money(a.unit)}</span><b>${money(a.total)}</b></div>
-      <div class="cap"><span>Échéance</span><b>${new Date(a.due).toLocaleDateString('fr-CA',{day:'numeric',month:'long',year:'numeric'})}</b></div>
-      ${a.paid?`<div class="cap"><span>Réglé le</span><b class="ok">${new Date(a.paidAt||a.due).toLocaleDateString('fr-CA',{day:'numeric',month:'long'})}</b></div>`
-      :`<div class="v-int"><span>Virement Interac à</span><b>${EVZ_INTERAC}</b><small>Message du virement : ${esc(a.ref)}</small></div>
-      <div style="display:flex;gap:7px;margin-top:9px;flex-wrap:wrap">
-        <button class="mini-btn" data-cpav="${a.id}">Copier les infos</button>
-        <button class="mini-btn" data-payav="${a.id}">J'ai payé</button></div>`}
-    </div></div>`;
+function inviteTierIdx(){return EV.inviteTier||0;}
+function inviteTier(){return INVITE_TIERS[inviteTierIdx()];}
+function inviteCap(){return inviteTier().cap;}
+// plus petit palier qui couvre "total" invitations
+function tierIdxFor(total){return INVITE_TIERS.findIndex(t=>total<=t.cap);}
+// reste de place sur le palier courant
+function inviteRoom(){return Math.max(0,inviteCap()-sentCount());}
+function inviteUpgradePrice(targetIdx){return Math.max(0,INVITE_TIERS[targetIdx].price-inviteTier().price);}
+async function buyInviteTier(targetIdx){
+  if(targetIdx<=inviteTierIdx()){toast('Palier déjà atteint');return;}
+  try{
+    const {data,error}=await sb.functions.invoke('create-invite-checkout',{body:{event_id:EV.id,target_tier:targetIdx}});
+    if(error||!data||data.error||!data.url)throw new Error((data&&data.error)||(error&&error.message)||'indisponible');
+    location.href=data.url;
+  }catch(e){
+    dialog({title:'Paiement indisponible',
+      body:`<p class="dlg-p">Le service de paiement n'a pas répondu : <b>${esc(e.message||e)}</b>.</p>
+        <p class="dlg-p">Vérifiez que la fonction <b>create-invite-checkout</b> est déployée.</p>`,
+      ok:'Fermer',cancel:'Fermer'});
+  }
 }
 async function sendByEvenza(guestId){
   try{
@@ -3280,8 +3263,7 @@ async function sendByEvenza(guestId){
     if(data&&data.error)throw new Error(data.error);
     await reloadGuests();
     const sent=data?data.sent||0:0;
-    const a=await genAvis();
-    toast(int(sent)+' invitation'+(sent>1?'s':'')+' envoyée'+(sent>1?'s':'')+(a?' — avis '+a.ref+' généré':''));
+    toast(int(sent)+' invitation'+(sent>1?'s':'')+' envoyée'+(sent>1?'s':''));
     if(data&&data.errors&&data.errors.length)console.warn('Envois en erreur :',data.errors);
     paintInvites();
   }catch(e){
@@ -3293,8 +3275,7 @@ async function sendByEvenza(guestId){
         const t=Date.now();
         (EV.list||[]).forEach(g=>{if(!g.sent&&(g.contact||'').includes('@')){g.sent=t;g.sentVia='manuel';}});
         await doSave();
-        const a=await genAvis();
-        toast('Invitations marquées comme envoyées'+(a?' — avis '+a.ref+' généré':''));
+        toast('Invitations marquées comme envoyées');
         paintInvites();}});
   }
 }
@@ -3303,46 +3284,52 @@ function paintInvites(){
   const sent=list.filter(g=>g.sent),pending=list.filter(g=>!g.sent);
   const pendMail=pending.filter(g=>(g.contact||'').includes('@'));
   const pendNoMail=pending.filter(g=>!(g.contact||'').includes('@'));
-  const invs=(EV.invoices||[]).slice().sort((a,b)=>b.date-a.date);
-  const late=hasOverdue();
+  const needed=sentCount()+pendMail.length;
+  const neededTierIdx=tierIdxFor(needed);
+  const blocked=pendMail.length>0&&neededTierIdx>inviteTierIdx();
+  const singleBlocked=sentCount()+1>inviteCap();
   $('paneinvitations').innerHTML=`
   <div class="inv-grid">
     <div class="box">
       <h3>Envoyer les invitations <em>${int(sent.length)} envoyées · ${int(pending.length)} à envoyer</em></h3>
       <p class="empty" style="padding-top:0">Toutes les invitations partent du courriel d'Evenza (<b>${EVZ_MAIL}</b>), chacune avec le lien personnel de l'invité. Chaque confirmation reçue met le suivi à jour automatiquement, en direct.</p>
       ${EV.paid?`<p class="empty" style="padding-top:0">Participation : <b>${money(EV.price)}</b> par personne, virée à <b>${esc(EV.interac||'— adresse Interac non réglée —')}</b>.</p>`:''}
-      ${late?`<div class="lock" style="margin:0 0 14px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><rect x="4" y="10" width="16" height="10" rx="2.5" stroke="currentColor" stroke-width="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3" stroke="currentColor" stroke-width="2"/></svg>
-        <span>Un avis de facturation a dépassé son échéance de ${AVIS_DELAI} jours. Les nouveaux envois reprendront dès la réception de votre virement Interac.</span></div>`:''}
+      ${blocked?`<div class="lock" style="margin:0 0 14px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><rect x="4" y="10" width="16" height="10" rx="2.5" stroke="currentColor" stroke-width="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3" stroke="currentColor" stroke-width="2"/></svg>
+        <span>Votre palier actuel (${esc(inviteTier().n)}) ne couvre pas ces ${int(pendMail.length)} invitations. Débloquez un palier plus grand ci-contre pour continuer.</span></div>`:''}
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
-        <button class="btn btn-gold btn-sm" id="sendAll" ${(!pendMail.length||late)?'disabled':''}>Envoyer ${int(pendMail.length)} invitation${pendMail.length>1?'s':''} par Evenza</button>
+        <button class="btn btn-gold btn-sm" id="sendAll" ${(!pendMail.length||blocked)?'disabled':''}>Envoyer ${int(pendMail.length)} invitation${pendMail.length>1?'s':''} par Evenza</button>
         <button class="mini-btn" id="allLinks">Copier tous les liens</button>
       </div>
       ${pendNoMail.length?`<p class="empty" style="padding-top:0">${int(pendNoMail.length)} invité${pendNoMail.length>1?'s':''} sans courriel — ajoutez leur adresse dans l'onglet Invités, ou remettez-leur le lien copié à la main.</p>`:''}
       ${list.length?list.map(g=>{
         const sl=seatLabel(EV,g.seat),isMail=(g.contact||'').includes('@');
+        const rowBlocked=!g.sent&&singleBlocked;
         return `<div class="sendrow${g.sent?' done':''}">
           <span class="nm"><b>${esc(g.name)}</b><small>${sl?esc(sl.t+' · '+sl.s):'non placé'} · ${esc(g.contact||'aucun contact')}</small></span>
           <span class="sendst">${g.sent
             ? `<span class="badge ok"><i></i>${esc(g.sentVia||'envoyée')} · ${ago(g.sent)}</span>`
             : `<span class="badge wait"><i></i>à envoyer</span>`}</span>
           <span class="acts">
-            ${isMail?`<button class="ico-btn" data-one="${g.id}" ${late?'disabled':''}>${g.sent?'Renvoyer':'Envoyer'} par Evenza</button>`:''}
+            ${isMail?`<button class="ico-btn" data-one="${g.id}" ${rowBlocked?'disabled':''}>${g.sent?'Renvoyer':'Envoyer'} par Evenza</button>`:''}
             <button class="ico-btn" data-cp="${g.id}">Copier le lien</button>
             <a class="ico-btn" href="#/i/${g.token}" target="_blank" rel="noopener">Aperçu</a>
           </span></div>`;}).join('')
-        :'<p class="empty">Ajoutez vos invités dans l\u2019onglet Invités.</p>'}
+        :'<p class="empty">Ajoutez vos invités dans l’onglet Invités.</p>'}
     </div>
     <div style="display:flex;flex-direction:column;gap:14px">
       <div class="box">
-        <h3>Avis de facturation <em>${money(EVZ_FEE)} / invitation envoyée</em></h3>
+        <h3>Palier d'invitations <em>${esc(inviteTier().n)}</em></h3>
         <div class="split" style="margin-top:0">
-          <div class="sp"><span>Invitations envoyées</span><b>${int(sent.length)}</b><small>comptées à l'envoi</small></div>
-          <div class="sp"><span>Non facturées</span><b>${int(unbilled())}</b><small>× ${money(EVZ_FEE)}</small></div>
+          <div class="sp"><span>Invitations envoyées</span><b>${int(sentCount())}</b><small>${inviteCap()===Infinity?'illimité':'sur '+int(inviteCap())}</small></div>
+          <div class="sp"><span>Payé pour ce palier</span><b>${money(inviteTier().price)}</b><small>paiement unique</small></div>
         </div>
-        ${unbilled()?`<button class="btn btn-navy btn-sm" id="mkAvis" style="width:100%;margin-bottom:4px">Générer l'avis — ${money(unbilled()*EVZ_FEE)}</button>`:''}
-        ${invs.length?invs.map(avisCard).join('')
-          :`<p class="empty">Aucun avis pour l'instant. Dès qu'un envoi groupé part, le système compte les invitations réellement envoyées, génère l'avis et l'affiche ici : vous avez ${AVIS_DELAI} jours pour payer par virement Interac.</p>`}
-        <p class="empty">Seul votre abonnement (${money(PLANS[plan()].sub)} / mois) est récurrent. Tout le reste est facturé à l'usage, après l'envoi.</p>
+        ${blocked?`<button class="btn btn-navy btn-sm" id="buyTier" style="width:100%;margin:10px 0 4px">Débloquer « ${esc(INVITE_TIERS[neededTierIdx].n)} » — ${money(inviteUpgradePrice(neededTierIdx))}</button>`:''}
+        ${inviteTierIdx()<INVITE_TIERS.length-1?`<details style="margin-top:10px">
+          <summary class="mini-btn" style="cursor:pointer;width:fit-content">Voir tous les paliers
+          <div style="display:flex;flex-direction:column;gap:6px;margin-top:8px">
+            ${INVITE_TIERS.map((t,i)=>i<=inviteTierIdx()?'':`<button class="mini-btn" data-buytier="${i}" style="justify-content:space-between;width:100%">${esc(t.n)}<b>${money(inviteUpgradePrice(i))}</b></button>`).join('')}
+          </div></details>`:''}
+        <p class="empty" style="padding-top:10px">Seul votre abonnement (${money(PLANS[plan()].sub)} / an) est récurrent. Les paliers d'invitations sont des achats uniques, sans renouvellement automatique — 10 premières invitations toujours gratuites.</p>
       </div>
       <div class="box">
         <h3>Réponses en direct</h3>
@@ -3351,39 +3338,23 @@ function paintInvites(){
     </div>
   </div>`;
   $('sendAll').onclick=()=>{
-    if(!pendMail.length||late)return;
-    const n=pendMail.length,tot=(unbilled()+n)*EVZ_FEE;
-    dialog({title:'Envoyer par le courriel d\u2019Evenza',
-      body:`<p class="dlg-p"><b>${int(n)} invitation${n>1?'s':''}</b> partiront réellement de <b>${EVZ_MAIL}</b>, chacune avec le lien personnel de l'invité (nom, place à table, déroulé, confirmation).</p>
-        <p class="dlg-p">Une fois l'envoi effectué, le système compte les invitations réellement parties et génère automatiquement l'avis de facturation : <b>${int(unbilled()+n)} × ${money(EVZ_FEE)} = ${money(tot)}</b>, payable par virement Interac sous <b>${AVIS_DELAI} jours</b>.</p>`,
-      ok:'Envoyer et générer l\u2019avis',
+    if(!pendMail.length||blocked)return;
+    const n=pendMail.length;
+    dialog({title:'Envoyer par le courriel d’Evenza',
+      body:`<p class="dlg-p"><b>${int(n)} invitation${n>1?'s':''}</b> partiront réellement de <b>${EVZ_MAIL}</b>, chacune avec le lien personnel de l'invité (nom, place à table, déroulé, confirmation).</p>`,
+      ok:'Envoyer',
       onOk:()=>{sendByEvenza(null);}});
   };
-  if($('mkAvis'))$('mkAvis').onclick=async()=>{
-    const a=await genAvis();
-    if(a){toast('Avis '+a.ref+' généré — '+money(a.total)+' à payer sous '+AVIS_DELAI+' jours');paintInvites();}};
-  document.querySelectorAll('[data-payav]').forEach(b=>b.onclick=()=>{
-    const a=(EV.invoices||[]).find(x=>x.id===b.dataset.payav);if(!a)return;
-    dialog({title:'Confirmer le paiement',
-      body:`<p class="dlg-p">Vous confirmez avoir envoyé le virement Interac de <b>${money(a.total)}</b> à <b>${EVZ_INTERAC}</b> en indiquant la référence <b>${esc(a.ref)}</b> dans le message du virement.</p>
-        <p class="dlg-p">Evenza vérifie chaque virement à la réception : la référence permet de rattacher votre paiement au bon avis.</p>`,
-      ok:'J\u2019ai payé '+money(a.total),
-      onOk:async()=>{
-        a.paid=true;a.paidAt=Date.now();
-        await sb.from('invoices').update({paid:true,paid_at:new Date(a.paidAt).toISOString()}).eq('id',a.id);
-        paintInvites();toast('Avis '+a.ref+' réglé — merci !');}});});
-  document.querySelectorAll('[data-cpav]').forEach(b=>b.onclick=()=>{
-    const a=(EV.invoices||[]).find(x=>x.id===b.dataset.cpav);if(!a)return;
-    copyText('Virement Interac — Evenza\nMontant : '+money(a.total)+'\nDestinataire : '+EVZ_INTERAC+'\nMessage du virement : '+a.ref,b,'Copier les infos');});
+  if($('buyTier'))$('buyTier').onclick=()=>buyInviteTier(neededTierIdx);
+  document.querySelectorAll('[data-buytier]').forEach(b=>b.onclick=()=>buyInviteTier(+b.dataset.buytier));
   document.querySelectorAll('[data-one]').forEach(b=>b.onclick=()=>{
-    if(late){toast('Réglez d\u2019abord l\u2019avis en retard');return;}
+    if(singleBlocked){toast('Débloquez un palier plus grand pour continuer');return;}
     sendByEvenza(b.dataset.one);});
   document.querySelectorAll('[data-cp]').forEach(b=>b.onclick=()=>{
     const g=(EV.list||[]).find(x=>x.id===b.dataset.cp);
     if(g)copyText(inviteLink(g),b,'Copier le lien');});
   $('allLinks').onclick=()=>copyText((EV.list||[]).map(g=>g.name+' : '+inviteLink(g)).join('\n'),$('allLinks'),'Copier tous les liens');
 }
-
 /* ---------- Suivi ---------- */
 function paintFollow(){
   const list=EV.list||[];
@@ -3656,9 +3627,9 @@ function paintSettings(){
       <div class="box"><h3>Budget</h3>
         <div class="cap" style="border:none;padding:0"><span>Budget total</span><b>${EV.budget?money(EV.budget):'—'}</b></div>
         <div class="cap"><span>Par invité (${int(EV.guests)})</span><b>${EV.budget?money(EV.budget/Math.max(1,EV.guests)):'—'}</b></div>
-        <div class="cap"><span>Invitations envoyées (${int(sentCount())} × ${money(EVZ_FEE)})</span><b>${money(sentCount()*EVZ_FEE)}</b></div>
+        <div class="cap"><span>Invitations envoyées (${int(sentCount())})</span><b>${money(inviteTier().price)}</b></div>
         <div class="cap"><span>Abonnement Evenza</span><b>${esc(planPrice(plan()))}</b></div>
-        <p class="empty">Les invitations sont facturées après l'envoi, par avis payable sous ${AVIS_DELAI} jours par Interac — voir l'onglet Envois.</p></div>
+        <p class="empty">10 premières invitations gratuites, puis un palier payé une seule fois par Stripe — voir l'onglet Envois.</p></div>
     </div>
   </div>
 
