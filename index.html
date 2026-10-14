@@ -1475,6 +1475,16 @@ async function openBillingPortal(){
 ============================================================ */
 const ROOM={w:1000,h:680};
 const SEAT_R=13, SEAT_GAP=28;
+// Demi-largeur/demi-hauteur réelles d'une table ou d'une zone (chaises comprises),
+// pour empêcher qu'on la glisse au bord au point qu'elle dépasse la salle.
+function objExtent(o){
+  if(o.shape){
+    if(o.shape==='circle'||o.shape==='arc'||o.shape==='hex'){const e=(o.r||50)+SEAT_GAP+SEAT_R+4;return{hw:e,hh:e};}
+    if(o.shape==='row')return{hw:(o.w||100)/2+SEAT_R+4,hh:SEAT_R+8};
+    return{hw:(o.w||100)/2+SEAT_GAP+SEAT_R+4,hh:(o.h||100)/2+SEAT_GAP+SEAT_R+4};
+  }
+  return{hw:(o.w||100)/2,hh:(o.h||60)/2};
+}
 
 function tableSeats(t){
   const out=[],n=Math.max(0,t.seats|0);
@@ -1725,7 +1735,7 @@ function planSvg(ev,opt){
   opt=opt||{};
   const taken={};(ev.list||[]).forEach(g=>{if(g.seat)taken[g.seat]=g;});
   const cam=opt.cam||{k:1,tx:0,ty:0};
-  let s=`<svg viewBox="0 0 ${ROOM.w} ${ROOM.h}" xmlns="http://www.w3.org/2000/svg"${opt.interactive?' class="editable"':''}${opt.fit?' preserveAspectRatio="xMidYMid meet"':''}>
+  let s=`<svg viewBox="${opt.viewBox||('0 0 '+ROOM.w+' '+ROOM.h)}" xmlns="http://www.w3.org/2000/svg"${opt.interactive?' class="editable"':''}${opt.fit?' preserveAspectRatio="xMidYMid meet"':''}>
     <g id="${opt.camId||'camG'}" transform="translate(${cam.tx.toFixed(2)},${cam.ty.toFixed(2)}) scale(${cam.k.toFixed(4)})">
     <rect class="floor" data-floor="1" x="0" y="0" width="${ROOM.w}" height="${ROOM.h}" rx="18"/>`;
   for(let x=40;x<ROOM.w;x+=40)s+=`<line x1="${x}" y1="0" x2="${x}" y2="${ROOM.h}" stroke="#EAEEF3" stroke-width="1" pointer-events="none"/>`;
@@ -1845,8 +1855,9 @@ function bindPlan(host,onSelect,onChange,cfg){
     if(drag){
       const o=find(drag.id);if(!o)return;
       const p=svgPoint(svg,cam,e);
-      o.cx=clamp(p.x-drag.ox,30,ROOM.w-30);
-      o.cy=clamp(p.y-drag.oy,30,ROOM.h-30);
+      {const ex=objExtent(o);
+      o.cx=clamp(p.x-drag.ox,ex.hw,ROOM.w-ex.hw);
+      o.cy=clamp(p.y-drag.oy,ex.hh,ROOM.h-ex.hh);}
       drag.el.setAttribute('transform',`translate(${o.cx.toFixed(1)},${o.cy.toFixed(1)}) rotate(${o.rot||0})`);
       drag.moved=true;return;
     }
@@ -2543,7 +2554,8 @@ function paintPlan(){
     document.querySelector('[data-rot]').onclick=()=>{sel.rot=((sel.rot||0)+15)%360;save();paintPlan();};
     document.querySelectorAll('[data-decor]').forEach(b=>b.onclick=()=>{sel.decor=b.dataset.decor;save();paintPlan();});
     document.querySelector('[data-dup]').onclick=()=>{
-      const c={...sel,id:uid(),cx:clamp(sel.cx+60,30,ROOM.w-30),cy:clamp(sel.cy+60,30,ROOM.h-30)};
+      const ex0=objExtent(sel);
+      const c={...sel,id:uid(),cx:clamp(sel.cx+60,ex0.hw,ROOM.w-ex0.hw),cy:clamp(sel.cy+60,ex0.hh,ROOM.h-ex0.hh)};
       if(isZone)EV.plan.zones.push(c);else{c.label='T'+(EV.plan.tables.length+1);EV.plan.tables.push(c);}
       selObj=c.id;save();paintPlan();};
     document.querySelector('[data-del]').onclick=()=>{
@@ -3264,7 +3276,8 @@ function fsPanel(mode){
     save();re();});
   if(p.querySelector('[data-fsrot]'))p.querySelector('[data-fsrot]').onclick=()=>{sel.rot=((sel.rot||0)+15)%360;save();re();};
   if(p.querySelector('[data-fsdup]'))p.querySelector('[data-fsdup]').onclick=()=>{
-    const c={...sel,id:uid(),cx:clamp(sel.cx+70,30,ROOM.w-30),cy:clamp(sel.cy+70,30,ROOM.h-30)};
+    const ex0=objExtent(sel);
+    const c={...sel,id:uid(),cx:clamp(sel.cx+70,ex0.hw,ROOM.w-ex0.hw),cy:clamp(sel.cy+70,ex0.hh,ROOM.h-ex0.hh)};
     if(isZone)EV.plan.zones.push(c);else{c.label='T'+(EV.plan.tables.length+1);EV.plan.tables.push(c);}
     selObj=c.id;save();re();};
   if(p.querySelector('[data-fsdel]'))p.querySelector('[data-fsdel]').onclick=()=>{
@@ -4475,6 +4488,26 @@ async function renderTableShare(token){
   TBS=d;
   paintTableShare();
 }
+function planBBox(tables,zones){
+  // calcule un viewBox qui englobe toujours toute la salle "normale"
+  // (0,0,ROOM.w,ROOM.h) ET tout objet qui dépasserait ces limites (ex. une
+  // table ou une zone glissée tout contre le bord) — pour qu'un aperçu
+  // "zoom to fit" ne rogne jamais rien, même si le plan n'est pas parfait.
+  let minX=0,minY=0,maxX=ROOM.w,maxY=ROOM.h;
+  const extend=(cx,cy,hw,hh)=>{
+    minX=Math.min(minX,cx-hw);minY=Math.min(minY,cy-hh);
+    maxX=Math.max(maxX,cx+hw);maxY=Math.max(maxY,cy+hh);};
+  (tables||[]).forEach(t=>{
+    const cx=+t.cx||0,cy=+t.cy||0;let hw,hh;
+    if(t.shape==='circle'||t.shape==='arc'||t.shape==='hex'){const e=(+t.r||50)+SEAT_GAP+SEAT_R+6;hw=e;hh=e;}
+    else if(t.shape==='row'){hw=(+t.w||100)/2+SEAT_R+6;hh=SEAT_R+10;}
+    else{hw=(+t.w||100)/2+SEAT_GAP+SEAT_R+6;hh=(+t.h||100)/2+SEAT_GAP+SEAT_R+6;}
+    extend(cx,cy,hw,hh);});
+  (zones||[]).forEach(z=>{extend(+z.cx||0,+z.cy||0,(+z.w||100)/2+6,(+z.h||60)/2+6);});
+  const pad=16;
+  minX-=pad;minY-=pad;maxX+=pad;maxY+=pad;
+  return (minX.toFixed(0))+' '+(minY.toFixed(0))+' '+((maxX-minX).toFixed(0))+' '+((maxY-minY).toFixed(0));
+}
 function paintTableShare(){
   const w=$('tbsWrap');
   const t=TBS.table;
@@ -4485,6 +4518,7 @@ function paintTableShare(){
   const q=tbsQ.toLowerCase();
   const shownFree=free.filter(g=>!q||g.name.toLowerCase().includes(q));
   const previewEv={plan:{tables:TBS.tables||[],zones:TBS.zones||[]},list:(TBS.guests||[]).map(g=>Object.assign({},g))};
+  const previewVB=planBBox(TBS.tables,TBS.zones);
   w.innerHTML=`
   <div class="shr-card">
     <div class="shr-top">
@@ -4494,7 +4528,7 @@ function paintTableShare(){
     </div>
     <div class="shr-body">
       <p class="shr-intro">L'organisateur vous a confié cette table. Repérez-la sur le plan ci-dessous (en doré), puis choisissez qui s'assoit à chaque place — <b>aucun compte nécessaire</b>.</p>
-      <div class="tbs-prev">${planSvg(previewEv,{interactive:false,sel:t.id,fit:true})}</div>
+      <div class="tbs-prev">${planSvg(previewEv,{interactive:false,sel:t.id,fit:true,viewBox:previewVB})}</div>
       <h3 class="shr-h3">${int(seatsN)} place${seatsN>1?'s':''}</h3>
       <div class="tbs-seats">
         ${Array.from({length:seatsN}).map((_,j)=>{
