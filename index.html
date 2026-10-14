@@ -377,9 +377,16 @@ footer{background:var(--navy-ink);color:rgba(255,255,255,.6);padding:44px 0 30px
 .v-int small{display:block;font-size:11.5px}
 
 
-.nav-login{font-weight:600;font-size:14.5px;color:var(--navy)}
+.nav-login{font-weight:600;font-size:14.5px;color:var(--navy);display:inline-flex;align-items:center;gap:6px}
 .nav-login:hover{color:var(--gold)}
-@media(max-width:560px){.nav-login{display:none}}
+.nav-login-ic{display:none;flex-shrink:0}
+@media(max-width:560px){
+  .nav-login-lbl{display:none}
+  .nav-login-ic{display:block}
+  .nav-login{border:1px solid var(--line);border-radius:9px;padding:8px;width:34px;height:34px;justify-content:center}
+  #site header .logo{font-size:21px}
+  .btn-sm{padding:9px 12px;font-size:12.5px}
+}
 
 
 .cmp-wrap{background:#fff;border:1px solid var(--line);border-radius:16px;overflow-x:auto;box-shadow:var(--shadow-sm)}
@@ -873,6 +880,19 @@ footer{background:var(--navy-ink);color:rgba(255,255,255,.6);padding:44px 0 30px
 .nw-post-foot small{color:var(--muted);font-size:12px}
 .nw-del{font-size:12px;color:var(--muted);font-weight:600}.nw-del:hover{color:var(--red)}
 /* ---- Fil de nouvelles (vue invité publique) ---- */
+#tableshare{background:var(--gray);min-height:100vh;padding:30px 18px 60px}
+.tbs-prev{background:var(--gray);border:1px solid var(--line);border-radius:14px;overflow:hidden;aspect-ratio:1000/680;margin-bottom:22px}
+.tbs-prev svg{width:100%;height:100%;display:block}
+.tbs-seats{display:flex;flex-direction:column;gap:10px}
+.tbs-seat{border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.tbs-seat.editing{border-color:var(--navy)}
+.tbs-seat-row{display:flex;align-items:center;gap:10px}
+.tbs-seat-n{width:26px;height:26px;border-radius:50%;background:var(--gray);color:var(--navy);display:grid;place-items:center;font-size:12px;font-weight:700;flex-shrink:0}
+.tbs-seat-row .nm{flex:1;min-width:0;font-size:14px}
+.tbs-seat-row .nm.empty-nm{color:var(--muted)}
+.tbs-picker{margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+.tbs-sub{font-family:var(--font-mono);font-size:10.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:12px 0 8px}
+
 #feed{background:var(--gray);min-height:100vh;padding:30px 18px 60px}
 .fd{max-width:560px;margin:0 auto}
 .fd-card{background:#fff;border-radius:20px;box-shadow:var(--shadow-lg);overflow:hidden}
@@ -1066,7 +1086,10 @@ body.app-on .help-btn{display:flex}
       <a href="#story">À propos</a>
     </nav>
     <div style="display:flex;gap:10px;align-items:center">
-      <a href="#/compte" class="nav-login" id="navLogin">Se connecter</a>
+      <a href="#/compte" class="nav-login" id="navLogin" aria-label="Se connecter" title="Se connecter">
+        <svg class="nav-login-ic" width="17" height="17" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.6" stroke="currentColor" stroke-width="1.9"/><path d="M5 20c1.3-4 4.2-6 7-6s5.7 2 7 6" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>
+        <span class="nav-login-lbl">Se connecter</span>
+      </a>
       <button class="btn btn-navy btn-sm" data-go="setup">Créer mon compte</button>
     </div>
   </div>
@@ -1281,6 +1304,7 @@ body.app-on .help-btn{display:flex}
 <div id="invite" class="view"><div class="iv" id="ivWrap"></div></div>
 <div id="share" class="view"><div class="shr" id="shrWrap"></div></div>
 <div id="feed" class="view"><div class="fd" id="fdWrap"></div></div>
+<div id="tableshare" class="view"><div class="shr" id="tbsWrap"></div></div>
 
 
 <!-- ==================== PLAN PLEIN ÉCRAN ==================== -->
@@ -2444,6 +2468,8 @@ function paintPlan(){
           <button class="mini-btn" data-dup="1">Dupliquer</button>
           <button class="mini-btn danger" data-del="1">Supprimer</button>
         </div>
+        ${!isZone?`<button class="mini-btn" data-sharetbl="1" style="width:100%;margin-top:10px;justify-content:center">Envoyer cette table à quelqu'un</button>
+        <div id="tblSharesBox" style="margin-top:10px"></div>`:''}
       </div>`:`<div class="box"><h3>Tables</h3>
         <p class="empty" style="padding-top:0">Touchez une table ou une zone sur le plan pour la renommer, la redimensionner ou la déplacer au doigt.</p></div>`}
 
@@ -2525,6 +2551,10 @@ function paintPlan(){
       else{EV.plan.tables=EV.plan.tables.filter(t=>t.id!==sel.id);
         (EV.list||[]).forEach(g=>{if(g.seat&&g.seat.startsWith(sel.id+':'))g.seat=null;});}
       selObj=null;save();paintPlan();};
+    if(!isZone){
+      document.querySelector('[data-sharetbl]').onclick=()=>shareTableDialog(sel.id);
+      loadTableShares(sel.id,'tblSharesBox');
+    }
   }
   $('renum').onclick=()=>{
     EV.plan.tables.sort((a,b)=>(a.cy-b.cy)||(a.cx-b.cx));
@@ -3128,7 +3158,9 @@ function fsPanel(mode){
         <div class="fsp-list">${(EV.list||[]).filter(g=>g.seat&&g.seat.startsWith(sel.id+':')).map(g=>`
           <div class="gi"><span class="av">${esc(initials(g.name))}</span><span class="nm"><b>${esc(g.name)}</b>
           <small>Place ${+g.seat.split(':')[1]+1}</small></span>
-          <button class="x" data-fsun="${g.id}">×</button></div>`).join('')||'<p class="empty">Personne d\u2019assis ici pour l\u2019instant.</p>'}</div>`:''}
+          <button class="x" data-fsun="${g.id}">×</button></div>`).join('')||'<p class="empty">Personne d’assis ici pour l’instant.</p>'}</div>
+        <button class="mini-btn" data-fssharetbl="1" style="width:100%;margin-top:10px;justify-content:center">Envoyer cette table à quelqu'un</button>
+        <div id="fsTblSharesBox" style="margin-top:10px"></div>`:''}
     </div>`;
   }
   else if(mode==='seat'&&FS.seat){
@@ -3242,6 +3274,8 @@ function fsPanel(mode){
     selObj=null;save();fsPanel('add');fsRender();};
   p.querySelectorAll('[data-fsun]').forEach(b=>b.onclick=()=>{
     const g=(EV.list||[]).find(x=>x.id===b.dataset.fsun);if(g){g.seat=null;save();re();}});
+  if(p.querySelector('[data-fssharetbl]'))p.querySelector('[data-fssharetbl]').onclick=()=>shareTableDialog(sel.id);
+  if(!isZone&&mode==='obj'&&sel)loadTableShares(sel.id,'fsTblSharesBox');
   p.querySelectorAll('[data-fssit]').forEach(b=>b.onclick=()=>{
     const g=(EV.list||[]).find(x=>x.id===b.dataset.fssit);
     if(g&&FS.seat){const occ=(EV.list||[]).find(x=>x.seat===FS.seat);if(occ)occ.seat=null;
@@ -4376,9 +4410,149 @@ async function renderSharedSpace(token){
 }
 
 /* ============================================================
+   PARTAGE D'UNE TABLE (déléguer une table à un proche)
+============================================================ */
+async function loadTableShares(tableId, boxId){
+  if(!sb||!EV||!EV.id)return;
+  const {data:shares}=await sb.from('table_shares').select('*').eq('event_id',EV.id).eq('table_id',tableId).eq('active',true).order('created_at');
+  const box=$(boxId);if(!box)return;
+  if(!shares||!shares.length){box.innerHTML='';return;}
+  box.innerHTML=shares.map(s=>`
+    <div class="sp-share">
+      <div class="sp-share-head">
+        <span class="sp-share-role"><b>Lien actif</b>${s.recipient_name?' · '+esc(s.recipient_name):''}</span>
+        <span style="display:flex;gap:6px">
+          <button class="mini-btn" data-copytbl="${s.token}">Copier le lien</button>
+          <button class="mini-btn danger" data-revoketbl="${s.id}">Révoquer</button>
+        </span>
+      </div>
+    </div>`).join('');
+  box.querySelectorAll('[data-copytbl]').forEach(b=>b.onclick=()=>{
+    copyText(baseURL()+'#/t/'+b.dataset.copytbl,b,'Copier le lien');});
+  box.querySelectorAll('[data-revoketbl]').forEach(b=>b.onclick=()=>{
+    dialog({title:'Révoquer ce lien ?',
+      body:'<p class="dlg-p">La personne n’aura plus accès à cette table via son lien — ce qu’elle a déjà placé reste en place.</p>',
+      ok:'Révoquer',danger:true,onOk:async()=>{
+        await sb.from('table_shares').update({active:false}).eq('id',b.dataset.revoketbl);
+        loadTableShares(tableId,boxId);toast('Lien révoqué');}});});
+}
+function shareTableDialog(tableId){
+  const t=(EV.plan.tables||[]).find(x=>x.id===tableId);if(!t)return;
+  const idx=(EV.plan.tables||[]).findIndex(x=>x.id===tableId);
+  const tn=tableName(t,idx);
+  dialog({title:'Partager « '+tn+' »',
+    body:`<p class="dlg-p">Créez un lien que vous enverrez à un proche responsable de cette table : il pourra voir où elle se trouve sur le plan, et choisir ou ajouter les noms de ses invités — <b>sans créer de compte</b>.</p>
+      <div class="field" style="margin-bottom:0"><label>Pour qui&nbsp;? <span class="hint">facultatif, pour vous y retrouver</span></label>
+      <input class="inp" id="shTblName" placeholder="Ex : Tante Nicole"></div>`,
+    ok:'Créer le lien',
+    onOk:async()=>{
+      const name=($('shTblName')?$('shTblName').value:'').trim();
+      const {data,error}=await sb.from('table_shares').insert({event_id:EV.id,table_id:tableId,recipient_name:name}).select().single();
+      if(error){toast('Erreur : '+error.message);return;}
+      const link=baseURL()+'#/t/'+data.token;
+      dialog({title:'Lien créé ✓',
+        body:`<p class="dlg-p">Envoyez ce lien${name?' à <b>'+esc(name)+'</b>':''}. « ${esc(tn)} » compte ${int(t.seats)} place${t.seats>1?'s':''}.</p>
+          <div class="code-out">${esc(link)}</div>`,
+        ok:'Copier le lien',cancel:'Fermer',
+        onOk:()=>{copyText(link);}});
+      if(TAB==='plan')paintPlan();
+      if($('fsPanel')&&$('fsPanel').classList.contains('on'))fsPanel(FS.mode);
+    }});
+}
+
+let TBS=null,TBS_TOKEN=null,tbsSeat=null,tbsQ='';
+async function renderTableShare(token){
+  TBS_TOKEN=token;tbsSeat=null;tbsQ='';
+  const w=$('tbsWrap');
+  w.innerHTML='<div class="shr-card"><p class="empty" style="padding:30px">Chargement de la table…</p></div>';
+  if(!sb){w.innerHTML='<div class="shr-card"><p class="empty" style="padding:30px">Service non configuré.</p></div>';return;}
+  let d=null;
+  try{const {data,error}=await sb.rpc('get_table_share',{p_token:token});if(error)throw error;d=data;}catch(e){}
+  if(!d||!d.table){
+    w.innerHTML='<div class="shr-card"><div class="shr-top"><b>Evenza</b></div><div style="padding:26px"><p class="empty">Ce lien est invalide ou a été retiré par l’organisateur.</p></div></div>';
+    return;
+  }
+  TBS=d;
+  paintTableShare();
+}
+function paintTableShare(){
+  const w=$('tbsWrap');
+  const t=TBS.table;
+  const tn=(t.name&&String(t.name).trim())?String(t.name).trim():(t.label||'Table');
+  const seatsN=Math.max(0,+t.seats||0);
+  const occ=j=>(TBS.guests||[]).find(g=>g.seat===t.id+':'+j);
+  const free=(TBS.guests||[]).filter(g=>!g.seat);
+  const q=tbsQ.toLowerCase();
+  const shownFree=free.filter(g=>!q||g.name.toLowerCase().includes(q));
+  const previewEv={plan:{tables:TBS.tables||[],zones:TBS.zones||[]},list:(TBS.guests||[]).map(g=>Object.assign({},g))};
+  w.innerHTML=`
+  <div class="shr-card">
+    <div class="shr-top">
+      <span class="shr-eyebrow">TABLE PARTAGÉE${TBS.recipient_name?' · '+esc(String(TBS.recipient_name).toUpperCase()):''}</span>
+      <h1>${esc(tn)}</h1>
+      <p>${esc(TBS.event_name||'')}${TBS.event_date?' · '+esc(fmtDate(TBS.event_date)):''}</p>
+    </div>
+    <div class="shr-body">
+      <p class="shr-intro">L'organisateur vous a confié cette table. Repérez-la sur le plan ci-dessous (en doré), puis choisissez qui s'assoit à chaque place — <b>aucun compte nécessaire</b>.</p>
+      <div class="tbs-prev">${planSvg(previewEv,{interactive:false,sel:t.id,fit:true})}</div>
+      <h3 class="shr-h3">${int(seatsN)} place${seatsN>1?'s':''}</h3>
+      <div class="tbs-seats">
+        ${Array.from({length:seatsN}).map((_,j)=>{
+          const g=occ(j);
+          return `<div class="tbs-seat${tbsSeat===j?' editing':''}">
+            <div class="tbs-seat-row">
+              <span class="tbs-seat-n">${j+1}</span>
+              ${g?`<span class="nm"><b>${esc(g.name)}</b></span>`:`<span class="nm empty-nm">Place libre</span>`}
+              <button class="mini-btn" data-tbsedit="${j}">${g?'Changer':'Assigner'}</button>
+            </div>
+            ${tbsSeat===j?`
+              <div class="tbs-picker">
+                ${g?`<button class="mini-btn danger" data-tbsclear="${j}" style="margin-bottom:10px">Libérer cette place</button>`:''}
+                <div class="field"><input class="inp" id="tbsQ" placeholder="Rechercher dans la liste d'invités…" value="${esc(tbsQ)}"></div>
+                <div class="fsp-list" style="max-height:220px;overflow:auto">${shownFree.length?shownFree.map(fg=>`
+                  <button class="gi tap" data-tbssit="${fg.id}"><span class="av">${esc(initials(fg.name))}</span>
+                  <span class="nm"><b>${esc(fg.name)}</b></span><span class="plus">+</span></button>`).join('')
+                  :'<p class="empty">Tous les invités de la liste sont déjà placés ailleurs.</p>'}</div>
+                <div class="tbs-sub">Ou ajouter un nouveau nom</div>
+                <div class="field" style="margin-bottom:8px"><input class="inp" id="tbsNewN" placeholder="Nom complet"></div>
+                <button class="btn btn-navy btn-sm" data-tbsnew="${j}" style="width:100%">Ajouter et asseoir ici</button>
+              </div>`:''}
+          </div>`;}).join('')}
+      </div>
+    </div>
+  </div>`;
+  w.querySelectorAll('[data-tbsedit]').forEach(b=>b.onclick=()=>{
+    const j=+b.dataset.tbsedit;tbsSeat=tbsSeat===j?null:j;tbsQ='';paintTableShare();
+    setTimeout(()=>{const el=$('tbsQ');if(el)el.focus();},30);});
+  if($('tbsQ'))$('tbsQ').oninput=e=>{tbsQ=e.target.value;paintTableShare();
+    const el=$('tbsQ');if(el){el.focus();el.setSelectionRange(el.value.length,el.value.length);}};
+  w.querySelectorAll('[data-tbssit]').forEach(b=>b.onclick=async()=>{
+    if(tbsSeat==null)return;
+    const sid=TBS.table.id+':'+tbsSeat;
+    const {error}=await sb.rpc('assign_table_seat',{p_token:TBS_TOKEN,p_seat:tbsSeat,p_guest_id:b.dataset.tbssit,p_new_name:null});
+    if(error){toast('Erreur : '+error.message);return;}
+    (TBS.guests||[]).forEach(g=>{if(g.seat===sid)g.seat=null;});
+    const gg=(TBS.guests||[]).find(x=>x.id===b.dataset.tbssit);if(gg)gg.seat=sid;
+    toast('Placé');tbsSeat=null;tbsQ='';paintTableShare();});
+  w.querySelectorAll('[data-tbsnew]').forEach(b=>b.onclick=async()=>{
+    const j=+b.dataset.tbsnew;const n=($('tbsNewN')?$('tbsNewN').value:'').trim();
+    if(!n){toast('Entrez un nom');return;}
+    const {error}=await sb.rpc('assign_table_seat',{p_token:TBS_TOKEN,p_seat:j,p_guest_id:null,p_new_name:n});
+    if(error){toast('Erreur : '+error.message);return;}
+    toast(n+' ajouté et placé');
+    await renderTableShare(TBS_TOKEN);});
+  w.querySelectorAll('[data-tbsclear]').forEach(b=>b.onclick=async()=>{
+    const j=+b.dataset.tbsclear,sid=TBS.table.id+':'+j;
+    const {error}=await sb.rpc('assign_table_seat',{p_token:TBS_TOKEN,p_seat:j,p_guest_id:null,p_new_name:null});
+    if(error){toast('Erreur : '+error.message);return;}
+    (TBS.guests||[]).forEach(g=>{if(g.seat===sid)g.seat=null;});
+    tbsSeat=null;toast('Place libérée');paintTableShare();});
+}
+
+/* ============================================================
    ROUTEUR
 ============================================================ */
-const VIEWS=['setup','compte','reset','legal','espace','work','invite','share','feed'];
+const VIEWS=['setup','compte','reset','legal','espace','work','invite','share','feed','tableshare'];
 function show(v){VIEWS.forEach(x=>$(x).classList.toggle('on',x===v));
   document.body.classList.toggle('app-on',!!v);window.scrollTo({top:0});}
 async function route(){
@@ -4388,6 +4562,7 @@ async function route(){
   if(p[0]==='i'&&p[1]){show('invite');renderInvite(p[1]);return;}
   if(p[0]==='s'&&p[1]){show('share');renderSharedSpace(p[1]);return;}
   if(p[0]==='f'&&p[1]){show('feed');renderFeed(p[1]);return;}
+  if(p[0]==='t'&&p[1]){show('tableshare');renderTableShare(p[1]);return;}
   if(p[0]==='compte'){show('compte');renderAuth();return;}
   if(p[0]==='nouveau-mdp'){
     if(!USER){toast('Lien de réinitialisation invalide ou expiré — redemandez-en un.');location.hash='#/compte';return;}
