@@ -652,12 +652,24 @@ footer{background:var(--navy-ink);color:rgba(255,255,255,.6);padding:44px 0 30px
    Classique/Histoire/Compte à rebours) — la "Carte classique" garde son
    habillage de carte, volontairement inchangé. */
 #invite.iv-site-page{background:#fff;padding:0}
-.iv.iv-wide{max-width:1040px}
+.iv.iv-wide{max-width:1140px}
 .iv-wide .iv-card.ms-site{border-radius:0;box-shadow:none}
-.iv-wide .ms-sec,.iv-wide .ms-nohero,.iv-wide .ms-hero-txt,.iv-wide .ms-slide{max-width:760px;margin-left:auto;margin-right:auto}
+.iv-wide .ms-sec,.iv-wide .ms-nohero,.iv-wide .ms-slide{max-width:760px;margin-left:auto;margin-right:auto}
+.iv-wide .ms-hero-txt{max-width:900px;margin:0 auto;padding-left:40px;padding-right:40px}
+/* La photo d'en-tête a besoin de hauteur pour ne pas couper les visages : une
+   bannière basse (comme sur une carte étroite) écrase n'importe quelle photo
+   une fois étirée sur toute la largeur de l'écran. */
+.iv-wide .ms-hero{min-height:clamp(420px,56vw,640px)}
+.iv-wide .ms-hero img{object-position:center 28%}
+.iv-wide .ms-hero-txt h1{font-size:clamp(26px,3.4vw,40px)}
+.iv-wide .ms-nohero{padding:64px 26px 10px}
+.iv-wide .ms-nohero h1{font-size:clamp(26px,3.4vw,40px)!important}
+.iv-wide .ms-sec{padding:40px 26px}
 @media(max-width:800px){
   .iv.iv-wide{max-width:600px}
-  .iv-wide .ms-sec,.iv-wide .ms-nohero,.iv-wide .ms-hero-txt,.iv-wide .ms-slide{max-width:none}
+  .iv-wide .ms-sec,.iv-wide .ms-nohero,.iv-wide .ms-hero-txt,.iv-wide .ms-slide{max-width:none;padding-left:26px;padding-right:26px}
+  .iv-wide .ms-hero{min-height:300px}
+  .iv-wide .ms-hero img{object-position:center}
   #invite.iv-site-page{padding:0 0 40px}
 }
 .iv-top{padding:34px 30px 30px;text-align:center;color:#fff;position:relative;overflow:hidden}
