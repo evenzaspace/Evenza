@@ -2473,9 +2473,10 @@ async function loadSpaceShares(sp){
 // choisir à qui la réponse s'adresse.
 async function loadSpaceThreads(sp){
   if(!sb||!EV.id)return;
-  const {data:shares}=await sb.from('space_shares').select('id,vendor_role,vendor_name').eq('event_id',EV.id).eq('space_id',sp.id).eq('active',true).order('created_at');
+  const {data:shares}=await sb.from('space_shares').select('id,vendor_role,vendor_name,token').eq('event_id',EV.id).eq('space_id',sp.id).eq('active',true).order('created_at');
   const shareList=shares||[];
   const vendorOf={};shareList.forEach(s=>{vendorOf[s.id]=s.vendor_name||s.vendor_role||'Prestataire';});
+  const tokenOf={};shareList.forEach(s=>{tokenOf[s.id]=s.token;});
   let contribs=[];
   if(shareList.length){
     const {data}=await sb.from('space_contributions').select('*').in('share_id',shareList.map(s=>s.id)).order('created_at');
@@ -2535,6 +2536,10 @@ async function loadSpaceThreads(sp){
       if(error){toast('Erreur : '+error.message);return;}
       delete pendingImg[it.id];
       toast('Message envoyé');
+      // Avertit le prestataire par courriel, s'il en a laissé un — jamais
+      // bloquant si ça échoue (le message est déjà enregistré).
+      if(tokenOf[shareId])sb.functions.invoke('notify-space-message',{body:{
+        p_token:tokenOf[shareId],p_item_id:it.id,p_source:'organizer',p_author:EV.name||'Vous',p_body:body}}).catch(()=>{});
       loadSpaceThreads(sp);
     };
   });
@@ -4766,7 +4771,9 @@ async function renderSharedSpace(token){
     </div>
     <div class="shr-body">
       <p class="shr-intro">L'organisateur a partagé cet espace avec vous. Pour chaque idée, laissez vos commentaires, réponses et photos directement en dessous — <b>aucun compte nécessaire</b>.</p>
-      <div class="field" style="margin-bottom:18px"><label>Votre nom</label><input class="inp" id="shrAuthor" placeholder="Ex : Studio Lumen" value="${esc(d.vendor_name||'')}"></div>
+      <div class="field"><label>Votre nom</label><input class="inp" id="shrAuthor" placeholder="Ex : Studio Lumen" value="${esc(d.vendor_name||'')}"></div>
+      <div class="field" style="margin-bottom:18px"><label>Votre courriel <span class="hint">facultatif — pour être averti quand on vous répond</span></label>
+        <input class="inp" id="shrEmail" type="email" placeholder="vous@exemple.com" value="${esc(d.vendor_email||'')}"></div>
       <div class="shr-items" style="grid-template-columns:1fr">
         ${items.length?items.map(it=>{const msgs=byItem[it.id]||[];return `<div class="shr-item">
           ${it.img?`<img src="${it.img}" alt="">`:''}
@@ -4808,15 +4815,20 @@ async function renderSharedSpace(token){
     const sendBtn=document.querySelector(`[data-shrsend="${it.id}"]`);
     if(sendBtn)sendBtn.onclick=async()=>{
       const author=($('shrAuthor')?$('shrAuthor').value:'').trim();
+      const email=($('shrEmail')?$('shrEmail').value:'').trim();
       const ta=document.querySelector(`[data-shrbody="${it.id}"]`);
       const body=(ta?ta.value:'').trim();
       const img=pendingImg[it.id]||'';
       if(!body&&!img){toast('Écrivez un message');return;}
       sendBtn.disabled=true;sendBtn.textContent='Envoi…';
-      const {error}=await sb.rpc('add_contribution',{p_token:token,p_author:author,p_body:body,p_item_id:it.id,p_image:img});
+      const {error}=await sb.rpc('add_contribution',{p_token:token,p_author:author,p_body:body,p_item_id:it.id,p_image:img,p_vendor_email:email});
       if(error){sendBtn.disabled=false;sendBtn.textContent='Envoyer';toast('Envoi impossible');return;}
       delete pendingImg[it.id];
       toast('Message envoyé');
+      // Avertit l'organisateur par courriel — jamais bloquant si ça échoue
+      // (le message est déjà enregistré).
+      sb.functions.invoke('notify-space-message',{body:{
+        p_token:token,p_item_id:it.id,p_source:'vendor',p_author:author,p_body:body}}).catch(()=>{});
       renderSharedSpace(token);
     };
   });
