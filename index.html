@@ -655,12 +655,17 @@ footer{background:var(--navy-ink);color:rgba(255,255,255,.6);padding:44px 0 30px
 .iv.iv-wide{max-width:1140px}
 .iv-wide .iv-card.ms-site{border-radius:0;box-shadow:none}
 .iv-wide .ms-sec,.iv-wide .ms-nohero,.iv-wide .ms-slide{max-width:760px;margin-left:auto;margin-right:auto}
-.iv-wide .ms-hero-txt{max-width:900px;margin:0 auto;padding-left:40px;padding-right:40px}
-/* La photo d'en-tête a besoin de hauteur pour ne pas couper les visages : une
-   bannière basse (comme sur une carte étroite) écrase n'importe quelle photo
-   une fois étirée sur toute la largeur de l'écran. */
-.iv-wide .ms-hero{min-height:clamp(420px,56vw,640px)}
-.iv-wide .ms-hero img{object-position:center 28%}
+/* La photo d'en-tête s'adapte à sa propre forme plutôt que d'être découpée :
+   peu importe si elle est carrée, portrait ou panoramique, elle s'affiche en
+   entier (comme une vraie bannière de site), et la légende passe dans un
+   bandeau SOUS la photo plutôt qu'écrite dessus — ça marche avec n'importe
+   quelle photo, alors qu'un texte en surimpression dépend trop de la couleur
+   de l'image en dessous. */
+.iv-wide .ms-hero{position:static;display:block;min-height:0;background:none}
+.iv-wide .ms-hero::after{content:none}
+.iv-wide .ms-hero img{position:static;width:100%;height:auto;max-height:78vh;object-fit:contain;background:var(--ivtop)}
+.iv-wide .ms-hero-txt{position:static;z-index:auto;color:var(--ivtoptxt);background:var(--ivtop);
+  max-width:900px;margin:0 auto;padding:30px 40px 34px}
 .iv-wide .ms-hero-txt h1{font-size:clamp(26px,3.4vw,40px)}
 .iv-wide .ms-nohero{padding:64px 26px 10px}
 .iv-wide .ms-nohero h1{font-size:clamp(26px,3.4vw,40px)!important}
@@ -668,8 +673,7 @@ footer{background:var(--navy-ink);color:rgba(255,255,255,.6);padding:44px 0 30px
 @media(max-width:800px){
   .iv.iv-wide{max-width:600px}
   .iv-wide .ms-sec,.iv-wide .ms-nohero,.iv-wide .ms-hero-txt,.iv-wide .ms-slide{max-width:none;padding-left:26px;padding-right:26px}
-  .iv-wide .ms-hero{min-height:300px}
-  .iv-wide .ms-hero img{object-position:center}
+  .iv-wide .ms-hero img{max-height:60vh}
   #invite.iv-site-page{padding:0 0 40px}
 }
 .iv-top{padding:34px 30px 30px;text-align:center;color:#fff;position:relative;overflow:hidden}
@@ -1973,7 +1977,7 @@ function evData(e){
     paid:!!e.paid,price:e.price||0,interac:e.interac||'',contact:e.contact||'',
     theme:e.theme||'royal',visual:e.visual||'',visualFull:e.visualFull!==false,
     hotels:e.hotels||[],vendors:e.vendors||[],budgetItems:e.budgetItems||[],inspo:e.inspo||[],spaces:e.spaces||null,
-    format:e.format||'carte',story:e.story||'',gallery:e.gallery||[],venueAddress:e.venueAddress||'',
+    format:e.format||'carte',story:e.story||'',storyTitle:e.storyTitle||'',gallery:e.gallery||[],venueAddress:e.venueAddress||'',
     gift:e.gift||{text:'',link:''},faq:e.faq||[],dresscode:e.dresscode||'',menu:e.menu||'',showCountdown:e.showCountdown!==false,
     msStyle:e.msStyle||'classique',p1Name:e.p1Name||'',p1Story:e.p1Story||'',p2Name:e.p2Name||'',p2Story:e.p2Story||'',
     msAutoplay:!!e.msAutoplay,msAutoplaySecs:e.msAutoplaySecs||6};
@@ -3570,6 +3574,13 @@ function paintDesign(){
       <div class="box">
         <h3>Notre histoire</h3>
         <p class="empty" style="padding-top:0">Racontez en quelques lignes comment vous vous êtes rencontrés — ça personnalise beaucoup la page.</p>
+        <div class="field"><label>Titre de cette section</label>
+          <input class="inp" id="msStoryTitle" value="${esc(EV.storyTitle||'')}" placeholder="Notre histoire"></div>
+        <div class="ms-title-chips" style="display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 12px">
+          ${['Notre histoire','Comment tout a commencé','Notre parcours','Un peu de nous','Avant le grand jour','Deux mots sur nous'].map(t=>
+            `<button type="button" class="mini-btn" data-storytitle-pick="${esc(t)}" style="font-size:12px">${esc(t)}</button>`).join('')}
+        </div>
+        <p class="empty" style="padding-top:0">Pas obligé d'écrire « notre histoire » si ça vous gêne — un titre plus pudique comme « Un peu de nous » fonctionne tout aussi bien.</p>
         <textarea class="inp" id="msStory" placeholder="Ex : Tout a commencé en 2019, dans une file d'attente..." style="min-height:110px">${esc(EV.story||'')}</textarea>
       </div>
       <div class="box">
@@ -3641,6 +3652,8 @@ function paintDesign(){
     if(b.dataset.lockth){toast('Cette palette fait partie de l’abonnement '+PLANS[upTo('themes')].n);return;}
     EV.theme=b.dataset.th;save();paintDesign();toast('Palette « '+IVTHEMES[EV.theme].n+' » appliquée');});
   if($('msStory'))$('msStory').oninput=e=>{EV.story=e.target.value;save();};
+  if($('msStoryTitle'))$('msStoryTitle').oninput=e=>{EV.storyTitle=e.target.value;save();};
+  document.querySelectorAll('[data-storytitle-pick]').forEach(b=>b.onclick=()=>{EV.storyTitle=b.dataset.storytitlePick;save();paintDesign();});
   if($('msAddr'))$('msAddr').oninput=e=>{EV.venueAddress=e.target.value;save();};
   if($('msGalFile'))$('msGalFile').onchange=e=>{
     const f=e.target.files&&e.target.files[0];if(!f)return;
@@ -3669,7 +3682,7 @@ function invPayload(g){
     tb:sl?sl.t:'',s:sl?sl.s:'',p:(EV.program||[]).filter(x=>x.l).map(x=>[x.t,x.l]),
     a:EV.paid?EV.price:0,ia:EV.interac||'',th:EV.theme||'royal',im:EV.visual||'',nf:EV.visualFull!==false?1:0,
     ho:(EV.hotels||[]).filter(h=>(h.name||'').trim()),
-    fmt:EV.format||'carte',story:EV.story||'',gal:EV.gallery||[],va:EV.venueAddress||'',
+    fmt:EV.format||'carte',story:EV.story||'',st:EV.storyTitle||'',gal:EV.gallery||[],va:EV.venueAddress||'',
     gift:EV.gift||{text:'',link:''},faq:(EV.faq||[]).filter(x=>x.q),dc:EV.dresscode||'',mn:EV.menu||'',cd:EV.showCountdown!==false,
     ms:EV.msStyle||'classique',p1n:EV.p1Name||'',p1s:EV.p1Story||'',p2n:EV.p2Name||'',p2s:EV.p2Story||'',
     ap:EV.msAutoplay?1:0,aps:EV.msAutoplaySecs||6};
@@ -4308,7 +4321,7 @@ function miniSiteHTML(d,opts){
         <div><b id="msCdM">00</b><span>min</span></div>
         <div><b id="msCdS">00</b><span>sec</span></div>
       </div></div>`:''}
-    ${d.story?`<div class="ms-sec ms-story"><h2>Notre histoire</h2><p>${esc(d.story)}</p></div>`:''}
+    ${d.story?`<div class="ms-sec ms-story"><h2>${esc(d.st||'Notre histoire')}</h2><p>${esc(d.story)}</p></div>`:''}
     ${(d.p&&d.p.length)?`<div class="ms-sec"><h2>Déroulé de la soirée</h2>
       <div class="iv-prog" style="margin:0">${d.p.map(x=>`<div class="p"><b>${esc(x[0])}</b><span>${esc(x[1])}</span></div>`).join('')}</div></div>`:''}
     ${(d.v||d.va)?`<div class="ms-sec"><h2>Lieu &amp; itinéraire</h2>
@@ -4361,7 +4374,7 @@ function msTail(d,opts){
   const faq=(d.faq||[]).filter(x=>x.q);
   const gift=d.gift||{};
   return `
-    ${(opts.includeStory!==false&&d.story)?`<div class="ms-sec ms-story"><h2>Notre histoire</h2><p>${esc(d.story)}</p></div>`:''}
+    ${(opts.includeStory!==false&&d.story)?`<div class="ms-sec ms-story"><h2>${esc(d.st||'Notre histoire')}</h2><p>${esc(d.story)}</p></div>`:''}
     ${(d.p&&d.p.length)?`<div class="ms-sec"><h2>Déroulé de la soirée</h2>
       <div class="iv-prog" style="margin:0">${d.p.map(x=>`<div class="p"><b>${esc(x[0])}</b><span>${esc(x[1])}</span></div>`).join('')}</div></div>`:''}
     ${(d.v||d.va)?`<div class="ms-sec"><h2>Lieu &amp; itinéraire</h2>
@@ -4458,7 +4471,7 @@ function histoireSiteHTML(d,opts){
     ${d.p2s?`<p>${esc(d.p2s)}</p>`:''}
   </div>`);
   if(d.story)slides.push(`<div class="ms-slide">
-    <div class="eyebrow2">Comment tout a commencé</div>
+    <div class="eyebrow2">${esc(d.st||'Comment tout a commencé')}</div>
     <p>${esc(d.story)}</p>
   </div>`);
   if(d.cd&&d.d)slides.push(`<div class="ms-slide">
@@ -4509,7 +4522,7 @@ async function renderInvite(token){
     a:evd.paid?evd.price:0,ia:evd.interac||'',th:evd.theme||'royal',
     im:evd.visual||'',nf:evd.visualFull!==false?1:0,
     ho:(evd.hotels||[]).filter(h=>(h.name||'').trim()),
-    fmt:evd.format||'carte',story:evd.story||'',gal:evd.gallery||[],va:evd.venueAddress||'',
+    fmt:evd.format||'carte',story:evd.story||'',st:evd.storyTitle||'',gal:evd.gallery||[],va:evd.venueAddress||'',
     gift:evd.gift||{text:'',link:''},faq:(evd.faq||[]).filter(x=>x.q),dc:evd.dresscode||'',mn:evd.menu||'',cd:evd.showCountdown!==false,
     ms:evd.msStyle||'classique',p1n:evd.p1Name||'',p1s:evd.p1Story||'',p2n:evd.p2Name||'',p2s:evd.p2Story||'',
     ap:evd.msAutoplay?1:0,aps:evd.msAutoplaySecs||6};
