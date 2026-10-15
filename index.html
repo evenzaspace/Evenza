@@ -715,6 +715,31 @@ footer{background:var(--navy-ink);color:rgba(255,255,255,.6);padding:44px 0 30px
 .ms-faq details:last-child{border-bottom:none}
 .ms-faq summary{font-size:14.5px;font-weight:600;color:var(--ivink);cursor:pointer}
 .ms-faq p{font-size:13.5px;color:var(--ivmut);margin-top:8px;line-height:1.6}
+/* ---- Mini site, sous-style « Histoire » (diaporama façon carnet) ---- */
+.ms-histoire{padding-bottom:0}
+.ms-slides{scroll-snap-type:y proximity;scroll-behavior:smooth}
+.ms-slide{scroll-snap-align:start;min-height:420px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:42px 28px;position:relative;gap:14px}
+.ms-slide+.ms-slide{border-top:1px solid var(--ivline)}
+.ms-slide .eyebrow2{font-family:var(--font-mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--ivacc)}
+.ms-slide h2{font-family:var(--font-display);font-size:25px;font-weight:700;color:var(--ivink);line-height:1.2;max-width:320px;margin:0}
+.ms-slide p{font-size:14.5px;line-height:1.7;color:var(--ivink);max-width:320px;white-space:pre-wrap;margin:0}
+.ms-slide .doodle{color:var(--ivacc);opacity:.8}
+.ms-polaroid{background:#fff;border-radius:3px;padding:10px 10px 30px;box-shadow:0 10px 26px rgba(0,0,0,.18);transform:rotate(-2deg);max-width:230px;margin:0 auto}
+.ms-polaroid img{width:100%;aspect-ratio:4/5;object-fit:cover;display:block;border-radius:1px}
+.ms-dots{display:flex;gap:6px;justify-content:center}
+.ms-dots i{width:7px;height:7px;border-radius:50%;background:var(--ivacc);display:block}
+.ms-apctl{display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 26px 22px;font-size:12px;color:var(--ivmut)}
+/* ---- Mini site, sous-style « Compte à rebours » ---- */
+.ms-cd-hero{text-align:center;padding-top:26px}
+.ms-cd-hero .ms-cd{max-width:420px;margin:0 auto}
+.ms-cd.big div{padding:18px 4px}
+.ms-cd.big b{font-size:28px}
+/* ---- Sélecteur de sous-style (éditeur) ---- */
+.ms-style-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px}
+.ms-style-pick{border:1.5px solid var(--line);background:#fff;border-radius:14px;padding:13px;text-align:left;display:flex;flex-direction:column;gap:3px}
+.ms-style-pick b{font-size:14px;color:var(--navy)}
+.ms-style-pick span{font-size:12px;color:var(--muted);line-height:1.4}
+.ms-style-pick.sel{border-color:var(--navy);background:var(--gray)}
 /* ---- Lignes hébergements/prestataires dans les réglages ---- */
 .lodge-row{border:1px solid var(--line);border-radius:12px;padding:13px;margin-bottom:10px;background:var(--gray)}
 
@@ -1028,6 +1053,7 @@ footer{background:var(--navy-ink);color:rgba(255,255,255,.6);padding:44px 0 30px
 @media(max-width:820px){.kpis{grid-template-columns:repeat(2,1fr)}}
 .cols2{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
 @media(max-width:900px){.cols2{grid-template-columns:1fr}}
+@media(max-width:640px){.ms-style-grid{grid-template-columns:1fr}}
 .song{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px}
 .song:last-child{border-bottom:none}
 .song b{font-weight:600;color:var(--navy)}
@@ -1923,7 +1949,9 @@ function evData(e){
     theme:e.theme||'royal',visual:e.visual||'',visualFull:e.visualFull!==false,
     hotels:e.hotels||[],vendors:e.vendors||[],budgetItems:e.budgetItems||[],inspo:e.inspo||[],spaces:e.spaces||null,
     format:e.format||'carte',story:e.story||'',gallery:e.gallery||[],venueAddress:e.venueAddress||'',
-    gift:e.gift||{text:'',link:''},faq:e.faq||[],dresscode:e.dresscode||'',menu:e.menu||'',showCountdown:e.showCountdown!==false};
+    gift:e.gift||{text:'',link:''},faq:e.faq||[],dresscode:e.dresscode||'',menu:e.menu||'',showCountdown:e.showCountdown!==false,
+    msStyle:e.msStyle||'classique',p1Name:e.p1Name||'',p1Story:e.p1Story||'',p2Name:e.p2Name||'',p2Story:e.p2Story||'',
+    msAutoplay:!!e.msAutoplay,msAutoplaySecs:e.msAutoplaySecs||6};
 }
 function rowToGuest(r){
   return {id:r.id,token:r.token,name:r.name,contact:r.contact||'',seat:r.seat||null,
@@ -3429,6 +3457,8 @@ function paintDesign(){
   const cur=EV.theme||'royal';
   const fmt=EV.format||'carte';
   const isSite=fmt==='site';
+  const msStyle=EV.msStyle||'classique';
+  const isHistoire=isSite&&msStyle==='histoire';
   const sample=(EV.list||[])[0]||{name:EV.kind==='mariage'?'Jean-Sébastien Roy':'Marie Lambert',seat:null};
   const d=Object.assign(invPayload(sample),{th:cur});
   const gal=EV.gallery||[];
@@ -3476,10 +3506,42 @@ function paintDesign(){
       <button class="${fmt==='site'?'sel':''}" data-fmt="site">Mini site</button>
     </div>
   </div>
+  ${isSite?`
+  <div class="box" style="margin-bottom:16px">
+    <h3>Style du mini site</h3>
+    <p class="empty" style="padding-top:0">Trois façons de présenter le même contenu — vous pouvez changer d'avis à tout moment.</p>
+    <div class="ms-style-grid">
+      <button class="ms-style-pick${msStyle==='classique'?' sel':''}" data-msstyle="classique"><b>Classique</b><span>Une page qui défile, section par section.</span></button>
+      <button class="ms-style-pick${msStyle==='histoire'?' sel':''}" data-msstyle="histoire"><b>Histoire</b><span>Un diaporama façon carnet : « il était une fois… »</span></button>
+      <button class="ms-style-pick${msStyle==='decompte'?' sel':''}" data-msstyle="decompte"><b>Compte à rebours</b><span>Le décompte avant le jour J, bien en vue.</span></button>
+    </div>
+  </div>`:''}
   <div class="cols2">
     ${isSite?`
     <div style="display:flex;flex-direction:column;gap:16px">
       ${paletteBox}
+      ${isHistoire?`
+      <div class="box">
+        <h3>Il était une fois… <em>premier portrait</em></h3>
+        <p class="empty" style="padding-top:0">Un court portrait de l'un des mariés, comme une page de carnet.</p>
+        <div class="field"><label>Prénom</label><input class="inp" id="msP1Name" value="${esc(EV.p1Name||'')}" placeholder="Ex : Léa"></div>
+        <div class="field" style="margin-top:8px;margin-bottom:0"><label>Quelques mots</label>
+          <textarea class="inp" id="msP1Story" placeholder="Ex : toujours le nez dans les livres, rêveuse, douce." style="min-height:70px">${esc(EV.p1Story||'')}</textarea></div>
+      </div>
+      <div class="box">
+        <h3>Il était une fois… <em>deuxième portrait</em></h3>
+        <div class="field"><label>Prénom</label><input class="inp" id="msP2Name" value="${esc(EV.p2Name||'')}" placeholder="Ex : Tom"></div>
+        <div class="field" style="margin-top:8px;margin-bottom:0"><label>Quelques mots</label>
+          <textarea class="inp" id="msP2Story" placeholder="Ex : fan de dinosaures, de vélo et de ballon rond !" style="min-height:70px">${esc(EV.p2Story||'')}</textarea></div>
+      </div>
+      <div class="box">
+        <h3>Animation</h3>
+        <label class="chkline"><input type="checkbox" id="msApOn" ${EV.msAutoplay?'checked':''}>
+          <span>Faire défiler les pages toutes seules</span></label>
+        ${EV.msAutoplay?`<div class="field" style="margin-top:10px;margin-bottom:0"><label>Secondes par page</label>
+          <input class="inp" id="msApSecs" type="number" min="3" max="20" value="${esc(EV.msAutoplaySecs||6)}" style="max-width:110px"></div>`
+          :`<p class="empty" style="padding-top:6px">Sinon, l'invité fait défiler du doigt, comme une page normale.</p>`}
+      </div>`:''}
       <div class="box">
         <h3>Notre histoire</h3>
         <p class="empty" style="padding-top:0">Racontez en quelques lignes comment vous vous êtes rencontrés — ça personnalise beaucoup la page.</p>
@@ -3534,7 +3596,15 @@ function paintDesign(){
   </div>`;
   bindLocks(paintDesign);
   startCountdown(d);
+  startHistoireAutoplay(d);
   document.querySelectorAll('[data-fmt]').forEach(b=>b.onclick=()=>{EV.format=b.dataset.fmt;save();paintDesign();});
+  document.querySelectorAll('[data-msstyle]').forEach(b=>b.onclick=()=>{EV.msStyle=b.dataset.msstyle;save();paintDesign();});
+  if($('msP1Name'))$('msP1Name').oninput=e=>{EV.p1Name=e.target.value;save();};
+  if($('msP1Story'))$('msP1Story').oninput=e=>{EV.p1Story=e.target.value;save();};
+  if($('msP2Name'))$('msP2Name').oninput=e=>{EV.p2Name=e.target.value;save();};
+  if($('msP2Story'))$('msP2Story').oninput=e=>{EV.p2Story=e.target.value;save();};
+  if($('msApOn'))$('msApOn').onchange=e=>{EV.msAutoplay=e.target.checked;save();paintDesign();};
+  if($('msApSecs'))$('msApSecs').oninput=e=>{EV.msAutoplaySecs=Math.max(3,Math.min(20,+e.target.value||6));save();startHistoireAutoplay(Object.assign({},d,{ap:EV.msAutoplay?1:0,aps:EV.msAutoplaySecs}));};
   if($('visFile'))$('visFile').onchange=e=>{
     const f=e.target.files&&e.target.files[0];if(!f)return;
     toast('Traitement de l’image…');
@@ -3575,7 +3645,9 @@ function invPayload(g){
     a:EV.paid?EV.price:0,ia:EV.interac||'',th:EV.theme||'royal',im:EV.visual||'',nf:EV.visualFull!==false?1:0,
     ho:(EV.hotels||[]).filter(h=>(h.name||'').trim()),
     fmt:EV.format||'carte',story:EV.story||'',gal:EV.gallery||[],va:EV.venueAddress||'',
-    gift:EV.gift||{text:'',link:''},faq:(EV.faq||[]).filter(x=>x.q),dc:EV.dresscode||'',mn:EV.menu||'',cd:EV.showCountdown!==false};
+    gift:EV.gift||{text:'',link:''},faq:(EV.faq||[]).filter(x=>x.q),dc:EV.dresscode||'',mn:EV.menu||'',cd:EV.showCountdown!==false,
+    ms:EV.msStyle||'classique',p1n:EV.p1Name||'',p1s:EV.p1Story||'',p2n:EV.p2Name||'',p2s:EV.p2Story||'',
+    ap:EV.msAutoplay?1:0,aps:EV.msAutoplaySecs||6};
 }
 function inviteLink(g){return baseURL()+'#/i/'+g.token;}
 function sentCount(){return (EV.list||[]).filter(g=>g.sent).length;}
@@ -4135,8 +4207,35 @@ function inviteHTML(d,opts){
     </div></div>`;
 }
 // Choisit le rendu selon le format de l'invitation (carte classique ou mini site)
-function inviteBody(d,opts){return d.fmt==='site'?miniSiteHTML(d,opts):inviteHTML(d,opts);}
+function inviteBody(d,opts){
+  if(d.fmt!=='site')return inviteHTML(d,opts);
+  if(d.ms==='histoire')return histoireSiteHTML(d,opts);
+  if(d.ms==='decompte')return decompteSiteHTML(d,opts);
+  return miniSiteHTML(d,opts);
+}
 function msMapURL(addr){return 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(addr);}
+let msApTimer=null,msApLast=0;
+// Fait défiler automatiquement les pages du format « Histoire » — seulement si
+// les mariés l'ont activé dans l'éditeur. S'interrompt pendant quelques
+// secondes dès que l'invité touche/scrolle lui-même la page.
+function startHistoireAutoplay(d){
+  if(msApTimer){clearInterval(msApTimer);msApTimer=null;}
+  if(!d||!d.ap)return;
+  const secs=Math.max(3,+d.aps||6);
+  let idx=0;
+  const el0=document.getElementById('msSlides');
+  if(el0&&!el0.dataset.apBound){
+    el0.dataset.apBound='1';
+    ['wheel','touchstart','pointerdown'].forEach(ev=>el0.addEventListener(ev,()=>{msApLast=Date.now();},{passive:true}));
+  }
+  msApTimer=setInterval(()=>{
+    const el=document.getElementById('msSlides');if(!el)return;
+    if(Date.now()-msApLast<secs*1000)return;
+    const slides=el.querySelectorAll('.ms-slide');if(!slides.length)return;
+    idx=(idx+1)%slides.length;
+    slides[idx].scrollIntoView({behavior:'smooth',block:'start'});
+  },secs*1000);
+}
 let msCdTimer=null;
 function startCountdown(d){
   if(msCdTimer){clearInterval(msCdTimer);msCdTimer=null;}
@@ -4223,6 +4322,141 @@ function miniSiteHTML(d,opts){
       <div id="replyOut"></div></div>`}
     </div>`;
 }
+// Petits motifs décoratifs réutilisés par le format « Histoire » (génériques,
+// pas liés à un thème en particulier — comme ornament() pour la carte classique).
+function sparkleDoodle(){return `<svg class="doodle" width="40" height="40" viewBox="0 0 40 40" fill="none" aria-hidden="true"><path d="M20 4c1 6 3 8 9 9-6 1-8 3-9 9-1-6-3-8-9-9 6-1 8-3 9-9Z" fill="currentColor"/><circle cx="33" cy="30" r="2" fill="currentColor"/><circle cx="7" cy="12" r="1.6" fill="currentColor"/></svg>`;}
+function thoughtDoodle(){return `<svg class="doodle" width="46" height="34" viewBox="0 0 46 34" fill="none" aria-hidden="true"><ellipse cx="24" cy="13" rx="17" ry="11" stroke="currentColor" stroke-width="1.6"/><circle cx="9" cy="27" r="3" stroke="currentColor" stroke-width="1.6"/><circle cx="4" cy="32" r="1.6" stroke="currentColor" stroke-width="1.4"/></svg>`;}
+// Sections communes aux trois sous-styles de mini site : déroulé, lieu,
+// hébergements, galerie, cadeaux, bon à savoir, FAQ, paiement et RSVP.
+// opts.includeStory=false omet le bloc « Notre histoire » (le format Histoire
+// la montre déjà comme une page à part, en plus grand).
+function msTail(d,opts){
+  opts=opts||{};
+  const gal=(d.gal||[]).slice(0,6);
+  const faq=(d.faq||[]).filter(x=>x.q);
+  const gift=d.gift||{};
+  return `
+    ${(opts.includeStory!==false&&d.story)?`<div class="ms-sec ms-story"><h2>Notre histoire</h2><p>${esc(d.story)}</p></div>`:''}
+    ${(d.p&&d.p.length)?`<div class="ms-sec"><h2>Déroulé de la soirée</h2>
+      <div class="iv-prog" style="margin:0">${d.p.map(x=>`<div class="p"><b>${esc(x[0])}</b><span>${esc(x[1])}</span></div>`).join('')}</div></div>`:''}
+    ${(d.v||d.va)?`<div class="ms-sec"><h2>Lieu &amp; itinéraire</h2>
+      <div class="ms-map"><div><b style="display:block;color:var(--ivink);font-size:15px;margin-bottom:3px">${esc(d.v||'')}</b>
+        ${d.va?`<span style="color:var(--ivmut);font-size:13.5px">${esc(d.va)}</span>`:''}</div>
+        <a href="${msMapURL(d.va||d.v)}" target="_blank" rel="noopener">Ouvrir dans Maps →</a></div></div>`:''}
+    ${(d.ho&&d.ho.length)?`<div class="ms-sec"><h2>Où loger&nbsp;?</h2>
+      <div class="iv-lodge">${d.ho.map(h=>`<div class="lodge">
+        <b>${esc(h.name)}</b>${h.price?`<span class="lodge-price">${esc(h.price)}</span>`:''}
+        ${h.addr?`<small>${esc(h.addr)}</small>`:''}
+        ${h.url?`<a href="${esc(h.url)}" target="_blank" rel="noopener" class="lodge-link">Réserver →</a>`:''}
+      </div>`).join('')}</div></div>`:''}
+    ${gal.length?`<div class="ms-sec"><h2>Galerie</h2><div class="ms-gal">${gal.map(u=>`<img src="${u}" alt="">`).join('')}</div></div>`:''}
+    ${(gift.text||gift.link)?`<div class="ms-sec"><h2>Liste de cadeaux</h2>
+      <div class="ms-gift">${gift.text?esc(gift.text).replace(/\n/g,'<br>'):''}
+        ${gift.link?`<a href="${esc(gift.link)}" target="_blank" rel="noopener">Voir la liste →</a>`:''}</div></div>`:''}
+    ${(d.dc||d.mn)?`<div class="ms-sec"><h2>Bon à savoir</h2>
+      <div class="ms-info">
+        ${d.dc?`<div><b>Code vestimentaire</b><span>${esc(d.dc)}</span></div>`:''}
+        ${d.mn?`<div><b>Menu</b><span>${esc(d.mn)}</span></div>`:''}
+      </div></div>`:''}
+    ${faq.length?`<div class="ms-sec ms-faq"><h2>Questions fréquentes</h2>
+      ${faq.map(x=>`<details><summary>${esc(x.q)}</summary><p>${esc(x.a||'')}</p></details>`).join('')}</div>`:''}
+    ${d.a>0?`<div class="ms-sec"><div class="paybox">Une participation de <b>${money(d.a)}</b> est demandée par personne.
+      <div class="v"><b>${esc(d.ia||'—')}</b>${opts.preview?'':'<button id="cpIa">Copier</button>'}</div>
+      Envoyez-la par virement Interac en indiquant votre nom dans le message.</div></div>`:''}
+    ${opts.preview?'':`<div class="ms-sec">
+      <h2 style="margin-bottom:12px">Serez-vous des nôtres&nbsp;?</h2>
+      <div class="rsvp"><button id="rYes">Je serai là</button><button id="rNo">Je ne pourrai pas</button></div>
+      <div id="songWrap" style="display:none">
+        <div class="field"><label>Avez-vous des allergies ou restrictions alimentaires&nbsp;? <span class="hint">facultatif</span></label>
+          <input class="inp" id="alrg" placeholder="Ex : arachides, sans gluten, végétarien…"></div>
+        <div class="field"><label>Une chanson pour le DJ <span class="hint">facultatif</span></label><input class="inp" id="m1" placeholder="Artiste — Titre"></div>
+        <div class="field"><label>Une deuxième&nbsp;?</label><input class="inp" id="m2" placeholder="Artiste — Titre"></div></div>
+      <button class="btn btn-navy" id="sendReply" style="width:100%;margin-top:6px" disabled>Envoyer ma réponse</button>
+      <div id="replyOut"></div></div>`}`;
+}
+// Sous-style « Compte à rebours » : même contenu que le mini site classique,
+// mais le décompte passe en premier plan, juste sous la photo d'en-tête.
+function decompteSiteHTML(d,opts){
+  opts=opts||{};
+  const th=d.th&&IVTHEMES[d.th]?d.th:'royal';
+  const when=fmtDate(d.d)+(d.t?' · '+fmtTime(d.t):'');
+  const isCeleb=d.k==='anniversaire';
+  return `<div class="iv-card ms-site ms-decompte th-${th}">
+    ${d.im?`<div class="ms-hero"><img src="${d.im}" alt=""><div class="ms-hero-txt">
+        <div class="ms-eyebrow">${isCeleb?'Invitation':'Vous êtes convié·e'}</div>
+        <h1>${esc(d.n||'Votre événement')}</h1>
+        <p>${esc(when)}${d.v?' · '+esc(d.v):''}</p></div></div>`
+      :`<div class="ms-nohero">
+        <div class="ms-eyebrow" style="color:var(--ivacc)">${isCeleb?'Invitation':'Vous êtes convié·e'}</div>
+        <h1 style="font-family:var(--font-display);font-size:26px;color:var(--ivink);margin:8px 0">${esc(d.n||'Votre événement')}</h1>
+        <p style="color:var(--ivmut);font-size:14px">${esc(when)}${d.v?' · '+esc(d.v):''}</p></div>`}
+    ${(d.cd&&d.d)?`<div class="ms-sec ms-cd-hero">
+      <p style="color:var(--ivmut);font-size:12.5px;text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px">Compte à rebours</p>
+      <div class="ms-cd big" id="msCd">
+        <div><b id="msCdD">00</b><span>jours</span></div>
+        <div><b id="msCdH">00</b><span>heures</span></div>
+        <div><b id="msCdM">00</b><span>min</span></div>
+        <div><b id="msCdS">00</b><span>sec</span></div>
+      </div></div>`:''}
+    <div class="ms-sec" style="text-align:center">
+      <p style="color:var(--ivmut);font-size:13px;text-transform:uppercase;letter-spacing:.06em">Invitation pour</p>
+      <div class="who big" style="color:var(--ivink)">${esc(d.g||'Votre invité')}</div>
+      ${d.tb?`<div class="iv-seat" style="display:inline-block;margin-top:10px"><span>Votre place</span><b>${esc(d.tb)} · ${esc(d.s)}</b></div>`:''}
+    </div>
+    ${msTail(d,opts)}
+    </div>`;
+}
+// Sous-style « Histoire » : un diaporama façon carnet — une page de garde,
+// un portrait de chaque marié (« il était une fois… »), l'histoire du couple,
+// le compte à rebours, puis l'invité — avant d'enchaîner sur les sections
+// pratiques habituelles. Défilement au doigt, ou automatique si activé.
+function histoireSiteHTML(d,opts){
+  opts=opts||{};
+  const th=d.th&&IVTHEMES[d.th]?d.th:'royal';
+  const when=fmtDate(d.d)+(d.t?' · '+fmtTime(d.t):'');
+  const slides=[];
+  slides.push(`<div class="ms-slide">
+    ${sparkleDoodle()}
+    <div class="eyebrow2">Un voyage à deux</div>
+    <h2>L'histoire de<br>${esc(d.n||'notre mariage')}</h2>
+    ${d.im?`<div class="ms-polaroid"><img src="${d.im}" alt=""></div>`:''}
+    <div class="ms-dots">${[0,1,2,3].map(()=>'<i></i>').join('')}</div>
+  </div>`);
+  if(d.p1n||d.p1s)slides.push(`<div class="ms-slide">
+    ${thoughtDoodle()}
+    <h2>Il était une fois…<br>${esc(d.p1n||'elle')}</h2>
+    ${d.p1s?`<p>${esc(d.p1s)}</p>`:''}
+  </div>`);
+  if(d.p2n||d.p2s)slides.push(`<div class="ms-slide">
+    ${thoughtDoodle()}
+    <h2>Il était une fois…<br>${esc(d.p2n||'lui')}</h2>
+    ${d.p2s?`<p>${esc(d.p2s)}</p>`:''}
+  </div>`);
+  if(d.story)slides.push(`<div class="ms-slide">
+    <div class="eyebrow2">Comment tout a commencé</div>
+    <p>${esc(d.story)}</p>
+  </div>`);
+  if(d.cd&&d.d)slides.push(`<div class="ms-slide">
+    <div class="eyebrow2">À vos agendas</div>
+    <div class="ms-cd big" id="msCd">
+      <div><b id="msCdD">00</b><span>jours</span></div>
+      <div><b id="msCdH">00</b><span>heures</span></div>
+      <div><b id="msCdM">00</b><span>min</span></div>
+      <div><b id="msCdS">00</b><span>sec</span></div>
+    </div>
+  </div>`);
+  slides.push(`<div class="ms-slide">
+    <div class="eyebrow2">Invitation pour</div>
+    <h2>${esc(d.g||'Votre invité')}</h2>
+    <p>${esc(when)}${d.v?' · '+esc(d.v):''}</p>
+    ${d.tb?`<div class="iv-seat" style="display:inline-block"><span>Votre place</span><b>${esc(d.tb)} · ${esc(d.s)}</b></div>`:''}
+  </div>`);
+  return `<div class="iv-card ms-site ms-histoire th-${th}">
+    <div class="ms-slides" id="msSlides">${slides.join('')}</div>
+    ${d.ap?`<div class="ms-apctl">▸ défile automatiquement</div>`:''}
+    ${msTail(d,Object.assign({},opts,{includeStory:false}))}
+    </div>`;
+}
 
 /* ============================================================
    VUE INVITÉ (publique — lit et écrit dans la vraie base)
@@ -4251,9 +4485,12 @@ async function renderInvite(token){
     im:evd.visual||'',nf:evd.visualFull!==false?1:0,
     ho:(evd.hotels||[]).filter(h=>(h.name||'').trim()),
     fmt:evd.format||'carte',story:evd.story||'',gal:evd.gallery||[],va:evd.venueAddress||'',
-    gift:evd.gift||{text:'',link:''},faq:(evd.faq||[]).filter(x=>x.q),dc:evd.dresscode||'',mn:evd.menu||'',cd:evd.showCountdown!==false};
+    gift:evd.gift||{text:'',link:''},faq:(evd.faq||[]).filter(x=>x.q),dc:evd.dresscode||'',mn:evd.menu||'',cd:evd.showCountdown!==false,
+    ms:evd.msStyle||'classique',p1n:evd.p1Name||'',p1s:evd.p1Story||'',p2n:evd.p2Name||'',p2s:evd.p2Story||'',
+    ap:evd.msAutoplay?1:0,aps:evd.msAutoplaySecs||6};
   w.innerHTML=inviteBody(d,{});
   startCountdown(d);
+  startHistoireAutoplay(d);
   if($('cpIa'))$('cpIa').onclick=()=>copyText(d.ia,$('cpIa'),'Copier');
   if(gst.rsvp==='oui'||gst.rsvp==='non')showDone(gst.rsvp,true);
   const setR=v=>{ivR=v;$('rYes').className=v==='oui'?'sel-yes':'';$('rNo').className=v==='non'?'sel-no':'';
