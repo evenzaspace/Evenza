@@ -899,6 +899,23 @@ footer{background:var(--navy-ink);color:rgba(255,255,255,.6);padding:44px 0 30px
 .sp-contrib b{color:var(--navy);display:block;font-size:12.5px;margin-bottom:2px}
 .sp-contrib span{color:var(--text);line-height:1.5}
 .sp-contrib small{display:block;color:var(--muted);font-size:11px;margin-top:4px}
+/* ---- Conversation par idée (fil attaché à chaque idée partagée, utilisé
+   côté organisateur ET côté prestataire sur sa page publique) ---- */
+.sp-thread{border-top:1px solid var(--line);padding:10px 13px 12px;background:var(--gray)}
+.sp-msgs{display:flex;flex-direction:column;gap:7px;margin-bottom:8px}
+.sp-msg{background:#fff;border:1px solid var(--line);border-radius:9px;padding:8px 10px;font-size:13px}
+.sp-msg.mine{background:#EEF5FF;border-color:#D6E6FB}
+.sp-msg b{color:var(--navy);display:block;font-size:11.5px;margin-bottom:2px}
+.sp-msg span{color:var(--text);line-height:1.5;white-space:pre-wrap}
+.sp-msg img{max-width:100%;border-radius:7px;margin-top:6px;display:block}
+.sp-msg small{display:block;color:var(--muted);font-size:10.5px;margin-top:4px}
+.sp-compose{display:flex;flex-direction:column;gap:6px}
+.sp-compose textarea{min-height:46px;font-size:13px;padding:8px 10px}
+.sp-compose select{font-size:12.5px;padding:7px 10px}
+.sp-compose-row{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.sp-img-prev{position:relative;display:inline-block;margin-top:2px}
+.sp-img-prev img{max-width:140px;border-radius:8px;display:block}
+.sp-img-prev button{position:absolute;top:4px;right:4px;width:22px;height:22px;border-radius:50%;background:rgba(8,26,51,.72);color:#fff;font-size:13px}
 /* ---- Vue prestataire (espace partagé public) ---- */
 #share{background:var(--gray);min-height:100vh;padding:30px 18px 60px}
 .shr{max-width:600px;margin:0 auto}
@@ -2340,6 +2357,13 @@ const SPACE_DEFAULTS=[
 let openSpace=null; // id de l'espace ouvert, ou null pour la grille
 function ensureSpaces(){
   if(!EV.spaces){EV.spaces=SPACE_DEFAULTS.map(s=>({...s,items:[]}));save();}
+  // Compat : les idées créées avant la conversation par idée n'avaient pas
+  // d'identifiant stable (seulement leur position dans la liste) — on leur
+  // en donne un ici, pour que les messages s'y rattachent même si l'idée
+  // est déplacée ou qu'une nouvelle est ajoutée devant elle.
+  let changed=false;
+  EV.spaces.forEach(s=>{(s.items||[]).forEach(it=>{if(!it.id){it.id='it'+uid()+uid();changed=true;}});});
+  if(changed)save();
   return EV.spaces;
 }
 function paintEspaces(){
@@ -2406,28 +2430,25 @@ function paintSpaceDetail(sp){
   $('spAddImg').onclick=()=>$('spImgFile').click();
   $('spImgFile').onchange=e=>{const f=e.target.files&&e.target.files[0];if(!f)return;
     toast('Traitement de l\u2019image…');
-    compressImage(f,720,90000).then(url=>{sp.items.unshift({type:'img',img:url,note:'',price:''});save();paintSpaceDetail(sp);toast('Image ajoutée');})
+    compressImage(f,720,90000).then(url=>{sp.items.unshift({id:'it'+uid()+uid(),type:'img',img:url,note:'',price:''});save();paintSpaceDetail(sp);toast('Image ajoutée');})
       .catch(()=>toast('Image illisible'));};
-  $('spAddNote').onclick=()=>{sp.items.unshift({type:'note',img:'',note:'',price:''});save();paintSpaceDetail(sp);
+  $('spAddNote').onclick=()=>{sp.items.unshift({id:'it'+uid()+uid(),type:'note',img:'',note:'',price:''});save();paintSpaceDetail(sp);
     setTimeout(()=>{const t=document.querySelector('[data-sf="0:note"]');if(t)t.focus();},50);};
-  $('spAddLink').onclick=()=>{sp.items.unshift({type:'link',img:'',note:'',url:'',price:''});save();paintSpaceDetail(sp);
+  $('spAddLink').onclick=()=>{sp.items.unshift({id:'it'+uid()+uid(),type:'link',img:'',note:'',url:'',price:''});save();paintSpaceDetail(sp);
     setTimeout(()=>{const t=document.querySelector('[data-sf="0:url"]');if(t)t.focus();},50);};
   bindSpaceItems(sp);
   loadSpaceShares(sp);
+  loadSpaceThreads(sp);
 }
 async function loadSpaceShares(sp){
   if(!sb||!EV.id)return;
   const {data:shares}=await sb.from('space_shares').select('*').eq('event_id',EV.id).eq('space_id',sp.id).eq('active',true).order('created_at');
   const box=$('spSharesBox');if(!box)return;
   if(!shares||!shares.length){box.innerHTML='';return;}
-  // charger les contributions de chaque partage
-  const ids=shares.map(s=>s.id);
-  const {data:contribs}=await sb.from('space_contributions').select('*').in('share_id',ids).order('created_at');
-  const byShare={};(contribs||[]).forEach(c=>{(byShare[c.share_id]=byShare[c.share_id]||[]).push(c);});
   box.innerHTML=`<div class="box" style="margin-bottom:16px">
     <h3>Partagé avec <em>${int(shares.length)} prestataire${shares.length>1?'s':''}</em></h3>
-    ${shares.map(s=>{const cs=byShare[s.id]||[];
-      return `<div class="sp-share">
+    <p class="empty" style="padding-top:0">Chaque prestataire peut commenter vos idées ci-dessous — ses messages (et les vôtres) apparaissent directement sous chaque idée, avec le nom de chacun.</p>
+    ${shares.map(s=>`<div class="sp-share">
         <div class="sp-share-head">
           <span class="sp-share-role"><b>${esc(s.vendor_role||'Prestataire')}</b>${s.vendor_name?' · '+esc(s.vendor_name):''}</span>
           <span style="display:flex;gap:6px">
@@ -2435,17 +2456,88 @@ async function loadSpaceShares(sp){
             <button class="mini-btn danger" data-revoke="${s.id}">Révoquer</button>
           </span>
         </div>
-        ${cs.length?`<div class="sp-contribs">${cs.map(c=>`
-          <div class="sp-contrib"><b>${esc(c.author||'Prestataire')}</b><span>${esc(c.body)}</span><small>${ago(Date.parse(c.created_at))}</small></div>`).join('')}</div>`
-          :'<p class="empty" style="padding:6px 0 0">En attente d\u2019une réponse du prestataire…</p>'}
-      </div>`;}).join('')}
+      </div>`).join('')}
   </div>`;
   box.querySelectorAll('[data-copyshare]').forEach(b=>b.onclick=()=>{
     copyText(baseURL()+'#/s/'+b.dataset.copyshare,b,'Copier le lien');});
   box.querySelectorAll('[data-revoke]').forEach(b=>b.onclick=()=>{
     dialog({title:'Révoquer ce partage ?',body:'<p class="dlg-p">Le prestataire n\u2019aura plus accès à cet espace via son lien.</p>',
       ok:'Révoquer',danger:true,onOk:async()=>{await sb.from('space_shares').update({active:false}).eq('id',b.dataset.revoke);
-        loadSpaceShares(sp);toast('Partage révoqué');}});});
+        loadSpaceShares(sp);loadSpaceThreads(sp);toast('Partage révoqué');}});});
+}
+// Conversation par idée : récupère les messages de tous les prestataires
+// actifs de cet espace, les regroupe par idée (item_id), et affiche sous
+// chaque idée son propre fil + une zone pour répondre (texte + photo).
+// L'organisateur répond ici avec le nom de l'événement comme auteur ; si
+// plusieurs prestataires sont actifs sur le même espace, un menu permet de
+// choisir à qui la réponse s'adresse.
+async function loadSpaceThreads(sp){
+  if(!sb||!EV.id)return;
+  const {data:shares}=await sb.from('space_shares').select('id,vendor_role,vendor_name').eq('event_id',EV.id).eq('space_id',sp.id).eq('active',true).order('created_at');
+  const shareList=shares||[];
+  const vendorOf={};shareList.forEach(s=>{vendorOf[s.id]=s.vendor_name||s.vendor_role||'Prestataire';});
+  let contribs=[];
+  if(shareList.length){
+    const {data}=await sb.from('space_contributions').select('*').in('share_id',shareList.map(s=>s.id)).order('created_at');
+    contribs=data||[];
+  }
+  const byItem={};
+  contribs.forEach(c=>{const k=c.item_id||'';(byItem[k]=byItem[k]||[]).push(c);});
+  const pendingImg={};
+  sp.items.forEach(it=>{
+    const box=document.getElementById('thread-'+it.id);if(!box)return;
+    if(!shareList.length){
+      box.innerHTML='<p class="empty" style="padding:4px 0">Partagez cet espace avec un prestataire pour en discuter ici.</p>';
+      return;
+    }
+    const msgs=byItem[it.id]||[];
+    box.innerHTML=`
+      ${msgs.length?`<div class="sp-msgs">${msgs.map(m=>`
+        <div class="sp-msg${m.source==='organizer'?' mine':''}">
+          <b>${esc(m.author||(m.source==='organizer'?(EV.name||'Vous'):(vendorOf[m.share_id]||'Prestataire')))}</b>
+          ${m.body?`<span>${esc(m.body)}</span>`:''}
+          ${m.image?`<img src="${m.image}" alt="">`:''}
+          <small>${ago(Date.parse(m.created_at))}</small>
+        </div>`).join('')}</div>`:'<p class="empty" style="padding:4px 0">Aucun message pour l\u2019instant.</p>'}
+      <div class="sp-compose">
+        ${shareList.length>1?`<select class="inp" data-threadshare="${it.id}">
+          ${shareList.map(s=>`<option value="${s.id}">${esc(vendorOf[s.id])}</option>`).join('')}
+        </select>`:''}
+        <textarea class="inp" data-threadbody="${it.id}" placeholder="Répondre…"></textarea>
+        <div id="threadImgPrev-${it.id}"></div>
+        <div class="sp-compose-row">
+          <label class="mini-btn">📷<input type="file" accept="image/*" hidden data-threadimg="${it.id}"></label>
+          <button class="mini-btn" data-threadsend="${it.id}">Envoyer</button>
+        </div>
+      </div>`;
+    const fi=box.querySelector(`[data-threadimg="${it.id}"]`);
+    if(fi)fi.onchange=e=>{const f=e.target.files&&e.target.files[0];if(!f)return;
+      toast('Traitement de l\u2019image…');
+      compressImage(f,640,70000).then(url=>{
+        pendingImg[it.id]=url;
+        const prev=document.getElementById('threadImgPrev-'+it.id);
+        if(prev)prev.innerHTML=`<div class="sp-img-prev"><img src="${url}" alt=""><button data-threadimgx="${it.id}">×</button></div>`;
+        const x=box.querySelector(`[data-threadimgx="${it.id}"]`);
+        if(x)x.onclick=()=>{delete pendingImg[it.id];prev.innerHTML='';};
+      }).catch(()=>toast('Image illisible'));};
+    const sendBtn=box.querySelector(`[data-threadsend="${it.id}"]`);
+    if(sendBtn)sendBtn.onclick=async()=>{
+      const ta=box.querySelector(`[data-threadbody="${it.id}"]`);
+      const sel=box.querySelector(`[data-threadshare="${it.id}"]`);
+      const body=(ta?ta.value:'').trim();
+      const img=pendingImg[it.id]||'';
+      if(!body&&!img){toast('Écrivez un message');return;}
+      const shareId=sel?sel.value:shareList[0].id;
+      sendBtn.disabled=true;
+      const {error}=await sb.from('space_contributions').insert({
+        share_id:shareId,item_id:it.id,author:EV.name||'Vous',body,image:img,source:'organizer'});
+      sendBtn.disabled=false;
+      if(error){toast('Erreur : '+error.message);return;}
+      delete pendingImg[it.id];
+      toast('Message envoyé');
+      loadSpaceThreads(sp);
+    };
+  });
 }
 function shareSpaceDialog(sp){
   dialog({title:'Partager « '+sp.name+' » avec un prestataire',
@@ -2464,7 +2556,7 @@ function shareSpaceDialog(sp){
           <div class="code-out">${esc(link)}</div>`,
         ok:'Copier le lien',cancel:'Fermer',
         onOk:()=>{copyText(link);}});
-      if(openSpace)loadSpaceShares(sp);
+      if(openSpace){loadSpaceShares(sp);loadSpaceThreads(sp);}
     }});
 }
 function spaceItemCard(it,i){
@@ -2476,6 +2568,7 @@ function spaceItemCard(it,i){
       <div class="sp-price"><span>$</span><input class="inp" type="number" min="0" data-sf="${i}:price" value="${it.price||''}" placeholder="Prix"></div>
       <button class="sp-item-del" data-sdel="${i}">Supprimer</button>
     </div>
+    <div class="sp-thread" id="thread-${esc(it.id||'')}" data-item="${esc(it.id||'')}"><p class="empty" style="padding:4px 0">Chargement de la conversation…</p></div>
   </div>`;
 }
 function bindSpaceItems(sp){
@@ -4662,6 +4755,8 @@ async function renderSharedSpace(token){
     return;
   }
   const sp=d.space,items=sp.items||[],contribs=d.contributions||[];
+  const byItem={};contribs.forEach(c=>{const k=c.item_id||'';(byItem[k]=byItem[k]||[]).push(c);});
+  const pendingImg={};
   w.innerHTML=`
   <div class="shr-card">
     <div class="shr-top">
@@ -4670,36 +4765,61 @@ async function renderSharedSpace(token){
       <p>${esc(d.event_name||'')}</p>
     </div>
     <div class="shr-body">
-      <p class="shr-intro">L'organisateur a partagé cet espace avec vous. Consultez ses idées ci-dessous, puis laissez vos commentaires et recommandations en bas — <b>aucun compte nécessaire</b>.</p>
-      <div class="shr-items">
-        ${items.length?items.map(it=>`<div class="shr-item">
+      <p class="shr-intro">L'organisateur a partagé cet espace avec vous. Pour chaque idée, laissez vos commentaires, réponses et photos directement en dessous — <b>aucun compte nécessaire</b>.</p>
+      <div class="field" style="margin-bottom:18px"><label>Votre nom</label><input class="inp" id="shrAuthor" placeholder="Ex : Studio Lumen" value="${esc(d.vendor_name||'')}"></div>
+      <div class="shr-items" style="grid-template-columns:1fr">
+        ${items.length?items.map(it=>{const msgs=byItem[it.id]||[];return `<div class="shr-item">
           ${it.img?`<img src="${it.img}" alt="">`:''}
           ${it.url?`<a href="${esc(it.url)}" target="_blank" rel="noopener" class="shr-link">${esc(it.url)}</a>`:''}
           ${it.note?`<p>${esc(it.note)}</p>`:''}
           ${it.price?`<span class="shr-price">${money(+it.price)}</span>`:''}
-        </div>`).join(''):'<p class="empty">L\u2019organisateur n\u2019a pas encore ajouté d\u2019idées.</p>'}
+          <div class="sp-thread">
+            ${msgs.length?`<div class="sp-msgs">${msgs.map(m=>`
+              <div class="sp-msg${m.source==='vendor'?' mine':''}">
+                <b>${esc(m.author||(m.source==='organizer'?'Organisateur':'Vous'))}</b>
+                ${m.body?`<span>${esc(m.body)}</span>`:''}
+                ${m.image?`<img src="${m.image}" alt="">`:''}
+                <small>${ago(Date.parse(m.created_at))}</small>
+              </div>`).join('')}</div>`:'<p class="empty" style="padding:4px 0">Aucun message pour l\u2019instant — soyez le premier à réagir.</p>'}
+            <div class="sp-compose">
+              <textarea class="inp" data-shrbody="${it.id}" placeholder="Votre message, recommandation ou question…"></textarea>
+              <div id="shrImgPrev-${it.id}"></div>
+              <div class="sp-compose-row">
+                <label class="mini-btn">📷<input type="file" accept="image/*" hidden data-shrimg="${it.id}"></label>
+                <button class="btn btn-navy btn-sm" data-shrsend="${it.id}">Envoyer</button>
+              </div>
+            </div>
+          </div>
+        </div>`;}).join(''):'<p class="empty">L\u2019organisateur n\u2019a pas encore ajouté d\u2019idées.</p>'}
       </div>
-      <h3 class="shr-h3">Vos recommandations</h3>
-      ${contribs.length?`<div class="shr-contribs">${contribs.map(c=>`
-        <div class="shr-contrib"><b>${esc(c.author||'Vous')}</b><span>${esc(c.body)}</span></div>`).join('')}</div>`:''}
-      <div class="field"><label>Votre nom</label><input class="inp" id="shrAuthor" placeholder="Ex : Studio Lumen"></div>
-      <div class="field"><label>Votre message, recommandation ou question</label>
-        <textarea class="inp" id="shrBody" placeholder="Ex : Je recommande un shooting en extérieur à l'heure dorée…"></textarea></div>
-      <button class="btn btn-navy" id="shrSend" style="width:100%">Envoyer à l'organisateur</button>
-      <div id="shrOut"></div>
     </div>
   </div>`;
-  $('shrSend').onclick=async()=>{
-    const author=($('shrAuthor')?$('shrAuthor').value:'').trim();
-    const body=($('shrBody')?$('shrBody').value:'').trim();
-    if(!body){toast('Écrivez un message');return;}
-    $('shrSend').disabled=true;$('shrSend').textContent='Envoi…';
-    const {error}=await sb.rpc('add_contribution',{p_token:token,p_author:author,p_body:body});
-    if(error){$('shrSend').disabled=false;$('shrSend').textContent='Envoyer à l\u2019organisateur';toast('Envoi impossible');return;}
-    $('shrOut').innerHTML='<div class="badge ok" style="margin-top:12px"><i></i>Message envoyé à l\u2019organisateur</div>';
-    $('shrBody').value='';$('shrSend').textContent='Envoyé ✓';
-    setTimeout(()=>{$('shrSend').disabled=false;$('shrSend').textContent='Envoyer un autre message';},1500);
-  };
+  items.forEach(it=>{
+    const fi=document.querySelector(`[data-shrimg="${it.id}"]`);
+    if(fi)fi.onchange=e=>{const f=e.target.files&&e.target.files[0];if(!f)return;
+      toast('Traitement de l\u2019image…');
+      compressImage(f,640,70000).then(url=>{
+        pendingImg[it.id]=url;
+        const prev=document.getElementById('shrImgPrev-'+it.id);
+        if(prev)prev.innerHTML=`<div class="sp-img-prev"><img src="${url}" alt=""><button data-shrimgx="${it.id}">×</button></div>`;
+        const x=document.querySelector(`[data-shrimgx="${it.id}"]`);
+        if(x)x.onclick=()=>{delete pendingImg[it.id];prev.innerHTML='';};
+      }).catch(()=>toast('Image illisible'));};
+    const sendBtn=document.querySelector(`[data-shrsend="${it.id}"]`);
+    if(sendBtn)sendBtn.onclick=async()=>{
+      const author=($('shrAuthor')?$('shrAuthor').value:'').trim();
+      const ta=document.querySelector(`[data-shrbody="${it.id}"]`);
+      const body=(ta?ta.value:'').trim();
+      const img=pendingImg[it.id]||'';
+      if(!body&&!img){toast('Écrivez un message');return;}
+      sendBtn.disabled=true;sendBtn.textContent='Envoi…';
+      const {error}=await sb.rpc('add_contribution',{p_token:token,p_author:author,p_body:body,p_item_id:it.id,p_image:img});
+      if(error){sendBtn.disabled=false;sendBtn.textContent='Envoyer';toast('Envoi impossible');return;}
+      delete pendingImg[it.id];
+      toast('Message envoyé');
+      renderSharedSpace(token);
+    };
+  });
 }
 
 /* ============================================================
