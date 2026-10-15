@@ -647,6 +647,19 @@ footer{background:var(--navy-ink);color:rgba(255,255,255,.6);padding:44px 0 30px
 #invite{background:var(--gray);min-height:100vh;padding:34px 18px 60px}
 .iv{max-width:440px;margin:0 auto}
 .iv-card{background:#fff;border-radius:20px;box-shadow:var(--shadow-lg);overflow:hidden}
+/* ---- Mini site : rendu plein format (vrai site, pas une carte flottante) ----
+   Appliqué uniquement quand le format est "Mini site" (les trois styles :
+   Classique/Histoire/Compte à rebours) — la "Carte classique" garde son
+   habillage de carte, volontairement inchangé. */
+#invite.iv-site-page{background:#fff;padding:0}
+.iv.iv-wide{max-width:1040px}
+.iv-wide .iv-card.ms-site{border-radius:0;box-shadow:none}
+.iv-wide .ms-sec,.iv-wide .ms-nohero,.iv-wide .ms-hero-txt,.iv-wide .ms-slide{max-width:760px;margin-left:auto;margin-right:auto}
+@media(max-width:800px){
+  .iv.iv-wide{max-width:600px}
+  .iv-wide .ms-sec,.iv-wide .ms-nohero,.iv-wide .ms-hero-txt,.iv-wide .ms-slide{max-width:none}
+  #invite.iv-site-page{padding:0 0 40px}
+}
 .iv-top{padding:34px 30px 30px;text-align:center;color:#fff;position:relative;overflow:hidden}
 .iv-top::before{content:"";position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.07) 1px,transparent 1px);background-size:22px 22px}
 .iv-top>*{position:relative}
@@ -4488,6 +4501,11 @@ async function renderInvite(token){
     gift:evd.gift||{text:'',link:''},faq:(evd.faq||[]).filter(x=>x.q),dc:evd.dresscode||'',mn:evd.menu||'',cd:evd.showCountdown!==false,
     ms:evd.msStyle||'classique',p1n:evd.p1Name||'',p1s:evd.p1Story||'',p2n:evd.p2Name||'',p2s:evd.p2Story||'',
     ap:evd.msAutoplay?1:0,aps:evd.msAutoplaySecs||6};
+  // Le mini site se présente comme une vraie page (pleine largeur, sans l'habillage
+  // "carte flottante") ; la carte classique garde son rendu habituel, inchangé.
+  const isSitePage=d.fmt==='site';
+  $('invite').classList.toggle('iv-site-page',isSitePage);
+  w.classList.toggle('iv-wide',isSitePage);
   w.innerHTML=inviteBody(d,{});
   startCountdown(d);
   startHistoireAutoplay(d);
