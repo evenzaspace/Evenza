@@ -899,6 +899,7 @@ footer{background:var(--navy-ink);color:rgba(255,255,255,.6);padding:44px 0 30px
 .sp-contrib b{color:var(--navy);display:block;font-size:12.5px;margin-bottom:2px}
 .sp-contrib span{color:var(--text);line-height:1.5}
 .sp-contrib small{display:block;color:var(--muted);font-size:11px;margin-top:4px}
+.tab-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#E0483E;margin-left:5px;vertical-align:middle}
 /* ---- Conversation par idée (fil attaché à chaque idée partagée, utilisé
    côté organisateur ET côté prestataire sur sa page publique) ---- */
 .sp-thread{border-top:1px solid var(--line);padding:10px 13px 12px;background:var(--gray)}
@@ -2195,9 +2196,25 @@ async function renderWork(slug,tab){
   TAB=tab||'accueil';
   $('wkBackTxt').textContent=JOBS[job()].home;
   $('wkTitle').innerHTML=`${esc(EV.name)}<small>${esc(fmtDate(EV.date))}${EV.time?' · '+esc(fmtTime(EV.time)):''}${EV.venue?' · '+esc(EV.venue):(EV.venueTbd?' · salle à confirmer':'')}</small>`;
-  $('wkTabs').innerHTML=TABS.map(([k,l])=>`<a class="tab${k===TAB?' on':''}" href="#/e/${slug}/${k}">${l}</a>`).join('');
+  $('wkTabs').innerHTML=TABS.map(([k,l])=>`<a class="tab${k===TAB?' on':''}" href="#/e/${slug}/${k}" data-tabkey="${k}">${l}</a>`).join('');
   document.querySelectorAll('#work .pane').forEach(p=>p.classList.toggle('on',p.dataset.pane===TAB));
+  if(TAB==='espaces'){try{localStorage.setItem('evz.spacesSeen.'+EV.id,String(Date.now()));}catch(e){}}
+  else checkSpacesBadge();
   repaint();
+}
+async function checkSpacesBadge(){
+  if(!EV||!EV.id||!sb)return;
+  try{
+    const {data}=await sb.from('space_contributions').select('created_at,space_shares!inner(event_id)')
+      .eq('space_shares.event_id',EV.id).order('created_at',{ascending:false}).limit(1);
+    const latest=data&&data[0]?Date.parse(data[0].created_at):0;
+    if(!latest)return;
+    let seen=0;try{seen=+localStorage.getItem('evz.spacesSeen.'+EV.id)||0;}catch(e){}
+    if(latest>seen){
+      const tab=document.querySelector('[data-tabkey="espaces"]');
+      if(tab&&!tab.querySelector('.tab-dot'))tab.insertAdjacentHTML('beforeend','<span class="tab-dot"></span>');
+    }
+  }catch(e){}
 }
 
 /* ---------------- Atelier « modèle de salle » ---------------- */
@@ -2530,8 +2547,9 @@ async function loadSpaceThreads(sp){
       if(!body&&!img){toast('Écrivez un message');return;}
       const shareId=sel?sel.value:shareList[0].id;
       sendBtn.disabled=true;
+      const meNow=session();
       const {error}=await sb.from('space_contributions').insert({
-        share_id:shareId,item_id:it.id,author:EV.name||'Vous',body,image:img,source:'organizer'});
+        share_id:shareId,item_id:it.id,author:(meNow&&meNow.name)||'Vous',body,image:img,source:'organizer'});
       sendBtn.disabled=false;
       if(error){toast('Erreur : '+error.message);return;}
       delete pendingImg[it.id];
@@ -2539,7 +2557,8 @@ async function loadSpaceThreads(sp){
       // Avertit le prestataire par courriel, s'il en a laissé un — jamais
       // bloquant si ça échoue (le message est déjà enregistré).
       if(tokenOf[shareId])sb.functions.invoke('notify-space-message',{body:{
-        p_token:tokenOf[shareId],p_item_id:it.id,p_source:'organizer',p_author:EV.name||'Vous',p_body:body}}).catch(()=>{});
+        p_token:tokenOf[shareId],p_item_id:it.id,p_source:'organizer',p_body:body,
+        p_author:(meNow&&meNow.name)||'Vous',p_actor_email:(meNow&&meNow.email)||''}}).catch(()=>{});
       loadSpaceThreads(sp);
     };
   });
@@ -4221,6 +4240,13 @@ function paintSettings(){
         <button class="mini-btn danger" data-vdel="${i}" style="margin-top:8px">Retirer ce prestataire</button>
       </div>`).join('')||'<p class="empty">Aucun prestataire pour l\u2019instant.</p>'}</div>
     <button class="mini-btn" id="vendorAdd" style="margin-top:12px">+ Ajouter un prestataire</button>
+  </div>
+
+  <div class="box" style="margin-top:16px">
+    <h3>Collaborateurs <em>acc\u00e8s complet \u2014 ex : les deux mari\u00e9\u00b7e\u00b7s</em></h3>
+    <p class="empty" style="padding-top:0">Invitez d'autres personnes \u00e0 g\u00e9rer cet \u00e9v\u00e9nement avec vous : m\u00eame acc\u00e8s que vous (invit\u00e9s, budget, plan de salle, Espaces\u2026), par courriel, sans mot de passe \u00e0 cr\u00e9er. Elles re\u00e7oivent aussi les notifications des Espaces.</p>
+    <div id="collabList"><p class="empty">Chargement\u2026</p></div>
+    <button class="mini-btn" id="collabAdd" style="margin-top:12px">+ Inviter un collaborateur</button>
   </div>`;
   $('rSave').onclick=()=>{
     EV.name=($('rName').value||'').trim()||EV.name;EV.date=$('rDate').value;EV.time=$('rTime').value;
@@ -4244,6 +4270,39 @@ function paintSettings(){
     const[i,f]=el.dataset.vf.split(':');if(EV.vendors&&EV.vendors[+i]){EV.vendors[+i][f]=e.target.value;save();}});
   document.querySelectorAll('[data-vdel]').forEach(b=>b.onclick=()=>{
     EV.vendors.splice(+b.dataset.vdel,1);save();paintSettings();});
+  // Collaborateurs
+  if($('collabAdd'))$('collabAdd').onclick=()=>{
+    dialog({title:'Inviter un collaborateur',
+      body:`<div class="field"><label>Nom</label><input class="inp" id="cbName" placeholder="Ex : Marc"></div>
+        <div class="field"><label>Rôle <span class="hint">facultatif</span></label><input class="inp" id="cbRole" placeholder="Ex : Marié, Témoin"></div>
+        <div class="field" style="margin-bottom:0"><label>Courriel</label><input class="inp" id="cbEmail" type="email" placeholder="marc@exemple.ca"></div>`,
+      ok:'Envoyer l’invitation',
+      onOk:async()=>{
+        const name=($('cbName')?$('cbName').value:'').trim();
+        const role=($('cbRole')?$('cbRole').value:'').trim();
+        const email=($('cbEmail')?$('cbEmail').value:'').trim().toLowerCase();
+        if(!email||!email.includes('@')){toast('Courriel invalide');return;}
+        const {data,error}=await sb.from('event_collaborators').insert({event_id:EV.id,name,role,email}).select().single();
+        if(error){toast(/duplicate|unique/i.test(error.message)?'Cette personne a déjà accès':'Erreur : '+error.message);return;}
+        sb.functions.invoke('invite-collaborator',{body:{collaborator_id:data.id}}).catch(()=>{});
+        toast('Invitation envoyée à '+email);loadCollaborators();}});
+  };
+  loadCollaborators();
+}
+async function loadCollaborators(){
+  const box=$('collabList');if(!box||!EV||!EV.id||!sb)return;
+  const {data}=await sb.from('event_collaborators').select('id,name,email,role,active,created_at').eq('event_id',EV.id).eq('active',true).order('created_at');
+  const list=data||[];
+  box.innerHTML=list.length?list.map(c=>`
+    <div class="lodge-row" data-ci="${c.id}">
+      <div class="row2">
+        <div><b>${esc(c.name||c.email)}</b>${c.role?' · <span class="hint">'+esc(c.role)+'</span>':''}</div>
+        <div class="hint">${esc(c.email)}</div></div>
+      <button class="mini-btn danger" data-crevoke="${c.id}" style="margin-top:8px">Retirer l'accès</button>
+    </div>`).join(''):'<p class="empty">Aucun collaborateur pour l’instant.</p>';
+  box.querySelectorAll('[data-crevoke]').forEach(b=>b.onclick=async()=>{
+    await sb.from('event_collaborators').update({active:false}).eq('id',b.dataset.crevoke);
+    toast('Accès retiré');loadCollaborators();});
 }
 
 /* ---------------- Visuel personnalisé ---------------- */
@@ -5089,6 +5148,11 @@ function maybeAutoTour(){
   // que quoi que ce soit ne touche à location.hash, puis on ouvre l'écran dédié
   // une fois la session (temporaire, de type "recovery") établie plus bas.
   const recoveryLink=/type=recovery/.test(location.hash);
+  // Lien magique de collaborateur (voir invite-collaborator.ts) : même
+  // mécanisme que recoveryLink ci-dessus, mais on redirige vers
+  // l'événement concerné une fois la session établie, au lieu de l'écran
+  // de nouveau mot de passe.
+  const collabLink=/type=magiclink/.test(location.hash);
   initSetup();
   document.querySelectorAll('[data-go="setup"]').forEach(b=>b.onclick=e=>{e.preventDefault();
     if(b.dataset.plan){authPlan=planKey(b.dataset.plan);if(USER)setPlan(authPlan);}
@@ -5123,6 +5187,16 @@ function maybeAutoTour(){
     });
   }
   if(recoveryLink&&USER)location.hash='#/nouveau-mdp';
+  if(collabLink&&USER){
+    try{
+      const {data:c}=await sb.from('event_collaborators').select('event_id').eq('active',true)
+        .ilike('email',USER.email).order('created_at',{ascending:false}).limit(1).maybeSingle();
+      if(c&&c.event_id){
+        const {data:ev}=await sb.from('events').select('slug').eq('id',c.event_id).maybeSingle();
+        if(ev&&ev.slug)location.hash='#/e/'+ev.slug+'/accueil';
+      }
+    }catch(e){}
+  }
   route();
 })();
 
