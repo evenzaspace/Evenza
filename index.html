@@ -1378,6 +1378,7 @@ body.app-on .help-btn{display:flex}
 <div id="share" class="view"><div class="shr" id="shrWrap"></div></div>
 <div id="feed" class="view"><div class="fd" id="fdWrap"></div></div>
 <div id="tableshare" class="view"><div class="shr" id="tbsWrap"></div></div>
+<div id="giftlist" class="view"><div class="shr" id="glWrap"></div></div>
 
 
 <!-- ==================== PLAN PLEIN ÉCRAN ==================== -->
@@ -1994,7 +1995,7 @@ function evData(e){
     layout:e.layout,plan:e.plan,program:e.program||[],
     paid:!!e.paid,price:e.price||0,interac:e.interac||'',contact:e.contact||'',
     theme:e.theme||'royal',visual:e.visual||'',visualFull:e.visualFull!==false,
-    hotels:e.hotels||[],vendors:e.vendors||[],budgetItems:e.budgetItems||[],inspo:e.inspo||[],spaces:e.spaces||null,
+    hotels:e.hotels||[],vendors:e.vendors||[],budgetItems:e.budgetItems||[],giftList:e.giftList||[],inspo:e.inspo||[],spaces:e.spaces||null,
     format:e.format||'carte',story:e.story||'',storyTitle:e.storyTitle||'',gallery:e.gallery||[],venueAddress:e.venueAddress||'',
     gift:e.gift||{text:'',link:''},faq:e.faq||[],dresscode:e.dresscode||'',menu:e.menu||'',showCountdown:e.showCountdown!==false,
     msStyle:e.msStyle||'classique',p1Name:e.p1Name||'',p1Story:e.p1Story||'',p2Name:e.p2Name||'',p2Story:e.p2Story||'',
@@ -2889,6 +2890,53 @@ function renderAuth(){
       toast('Compte créé — confirmez votre courriel, puis connectez-vous');
     }};
   $('suPass').onkeydown=e=>{if(e.key==='Enter')$('suGo').click();};
+}
+
+/* ============================================================
+   CONFIRMATION DE COLLABORATEUR (lien d'invitation à un événement)
+   Volontairement en 2 temps (page d'atterrissage + clic explicite sur un
+   bouton, plutôt qu'un lien qui connecte tout seul dès qu'on l'ouvre) :
+   beaucoup de boîtes courriel (Gmail, filtres de sécurité…) « visitent »
+   automatiquement les liens reçus pour les scanner avant même que la
+   personne les ouvre elle-même — un lien à usage unique qui se
+   consomme dès l'ouverture se retrouve alors déjà expiré/invalide au
+   moment du vrai clic humain (symptôme observé : « lien invalide ou
+   expiré » quelques minutes après la réception du courriel). En
+   n'échangeant le jeton contre une session qu'au clic explicite sur le
+   bouton « Confirmer », un simple passage automatisé ne grille plus le
+   lien.
+============================================================ */
+function renderCollabConfirm(th,em){
+  const b=$('authBody');
+  if(!th){
+    b.innerHTML=`<h1>Lien invalide</h1>
+      <p class="sub">Ce lien d'invitation est incomplet ou n'est plus valide. Demandez à la personne qui vous a invité·e de vous en renvoyer un.</p>`;
+    return;
+  }
+  b.innerHTML=`<h1>Invitation à collaborer</h1>
+    <p class="sub">${em?('Confirmez pour accéder à l’événement avec <b>'+esc(em)+'</b>.'):'Confirmez pour accéder à l’événement.'}</p>
+    <button class="btn btn-gold" id="ccGo" style="width:100%">Confirmer et accéder à l'événement</button>
+    <p class="empty" id="ccErr" style="color:var(--red);display:none"></p>`;
+  $('ccGo').onclick=async()=>{
+    $('ccGo').disabled=true;$('ccGo').textContent='Connexion…';
+    const {error}=await sb.auth.verifyOtp({token_hash:th,type:'magiclink'});
+    if(error){
+      $('ccGo').disabled=false;$('ccGo').textContent="Confirmer et accéder à l'événement";
+      $('ccErr').style.display='block';
+      $('ccErr').textContent='Ce lien est invalide ou a expiré — redemandez une invitation à l’organisateur·rice.';
+      return;
+    }
+    await refreshSession();
+    try{
+      const {data:c}=await sb.from('event_collaborators').select('event_id').eq('active',true)
+        .ilike('email',USER.email).order('created_at',{ascending:false}).limit(1).maybeSingle();
+      if(c&&c.event_id){
+        const {data:ev}=await sb.from('events').select('slug').eq('id',c.event_id).maybeSingle();
+        if(ev&&ev.slug){location.hash='#/e/'+ev.slug+'/accueil';return;}
+      }
+    }catch(e){}
+    location.hash='#/espace';
+  };
 }
 
 /* ============================================================
@@ -4127,6 +4175,7 @@ function paintBudget(){
           <div class="bud-nums">
             <label>Prévu <input class="inp" type="number" min="0" step="50" data-bf="${i}:planned" value="${it.planned||''}" placeholder="0"></label>
             <label>Payé <input class="inp" type="number" min="0" step="50" data-bf="${i}:paid" value="${it.paid||''}" placeholder="0"></label>
+            <button class="mini-btn" data-badd="${i}" title="Ajouter à la liste à partager">➕</button>
             <button class="mini-btn danger bud-del" data-bdel="${i}">×</button>
           </div>
         </div>`).join(''):'<p class="empty">Aucun poste de dépense. Ajoutez-en pour suivre où va votre budget.</p>'}</div>
@@ -4153,6 +4202,16 @@ function paintBudget(){
         ${items.length?'<button class="mini-btn" id="budExport" style="margin-top:12px;width:100%;justify-content:center">Exporter le budget (CSV)</button>':''}
       </div>
     </div>
+  </div>
+
+  <div class="box" style="margin-top:16px">
+    <h3>Liste à partager <em>transférable à la famille</em></h3>
+    <p class="empty" style="padding-top:0">Choisissez des postes de dépense (bouton ➕ sur chaque ligne) pour les copier dans une liste séparée, puis envoyez-la à votre famille — un simple lien à copier, sans compte requis pour la consulter. Elle reste indépendante : la modifier, ou modifier votre budget ensuite, ne change rien à l'autre.</p>
+    <div id="giftListBox"><p class="empty">Chargement…</p></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+      <button class="mini-btn" id="giftCopyLink">🔗 Copier le lien de la liste</button>
+      <a class="mini-btn" href="#/g/${EV.slug}" target="_blank" rel="noopener">Aperçu</a>
+    </div>
   </div>`;
   const el=$('bTotal');if(el)el.oninput=e=>{EV.budget=+e.target.value||0;save();
     // maj légère des KPI sans tout redessiner serait mieux, mais on garde simple :
@@ -4164,6 +4223,14 @@ function paintBudget(){
       if(EV.budgetItems&&EV.budgetItems[+i]){EV.budgetItems[+i][f]=e.target.value;save();
         if(f==='planned'||f==='paid'||f==='cat'){clearTimeout(inp._t);inp._t=setTimeout(paintBudget,500);}}};});
   document.querySelectorAll('[data-bdel]').forEach(b=>b.onclick=()=>{EV.budgetItems.splice(+b.dataset.bdel,1);save();paintBudget();});
+  document.querySelectorAll('[data-badd]').forEach(b=>b.onclick=()=>{
+    const it=items[+b.dataset.badd];if(!it)return;
+    const label=(it.label||'').trim()||it.cat||'Poste de dépense';
+    (EV.giftList=EV.giftList||[]).push({id:uid(),label,cat:it.cat||'',amount:+it.planned||+it.paid||0});
+    save();toast('Ajouté à la liste à partager');paintGiftBox();
+  });
+  if($('giftCopyLink'))$('giftCopyLink').onclick=()=>copyText(baseURL()+'#/g/'+EV.slug,$('giftCopyLink'),'🔗 Copier le lien de la liste');
+  paintGiftBox();
   if($('budExport'))$('budExport').onclick=()=>{
     const rows=[['Catégorie','Détail','Prévu','Payé']];
     items.forEach(it=>rows.push([it.cat||'',it.label||'',it.planned||0,it.paid||0]));
@@ -4171,6 +4238,21 @@ function paintBudget(){
     const csv='\ufeff'+rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(';')).join('\n');
     const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
     a.download='budget-'+EV.slug+'.csv';a.click();URL.revokeObjectURL(a.href);};
+}
+function paintGiftBox(){
+  const box=$('giftListBox');if(!box)return;
+  const list=EV.giftList||[];
+  box.innerHTML=list.length?list.map(it=>`
+    <div class="lodge-row" data-gi="${it.id}">
+      <div class="row2">
+        <div><b>${esc(it.label||'')}</b>${it.cat?' · <span class="hint">'+esc(it.cat)+'</span>':''}</div>
+        <div class="hint">${it.amount?money(+it.amount):''}</div>
+      </div>
+      <button class="mini-btn danger" data-gdel="${it.id}" style="margin-top:8px">Retirer de la liste</button>
+    </div>`).join(''):'<p class="empty">Aucun élément pour l’instant — ajoutez des postes de dépense depuis le tableau ci-dessus.</p>';
+  box.querySelectorAll('[data-gdel]').forEach(b=>b.onclick=()=>{
+    EV.giftList=(EV.giftList||[]).filter(x=>x.id!==b.dataset.gdel);
+    save();toast('Retiré de la liste');paintGiftBox();});
 }
 
 /* ---------- Réglages ---------- */
@@ -4804,6 +4886,27 @@ async function renderFeed(slug){
       async()=>{const {data}=await sb.rpc('get_wedding_feed',{p_slug:slug});if(data)paint(data.news||[]);}).subscribe();
   }catch(e){}
 }
+async function renderGiftList(slug){
+  const w=$('glWrap');
+  w.innerHTML='<div class="shr-card"><p class="empty" style="padding:30px">Chargement…</p></div>';
+  if(!sb){w.innerHTML='<div class="shr-card"><p class="empty" style="padding:30px">Service non configuré.</p></div>';return;}
+  let d=null;
+  try{const {data,error}=await sb.rpc('get_gift_list',{p_slug:slug});if(error)throw error;d=data;}catch(e){}
+  if(!d||!d.event_name){w.innerHTML='<div class="shr-card"><div class="shr-top"><b>Evenza</b></div><div style="padding:26px"><p class="empty">Cette liste est introuvable.</p></div></div>';return;}
+  const items=d.items||[];
+  w.innerHTML=`
+  <div class="shr-card">
+    <div class="shr-top">
+      <span class="shr-eyebrow">LISTE À PARTAGER</span>
+      <h1>${esc(d.event_name)}</h1>
+      <p>${d.event_date?esc(fmtDate(d.event_date)):''}</p>
+    </div>
+    <div class="shr-body">
+      <p class="shr-intro">Quelques idées pour celles et ceux qui demandent quoi offrir ou où donner un coup de main.</p>
+      ${items.length?items.map(it=>`<div class="cap"><span>${esc(it.label||'')}${it.cat?' · '+esc(it.cat):''}</span>${it.amount?'<b>'+money(+it.amount)+'</b>':''}</div>`).join(''):'<p class="empty">Cette liste est vide pour l’instant.</p>'}
+    </div>
+  </div>`;
+}
 
 /* ============================================================
    VUE PRESTATAIRE (espace partagé, sans compte)
@@ -5057,17 +5160,22 @@ function paintTableShare(){
 /* ============================================================
    ROUTEUR
 ============================================================ */
-const VIEWS=['setup','compte','reset','legal','espace','work','invite','share','feed','tableshare'];
+const VIEWS=['setup','compte','reset','legal','espace','work','invite','share','feed','tableshare','giftlist'];
 function show(v){VIEWS.forEach(x=>$(x).classList.toggle('on',x===v));
   document.body.classList.toggle('app-on',!!v);window.scrollTo({top:0});}
 async function route(){
-  const h=location.hash.replace(/^#/,'')||'/';
+  const raw=location.hash.replace(/^#/,'')||'/';
+  const qIdx=raw.indexOf('?');
+  const h=qIdx>=0?raw.slice(0,qIdx):raw;
+  const qs=new URLSearchParams(qIdx>=0?raw.slice(qIdx+1):'');
   const p=h.split('/').filter(Boolean);
   if(!CONFIGURED){show(null);return;}
   if(p[0]==='i'&&p[1]){show('invite');renderInvite(p[1]);return;}
   if(p[0]==='s'&&p[1]){show('share');renderSharedSpace(p[1]);return;}
   if(p[0]==='f'&&p[1]){show('feed');renderFeed(p[1]);return;}
   if(p[0]==='t'&&p[1]){show('tableshare');renderTableShare(p[1]);return;}
+  if(p[0]==='g'&&p[1]){show('giftlist');renderGiftList(p[1]);return;}
+  if(p[0]==='co-confirm'){show('compte');renderCollabConfirm(qs.get('th'),qs.get('em'));return;}
   if(p[0]==='compte'){show('compte');renderAuth();return;}
   if(p[0]==='nouveau-mdp'){
     if(!USER){toast('Lien de réinitialisation invalide ou expiré — redemandez-en un.');location.hash='#/compte';return;}
@@ -5148,11 +5256,6 @@ function maybeAutoTour(){
   // que quoi que ce soit ne touche à location.hash, puis on ouvre l'écran dédié
   // une fois la session (temporaire, de type "recovery") établie plus bas.
   const recoveryLink=/type=recovery/.test(location.hash);
-  // Lien magique de collaborateur (voir invite-collaborator.ts) : même
-  // mécanisme que recoveryLink ci-dessus, mais on redirige vers
-  // l'événement concerné une fois la session établie, au lieu de l'écran
-  // de nouveau mot de passe.
-  const collabLink=/type=magiclink/.test(location.hash);
   initSetup();
   document.querySelectorAll('[data-go="setup"]').forEach(b=>b.onclick=e=>{e.preventDefault();
     if(b.dataset.plan){authPlan=planKey(b.dataset.plan);if(USER)setPlan(authPlan);}
@@ -5187,16 +5290,6 @@ function maybeAutoTour(){
     });
   }
   if(recoveryLink&&USER)location.hash='#/nouveau-mdp';
-  if(collabLink&&USER){
-    try{
-      const {data:c}=await sb.from('event_collaborators').select('event_id').eq('active',true)
-        .ilike('email',USER.email).order('created_at',{ascending:false}).limit(1).maybeSingle();
-      if(c&&c.event_id){
-        const {data:ev}=await sb.from('events').select('slug').eq('id',c.event_id).maybeSingle();
-        if(ev&&ev.slug)location.hash='#/e/'+ev.slug+'/accueil';
-      }
-    }catch(e){}
-  }
   route();
 })();
 
