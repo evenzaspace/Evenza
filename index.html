@@ -2908,6 +2908,11 @@ function renderAuth(){
 ============================================================ */
 function renderCollabConfirm(th,em,evSlug){
   const b=$('authBody');
+  // Visible dans la Console (F12) dès l'ouverture de la page : permet de
+  // vérifier tout de suite si ce lien contient bien le paramètre ev (donc
+  // s'il a été envoyé par la version à jour de invite-collaborator.ts) sans
+  // attendre d'avoir cliqué sur Confirmer.
+  console.log('co-confirm — paramètres reçus :',{th:th?th.slice(0,8)+'…':null,em,evSlug});
   if(!th){
     b.innerHTML=`<h1>Lien invalide</h1>
       <p class="sub">Ce lien d'invitation est incomplet ou n'est plus valide. Demandez à la personne qui vous a invité·e de vous en renvoyer un.</p>`;
@@ -2935,18 +2940,26 @@ function renderCollabConfirm(th,em,evSlug){
     // slug de l'événement concerné (ajouté par invite-collaborator.ts) — on
     // y va sans détour, aucune ambiguïté possible même si cette personne est
     // collaboratrice sur plusieurs événements ou possède déjà un compte.
-    if(evSlug){location.hash='#/e/'+evSlug+'/accueil';return;}
+    if(evSlug){console.log('co-confirm — redirection directe via evSlug :',evSlug);location.hash='#/e/'+evSlug+'/accueil';return;}
     // Filet de secours pour d'anciens liens déjà envoyés avant cet ajout
     // (sans paramètre ev) : on retrouve l'événement via la table.
+    console.warn('co-confirm — aucun paramètre ev dans le lien : ce lien a été envoyé par une version de invite-collaborator.ts antérieure au correctif du 18 octobre (fonction pas encore redéployée, ou invitation envoyée avant le redéploiement). Tentative de secours via event_collaborators…');
     try{
-      const {data:c}=await sb.from('event_collaborators').select('event_id').eq('active',true)
+      const {data:c,error:ce}=await sb.from('event_collaborators').select('event_id').eq('active',true)
         .ilike('email',USER.email).order('created_at',{ascending:false}).limit(1).maybeSingle();
+      console.log('co-confirm — résultat de la requête de secours :',{c,ce});
       if(c&&c.event_id){
-        const {data:ev}=await sb.from('events').select('slug').eq('id',c.event_id).maybeSingle();
+        const {data:ev,error:ee}=await sb.from('events').select('slug').eq('id',c.event_id).maybeSingle();
+        console.log('co-confirm — événement trouvé :',{ev,ee});
         if(ev&&ev.slug){location.hash='#/e/'+ev.slug+'/accueil';return;}
       }
-    }catch(e){}
-    location.hash='#/espace';
+    }catch(e){console.error('co-confirm — erreur requête de secours :',e);}
+    // On ne redirige plus en silence vers le tableau de bord général : on
+    // affiche un diagnostic visible plutôt que de faire disparaître le
+    // problème dans une redirection muette.
+    $('ccErr').style.display='block';
+    $('ccErr').textContent="Connecté·e avec succès, mais ce lien ne précise pas quel événement ouvrir et aucune invitation active n'a été retrouvée pour "+(USER&&USER.email||'ce compte')+". Cela arrive si la fonction invite-collaborator n'a pas encore été redéployée après le dernier correctif, ou si ce lien a été envoyé avant ce redéploiement — redemandez une toute nouvelle invitation après avoir redéployé.";
+    $('ccGo').style.display='none';
   };
 }
 
