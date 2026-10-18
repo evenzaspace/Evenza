@@ -2923,7 +2923,11 @@ function renderCollabConfirm(th,em,evSlug){
     if(error){
       $('ccGo').disabled=false;$('ccGo').textContent="Confirmer et accéder à l'événement";
       $('ccErr').style.display='block';
-      $('ccErr').textContent='Ce lien est invalide ou a expiré — redemandez une invitation à l’organisateur·rice.';
+      // On affiche le message exact renvoyé par Supabase (pas un texte
+      // générique) : indispensable pour diagnostiquer à distance — même
+      // leçon que pour les bugs Postgres précédents de ce projet.
+      console.error('verifyOtp collaborateur :',error);
+      $('ccErr').textContent='Ce lien est invalide ou a expiré — redemandez une invitation à l’organisateur·rice. ('+(error.message||error.code||'erreur inconnue')+')';
       return;
     }
     await refreshSession();
