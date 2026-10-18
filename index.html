@@ -2906,7 +2906,7 @@ function renderAuth(){
    bouton « Confirmer », un simple passage automatisé ne grille plus le
    lien.
 ============================================================ */
-function renderCollabConfirm(th,em){
+function renderCollabConfirm(th,em,evSlug){
   const b=$('authBody');
   if(!th){
     b.innerHTML=`<h1>Lien invalide</h1>
@@ -2927,6 +2927,13 @@ function renderCollabConfirm(th,em){
       return;
     }
     await refreshSession();
+    // Chemin principal : le lien d'invitation porte désormais directement le
+    // slug de l'événement concerné (ajouté par invite-collaborator.ts) — on
+    // y va sans détour, aucune ambiguïté possible même si cette personne est
+    // collaboratrice sur plusieurs événements ou possède déjà un compte.
+    if(evSlug){location.hash='#/e/'+evSlug+'/accueil';return;}
+    // Filet de secours pour d'anciens liens déjà envoyés avant cet ajout
+    // (sans paramètre ev) : on retrouve l'événement via la table.
     try{
       const {data:c}=await sb.from('event_collaborators').select('event_id').eq('active',true)
         .ilike('email',USER.email).order('created_at',{ascending:false}).limit(1).maybeSingle();
@@ -5175,7 +5182,7 @@ async function route(){
   if(p[0]==='f'&&p[1]){show('feed');renderFeed(p[1]);return;}
   if(p[0]==='t'&&p[1]){show('tableshare');renderTableShare(p[1]);return;}
   if(p[0]==='g'&&p[1]){show('giftlist');renderGiftList(p[1]);return;}
-  if(p[0]==='co-confirm'){show('compte');renderCollabConfirm(qs.get('th'),qs.get('em'));return;}
+  if(p[0]==='co-confirm'){show('compte');renderCollabConfirm(qs.get('th'),qs.get('em'),qs.get('ev'));return;}
   if(p[0]==='compte'){show('compte');renderAuth();return;}
   if(p[0]==='nouveau-mdp'){
     if(!USER){toast('Lien de réinitialisation invalide ou expiré — redemandez-en un.');location.hash='#/compte';return;}
