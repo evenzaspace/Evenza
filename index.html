@@ -2894,37 +2894,44 @@ function renderAuth(){
 
 /* ============================================================
    CONFIRMATION DE COLLABORATEUR (lien d'invitation à un événement)
-   Volontairement en 2 temps (page d'atterrissage + clic explicite sur un
-   bouton, plutôt qu'un lien qui connecte tout seul dès qu'on l'ouvre) :
-   beaucoup de boîtes courriel (Gmail, filtres de sécurité…) « visitent »
-   automatiquement les liens reçus pour les scanner avant même que la
-   personne les ouvre elle-même — un lien à usage unique qui se
-   consomme dès l'ouverture se retrouve alors déjà expiré/invalide au
-   moment du vrai clic humain (symptôme observé : « lien invalide ou
-   expiré » quelques minutes après la réception du courriel). En
-   n'échangeant le jeton contre une session qu'au clic explicite sur le
-   bouton « Confirmer », un simple passage automatisé ne grille plus le
-   lien.
+   Architecture volontairement 100 % côté client, SANS fonction Edge à
+   déployer : sb.auth.signInWithOtp() envoie lui-même, via le mécanisme
+   natif de Supabase, un code à 6 chiffres par courriel — il suffit de
+   mettre {{ .Token }} dans les gabarits de courriel « Confirm signup »
+   et « Magic Link » du tableau de bord Supabase (Authentication → Email
+   Templates), sans aucun déploiement de code. Ancienne version : un
+   Edge Function (invite-collaborator.ts) générait un lien magique via
+   l'API service-role puis l'envoyait par Resend — plusieurs échecs en
+   test réel se sont révélés être des problèmes de redéploiement de
+   cette fonction (jamais confirmés résolus malgré plusieurs tentatives).
+   En supprimant la fonction de l'équation, il n'y a plus rien à
+   déployer : seul du code déjà en ligne (ce fichier) + un réglage dans
+   le tableau de bord Supabase (pas du code) sont nécessaires.
+   Le lien de confirmation (#/co-confirm?em=...&ev=...) est généré ici
+   même, côté client, au moment de l'invitation : le slug de l'événement
+   y est donc toujours présent avec certitude (plus jamais besoin de le
+   deviner via une requête sur event_collaborators).
 ============================================================ */
-function renderCollabConfirm(th,em,evSlug){
+function renderCollabConfirm(em,evSlug){
   const b=$('authBody');
-  // Visible dans la Console (F12) dès l'ouverture de la page : permet de
-  // vérifier tout de suite si ce lien contient bien le paramètre ev (donc
-  // s'il a été envoyé par la version à jour de invite-collaborator.ts) sans
-  // attendre d'avoir cliqué sur Confirmer.
-  console.log('co-confirm — paramètres reçus :',{th:th?th.slice(0,8)+'…':null,em,evSlug});
-  if(!th){
+  console.log('co-confirm — paramètres reçus :',{em,evSlug});
+  if(!em||!evSlug){
     b.innerHTML=`<h1>Lien invalide</h1>
       <p class="sub">Ce lien d'invitation est incomplet ou n'est plus valide. Demandez à la personne qui vous a invité·e de vous en renvoyer un.</p>`;
     return;
   }
   b.innerHTML=`<h1>Invitation à collaborer</h1>
-    <p class="sub">${em?('Confirmez pour accéder à l’événement avec <b>'+esc(em)+'</b>.'):'Confirmez pour accéder à l’événement.'}</p>
+    <p class="sub">Un code à 6 chiffres a été envoyé par courriel à <b>${esc(em)}</b>. Entrez-le ci-dessous pour accéder à l'événement.</p>
+    <div class="field"><label>Code reçu par courriel</label>
+      <input class="inp" id="ccCode" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="123456"></div>
     <button class="btn btn-gold" id="ccGo" style="width:100%">Confirmer et accéder à l'événement</button>
+    <button class="mini-btn" id="ccResend" style="width:100%;margin-top:8px">Renvoyer le code</button>
     <p class="empty" id="ccErr" style="color:var(--red);display:none"></p>`;
   $('ccGo').onclick=async()=>{
+    const code=($('ccCode').value||'').trim();
+    if(!code){$('ccErr').style.display='block';$('ccErr').textContent='Entrez le code reçu par courriel.';return;}
     $('ccGo').disabled=true;$('ccGo').textContent='Connexion…';
-    const {error}=await sb.auth.verifyOtp({token_hash:th,type:'magiclink'});
+    const {error}=await sb.auth.verifyOtp({email:em,token:code,type:'email'});
     if(error){
       $('ccGo').disabled=false;$('ccGo').textContent="Confirmer et accéder à l'événement";
       $('ccErr').style.display='block';
@@ -2932,34 +2939,21 @@ function renderCollabConfirm(th,em,evSlug){
       // générique) : indispensable pour diagnostiquer à distance — même
       // leçon que pour les bugs Postgres précédents de ce projet.
       console.error('verifyOtp collaborateur :',error);
-      $('ccErr').textContent='Ce lien est invalide ou a expiré — redemandez une invitation à l’organisateur·rice. ('+(error.message||error.code||'erreur inconnue')+')';
+      $('ccErr').textContent='Code invalide ou expiré — vérifiez le code reçu, ou cliquez « Renvoyer le code ». ('+(error.message||error.code||'erreur inconnue')+')';
       return;
     }
     await refreshSession();
-    // Chemin principal : le lien d'invitation porte désormais directement le
-    // slug de l'événement concerné (ajouté par invite-collaborator.ts) — on
-    // y va sans détour, aucune ambiguïté possible même si cette personne est
-    // collaboratrice sur plusieurs événements ou possède déjà un compte.
-    if(evSlug){console.log('co-confirm — redirection directe via evSlug :',evSlug);location.hash='#/e/'+evSlug+'/accueil';return;}
-    // Filet de secours pour d'anciens liens déjà envoyés avant cet ajout
-    // (sans paramètre ev) : on retrouve l'événement via la table.
-    console.warn('co-confirm — aucun paramètre ev dans le lien : ce lien a été envoyé par une version de invite-collaborator.ts antérieure au correctif du 18 octobre (fonction pas encore redéployée, ou invitation envoyée avant le redéploiement). Tentative de secours via event_collaborators…');
-    try{
-      const {data:c,error:ce}=await sb.from('event_collaborators').select('event_id').eq('active',true)
-        .ilike('email',USER.email).order('created_at',{ascending:false}).limit(1).maybeSingle();
-      console.log('co-confirm — résultat de la requête de secours :',{c,ce});
-      if(c&&c.event_id){
-        const {data:ev,error:ee}=await sb.from('events').select('slug').eq('id',c.event_id).maybeSingle();
-        console.log('co-confirm — événement trouvé :',{ev,ee});
-        if(ev&&ev.slug){location.hash='#/e/'+ev.slug+'/accueil';return;}
-      }
-    }catch(e){console.error('co-confirm — erreur requête de secours :',e);}
-    // On ne redirige plus en silence vers le tableau de bord général : on
-    // affiche un diagnostic visible plutôt que de faire disparaître le
-    // problème dans une redirection muette.
-    $('ccErr').style.display='block';
-    $('ccErr').textContent="Connecté·e avec succès, mais ce lien ne précise pas quel événement ouvrir et aucune invitation active n'a été retrouvée pour "+(USER&&USER.email||'ce compte')+". Cela arrive si la fonction invite-collaborator n'a pas encore été redéployée après le dernier correctif, ou si ce lien a été envoyé avant ce redéploiement — redemandez une toute nouvelle invitation après avoir redéployé.";
-    $('ccGo').style.display='none';
+    // evSlug vient du lien lui-même (généré côté client au moment de
+    // l'invitation) : aucune ambiguïté possible, aucune devinette.
+    console.log('co-confirm — redirection directe via evSlug :',evSlug);
+    location.hash='#/e/'+evSlug+'/accueil';
+  };
+  $('ccResend').onclick=async()=>{
+    $('ccResend').disabled=true;$('ccResend').textContent='Envoi…';
+    const {error}=await sb.auth.signInWithOtp({email:em});
+    $('ccResend').disabled=false;$('ccResend').textContent='Renvoyer le code';
+    if(error){console.error('signInWithOtp (renvoi) collaborateur :',error);toast('Erreur : '+(error.message||error.code||'inconnue'));return;}
+    toast('Nouveau code envoyé par courriel');
   };
 }
 
@@ -4390,8 +4384,24 @@ function paintSettings(){
         if(!email||!email.includes('@')){toast('Courriel invalide');return;}
         const {data,error}=await sb.from('event_collaborators').insert({event_id:EV.id,name,role,email}).select().single();
         if(error){toast(/duplicate|unique/i.test(error.message)?'Cette personne a déjà accès':'Erreur : '+error.message);return;}
-        sb.functions.invoke('invite-collaborator',{body:{collaborator_id:data.id}}).catch(()=>{});
-        toast('Invitation envoyée à '+email);loadCollaborators();}});
+        // Mécanique native de Supabase : envoie elle-même un code à 6
+        // chiffres par courriel — aucune fonction Edge à déployer (voir
+        // la note au-dessus de renderCollabConfirm).
+        const {error:otpErr}=await sb.auth.signInWithOtp({email,options:{shouldCreateUser:true}});
+        if(otpErr){
+          console.error('signInWithOtp collaborateur :',otpErr);
+          toast('Invitation enregistrée, mais le courriel du code n’a pas pu être envoyé : '+(otpErr.message||otpErr.code||'erreur inconnue'));
+          loadCollaborators();return;
+        }
+        const confirmLink=baseURL()+'#/co-confirm?em='+encodeURIComponent(email)+'&ev='+encodeURIComponent(EV.slug);
+        loadCollaborators();
+        dialog({title:'Invitation envoyée',
+          body:`<p class="hint" style="margin-top:-6px">Un code à 6 chiffres vient d'être envoyé par courriel à <b>${esc(email)}</b>. Copiez ce lien et envoyez-le vous-même (texto, courriel, WhatsApp…) : en l'ouvrant et en entrant son code, ${esc(name||email)} aura accès complet à l'événement.</p>
+            <div class="field" style="margin-bottom:0"><label>Lien à envoyer</label><input class="inp" id="ccLinkOut" readonly value="${esc(confirmLink)}"></div>`,
+          ok:'Copier le lien',cancel:'Fermer',
+          onOk:()=>copyText(confirmLink)});
+        if($('ccLinkOut'))$('ccLinkOut').onclick=function(){this.select();};
+      }});
   };
   loadCollaborators();
 }
@@ -5199,7 +5209,7 @@ async function route(){
   if(p[0]==='f'&&p[1]){show('feed');renderFeed(p[1]);return;}
   if(p[0]==='t'&&p[1]){show('tableshare');renderTableShare(p[1]);return;}
   if(p[0]==='g'&&p[1]){show('giftlist');renderGiftList(p[1]);return;}
-  if(p[0]==='co-confirm'){show('compte');renderCollabConfirm(qs.get('th'),qs.get('em'),qs.get('ev'));return;}
+  if(p[0]==='co-confirm'){show('compte');renderCollabConfirm(qs.get('em'),qs.get('ev'));return;}
   if(p[0]==='compte'){show('compte');renderAuth();return;}
   if(p[0]==='nouveau-mdp'){
     if(!USER){toast('Lien de réinitialisation invalide ou expiré — redemandez-en un.');location.hash='#/compte';return;}
