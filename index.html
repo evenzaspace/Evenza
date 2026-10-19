@@ -906,8 +906,9 @@ footer{background:var(--navy-ink);color:rgba(255,255,255,.6);padding:44px 0 30px
 .sp-msgs{display:flex;flex-direction:column;gap:7px;margin-bottom:8px}
 .sp-msg{background:#fff;border:1px solid var(--line);border-radius:9px;padding:8px 10px;font-size:13px}
 .sp-msg.mine{background:#EEF5FF;border-color:#D6E6FB}
-.sp-msg b{color:var(--navy);display:block;font-size:11.5px;margin-bottom:2px}
-.sp-msg span{color:var(--text);line-height:1.5;white-space:pre-wrap}
+.sp-msg b{color:var(--navy);display:inline-block;font-size:11.5px;margin-bottom:2px}
+.sp-msg-chan{display:inline-block;margin:0 0 2px 6px;font-size:10px;font-weight:600;color:var(--muted);background:var(--gray);border-radius:20px;padding:1px 7px}
+.sp-msg span{color:var(--text);line-height:1.5;white-space:pre-wrap;display:block}
 .sp-msg img{max-width:100%;border-radius:7px;margin-top:6px;display:block}
 .sp-msg small{display:block;color:var(--muted);font-size:10.5px;margin-top:4px}
 .sp-compose{display:flex;flex-direction:column;gap:6px}
@@ -2206,8 +2207,8 @@ async function renderWork(slug,tab){
 async function checkSpacesBadge(){
   if(!EV||!EV.id||!sb)return;
   try{
-    const {data}=await sb.from('space_contributions').select('created_at,space_shares!inner(event_id)')
-      .eq('space_shares.event_id',EV.id).order('created_at',{ascending:false}).limit(1);
+    const {data}=await sb.from('space_contributions').select('created_at')
+      .eq('event_id',EV.id).order('created_at',{ascending:false}).limit(1);
     const latest=data&&data[0]?Date.parse(data[0].created_at):0;
     if(!latest)return;
     let seen=0;try{seen=+localStorage.getItem('evz.spacesSeen.'+EV.id)||0;}catch(e){}
@@ -2484,11 +2485,14 @@ async function loadSpaceShares(sp){
         loadSpaceShares(sp);loadSpaceThreads(sp);toast('Partage révoqué');}});});
 }
 // Conversation par idée : récupère les messages de tous les prestataires
-// actifs de cet espace, les regroupe par idée (item_id), et affiche sous
-// chaque idée son propre fil + une zone pour répondre (texte + photo).
-// L'organisateur répond ici avec le nom de l'événement comme auteur ; si
-// plusieurs prestataires sont actifs sur le même espace, un menu permet de
-// choisir à qui la réponse s'adresse.
+// actifs de cet espace ET les messages « équipe » (entre organisateur et
+// collaborateurs, jamais liés à un prestataire — share_id null), les
+// regroupe par idée (item_id), et affiche sous chaque idée son propre fil +
+// une zone pour répondre (texte + photo) — toujours disponible, même sans
+// aucun prestataire partagé sur l'espace. L'organisateur/collaborateur
+// répond ici avec son propre nom comme auteur ; si au moins un prestataire
+// est actif sur l'espace, un menu permet de choisir entre « Équipe » (visible
+// seulement par l'organisateur et ses collaborateurs) et chaque prestataire.
 async function loadSpaceThreads(sp){
   if(!sb||!EV.id)return;
   const {data:shares}=await sb.from('space_shares').select('id,vendor_role,vendor_name,token').eq('event_id',EV.id).eq('space_id',sp.id).eq('active',true).order('created_at');
@@ -2497,31 +2501,39 @@ async function loadSpaceThreads(sp){
   const tokenOf={};shareList.forEach(s=>{tokenOf[s.id]=s.token;});
   let contribs=[];
   if(shareList.length){
-    const {data}=await sb.from('space_contributions').select('*').in('share_id',shareList.map(s=>s.id)).order('created_at');
-    contribs=data||[];
+    const {data}=await sb.from('space_contributions').select('*').in('share_id',shareList.map(s=>s.id));
+    contribs=contribs.concat(data||[]);
   }
+  // Messages « équipe » (entre organisateur et collaborateurs, section 8) :
+  // rattachés directement à l'événement/l'espace, jamais à un partage
+  // prestataire — donc toujours chargés, même sans aucun prestataire
+  // partagé sur cet espace, et jamais visibles par un prestataire
+  // (get_shared_space ne lit que les messages de SON partage).
+  {
+    const {data}=await sb.from('space_contributions').select('*').eq('event_id',EV.id).eq('space_id',sp.id).is('share_id',null);
+    contribs=contribs.concat(data||[]);
+  }
+  contribs.sort((a,b)=>Date.parse(a.created_at)-Date.parse(b.created_at));
   const byItem={};
   contribs.forEach(c=>{const k=c.item_id||'';(byItem[k]=byItem[k]||[]).push(c);});
   const pendingImg={};
   sp.items.forEach(it=>{
     const box=document.getElementById('thread-'+it.id);if(!box)return;
-    if(!shareList.length){
-      box.innerHTML='<p class="empty" style="padding:4px 0">Partagez cet espace avec un prestataire pour en discuter ici.</p>';
-      return;
-    }
     const msgs=byItem[it.id]||[];
     box.innerHTML=`
       ${msgs.length?`<div class="sp-msgs">${msgs.map(m=>`
         <div class="sp-msg${m.source==='organizer'?' mine':''}">
           <b>${esc(m.author||(m.source==='organizer'?(EV.name||'Vous'):(vendorOf[m.share_id]||'Prestataire')))}</b>
+          ${shareList.length?`<span class="sp-msg-chan">${m.share_id?esc(vendorOf[m.share_id]||'Prestataire'):'👥 Équipe'}</span>`:''}
           ${m.body?`<span>${esc(m.body)}</span>`:''}
           ${m.image?`<img src="${m.image}" alt="">`:''}
           <small>${ago(Date.parse(m.created_at))}</small>
         </div>`).join('')}</div>`:'<p class="empty" style="padding:4px 0">Aucun message pour l\u2019instant.</p>'}
       <div class="sp-compose">
-        ${shareList.length>1?`<select class="inp" data-threadshare="${it.id}">
+        ${shareList.length?`<select class="inp" data-threadshare="${it.id}">
+          <option value="__team__">👥 Équipe (co-organisateurs)</option>
           ${shareList.map(s=>`<option value="${s.id}">${esc(vendorOf[s.id])}</option>`).join('')}
-        </select>`:''}
+        </select>`:'<p class="hint" style="margin:0 0 6px">Visible par vous et vos collaborateur·rice·s de cet événement.</p>'}
         <textarea class="inp" data-threadbody="${it.id}" placeholder="Répondre…"></textarea>
         <div id="threadImgPrev-${it.id}"></div>
         <div class="sp-compose-row">
@@ -2546,18 +2558,21 @@ async function loadSpaceThreads(sp){
       const body=(ta?ta.value:'').trim();
       const img=pendingImg[it.id]||'';
       if(!body&&!img){toast('Écrivez un message');return;}
-      const shareId=sel?sel.value:shareList[0].id;
+      const selVal=sel?sel.value:'__team__';
+      const shareId=selVal==='__team__'?null:selVal;
       sendBtn.disabled=true;
       const meNow=session();
       const {error}=await sb.from('space_contributions').insert({
-        share_id:shareId,item_id:it.id,author:(meNow&&meNow.name)||'Vous',body,image:img,source:'organizer'});
+        share_id:shareId,event_id:EV.id,space_id:sp.id,item_id:it.id,
+        author:(meNow&&meNow.name)||'Vous',body,image:img,source:'organizer'});
       sendBtn.disabled=false;
       if(error){toast('Erreur : '+error.message);return;}
       delete pendingImg[it.id];
       toast('Message envoyé');
       // Avertit le prestataire par courriel, s'il en a laissé un — jamais
-      // bloquant si ça échoue (le message est déjà enregistré).
-      if(tokenOf[shareId])sb.functions.invoke('notify-space-message',{body:{
+      // bloquant si ça échoue (le message est déjà enregistré). Un message
+      // adressé à « Équipe » (shareId null) ne notifie aucun prestataire.
+      if(shareId&&tokenOf[shareId])sb.functions.invoke('notify-space-message',{body:{
         p_token:tokenOf[shareId],p_item_id:it.id,p_source:'organizer',p_body:body,
         p_author:(meNow&&meNow.name)||'Vous',p_actor_email:(meNow&&meNow.email)||''}}).catch(()=>{});
       loadSpaceThreads(sp);
