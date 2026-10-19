@@ -2896,7 +2896,9 @@ function renderAuth(){
    CONFIRMATION DE COLLABORATEUR (lien d'invitation à un événement)
    Architecture volontairement 100 % côté client, SANS fonction Edge à
    déployer : sb.auth.signInWithOtp() envoie lui-même, via le mécanisme
-   natif de Supabase, un code à 6 chiffres par courriel — il suffit de
+   natif de Supabase, un code (la longueur exacte dépend du projet — ne
+   jamais la coder en dur côté client, voir maxlength du champ ccCode plus
+   bas) par courriel — il suffit de
    mettre {{ .Token }} dans les gabarits de courriel « Confirm signup »
    et « Magic Link » du tableau de bord Supabase (Authentication → Email
    Templates), sans aucun déploiement de code. Ancienne version : un
@@ -2921,9 +2923,9 @@ function renderCollabConfirm(em,evSlug){
     return;
   }
   b.innerHTML=`<h1>Invitation à collaborer</h1>
-    <p class="sub">Un code à 6 chiffres a été envoyé par courriel à <b>${esc(em)}</b>. Entrez-le ci-dessous pour accéder à l'événement.</p>
+    <p class="sub">Un code a été envoyé par courriel à <b>${esc(em)}</b>. Entrez-le ci-dessous pour accéder à l'événement.</p>
     <div class="field"><label>Code reçu par courriel</label>
-      <input class="inp" id="ccCode" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="123456"></div>
+      <input class="inp" id="ccCode" inputmode="numeric" autocomplete="one-time-code" maxlength="12" placeholder="Ex. 12345678"></div>
     <button class="btn btn-gold" id="ccGo" style="width:100%">Confirmer et accéder à l'événement</button>
     <button class="mini-btn" id="ccResend" style="width:100%;margin-top:8px">Renvoyer le code</button>
     <p class="empty" id="ccErr" style="color:var(--red);display:none"></p>`;
@@ -4396,7 +4398,7 @@ function paintSettings(){
         const confirmLink=baseURL()+'#/co-confirm?em='+encodeURIComponent(email)+'&ev='+encodeURIComponent(EV.slug);
         loadCollaborators();
         dialog({title:'Invitation envoyée',
-          body:`<p class="hint" style="margin-top:-6px">Un code à 6 chiffres vient d'être envoyé par courriel à <b>${esc(email)}</b>. Copiez ce lien et envoyez-le vous-même (texto, courriel, WhatsApp…) : en l'ouvrant et en entrant son code, ${esc(name||email)} aura accès complet à l'événement.</p>
+          body:`<p class="hint" style="margin-top:-6px">Un code vient d'être envoyé par courriel à <b>${esc(email)}</b>. Copiez ce lien et envoyez-le vous-même (texto, courriel, WhatsApp…) : en l'ouvrant et en entrant son code, ${esc(name||email)} aura accès complet à l'événement.</p>
             <div class="field" style="margin-bottom:0"><label>Lien à envoyer</label><input class="inp" id="ccLinkOut" readonly value="${esc(confirmLink)}"></div>`,
           ok:'Copier le lien',cancel:'Fermer',
           onOk:()=>copyText(confirmLink)});
