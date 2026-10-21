@@ -226,6 +226,9 @@ footer{background:var(--navy-ink);color:rgba(255,255,255,.6);padding:44px 0 30px
 .sc-hud{position:absolute;top:26px;left:26px;display:flex;gap:8px;align-items:center;pointer-events:none}
 .hud-pill{background:rgba(255,255,255,.82);backdrop-filter:blur(6px);border:1px solid rgba(15,45,82,.08);border-radius:100px;padding:5px 12px;font-family:var(--font-mono);font-size:11px;font-weight:600;color:var(--navy);letter-spacing:.05em}
 .floor{fill:#F4F6F9}
+.room-outline{fill:none;stroke:#0F2D52;stroke-width:4;stroke-linejoin:round;opacity:.85}
+.room-door circle{fill:#fff;stroke:#0F2D52;stroke-width:2}
+.room-door text{font-size:11px}
 .tbl{fill:#DDE3EB;stroke:#CBD4DF;stroke-width:1.5}
 .tbl-lbl{font-family:'IBM Plex Mono',monospace;font-size:15px;fill:#7C8A9A;font-weight:600;text-anchor:middle;dominant-baseline:middle}
 .tbl-decor{pointer-events:none;opacity:.92}
@@ -1155,7 +1158,7 @@ body.app-on .help-btn{display:flex}
     <a href="#/" class="logo"><span class="logo-mark"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M6 4h12M6 12h9M6 20h12M6 4v16" stroke="#fff" stroke-width="3" stroke-linecap="round"/><path d="M17 9l4 3-4 3" stroke="#D4A017" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Evenza</a>
     <nav class="nav-links">
       <a href="#/">Accueil</a>
-      <a href="#profils">Prestataires</a>
+      <a href="#/annuaire">Prestataires</a>
       <a href="#/compte">Tarifs</a>
       <a href="#story">À propos</a>
     </nav>
@@ -1224,7 +1227,7 @@ body.app-on .help-btn{display:flex}
           <span class="prof-tag">PRESTATAIRES</span>
           <h3 class="serif">Je suis<br>prestataire</h3>
           <p>Soyez visible et connectez avec de futurs mariés.</p>
-          <button class="btn btn-outline btn-sm" data-go="setup" data-plan="pro" style="width:100%">Créer mon profil →</button>
+          <button class="btn btn-outline btn-sm" id="prestaTile" style="width:100%">Créer mon profil →</button>
         </div>
       </div>
     </div>
@@ -1381,6 +1384,40 @@ body.app-on .help-btn{display:flex}
 <div id="tableshare" class="view"><div class="shr" id="tbsWrap"></div></div>
 <div id="giftlist" class="view"><div class="shr" id="glWrap"></div></div>
 
+<!-- ==================== ANNUAIRE PRESTATAIRES ==================== -->
+<div id="vauth" class="view">
+  <div class="su-top"><div class="su-top-in">
+    <a href="#/" class="logo"><span class="logo-mark"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M6 4h12M6 12h9M6 20h12M6 4v16" stroke="#fff" stroke-width="3" stroke-linecap="round"/><path d="M17 9l4 3-4 3" stroke="#D4A017" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Evenza</a>
+    <a href="#/" class="mini-btn">Retour au site</a>
+  </div></div>
+  <div class="su-wrap">
+    <div class="su-card">
+      <div class="seg" id="vauthSeg" style="margin-bottom:22px">
+        <button class="sel" data-vauth="signup">Créer mon profil</button>
+        <button data-vauth="login">J'ai déjà un compte</button>
+      </div>
+      <div id="vauthBody"></div>
+    </div>
+  </div>
+</div>
+<div id="vdash" class="view">
+  <div class="su-top"><div class="su-top-in">
+    <a href="#/" class="logo"><span class="logo-mark"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M6 4h12M6 12h9M6 20h12M6 4v16" stroke="#fff" stroke-width="3" stroke-linecap="round"/><path d="M17 9l4 3-4 3" stroke="#D4A017" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Evenza</a>
+    <a href="#/" class="mini-btn">Retour au site</a>
+  </div></div>
+  <div class="su-wrap" style="max-width:640px">
+    <div class="su-card" id="vdashWrap"></div>
+  </div>
+</div>
+<div id="annuaire" class="view">
+  <div class="su-top"><div class="su-top-in">
+    <a href="#/" class="logo"><span class="logo-mark"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M6 4h12M6 12h9M6 20h12M6 4v16" stroke="#fff" stroke-width="3" stroke-linecap="round"/><path d="M17 9l4 3-4 3" stroke="#D4A017" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Evenza</a>
+    <a href="#/" class="mini-btn">Retour au site</a>
+  </div></div>
+  <div class="su-wrap" style="max-width:1080px" id="annuaireWrap"></div>
+</div>
+<div id="vprofile" class="view"><div class="shr" id="vpWrap"></div></div>
+
 
 <!-- ==================== PLAN PLEIN ÉCRAN ==================== -->
 <div id="fs" class="fs">
@@ -1472,6 +1509,11 @@ function copyText(txt,btn,label){
    SESSION (Supabase Auth)
 ============================================================ */
 let USER=null,PROFILE=null;
+// Les outils réservés au fondateur (modération des prestataires, catalogue
+// de salles modélisées) ont été déplacés dans un tableau de bord séparé
+// (admin.html) — aucun courriel ni logique d'administration codé en dur
+// ici, pour que ce fichier (livré à tous les visiteurs) ne révèle rien
+// sur qui a accès à quoi côté fondateur.
 function session(){return USER?{email:USER.email,
   name:(PROFILE&&PROFILE.name)||USER.email,
   company:(PROFILE&&PROFILE.company)||'',
@@ -1815,6 +1857,19 @@ function planSvg(ev,opt){
     <rect class="floor" data-floor="1" x="0" y="0" width="${ROOM.w}" height="${ROOM.h}" rx="18"/>`;
   for(let x=40;x<ROOM.w;x+=40)s+=`<line x1="${x}" y1="0" x2="${x}" y2="${ROOM.h}" stroke="#EAEEF3" stroke-width="1" pointer-events="none"/>`;
   for(let y=40;y<ROOM.h;y+=40)s+=`<line x1="0" y1="${y}" x2="${ROOM.w}" y2="${y}" stroke="#EAEEF3" stroke-width="1" pointer-events="none"/>`;
+
+  // Forme de salle devinée par IA à partir d'une photo (facultatif, outil
+  // réservé au fondateur — voir paintPlan()) : un simple contour + des
+  // repères de porte dessinés par-dessus le rectangle habituel, jamais à
+  // la place — une estimation approximative, pas une mesure exacte.
+  if(ev.plan.roomOutline&&ev.plan.roomOutline.length>=3){
+    const pts=ev.plan.roomOutline.map(p=>(p.x*ROOM.w).toFixed(1)+','+(p.y*ROOM.h).toFixed(1)).join(' ');
+    s+=`<polygon class="room-outline" points="${pts}" pointer-events="none"/>`;
+  }
+  (ev.plan.roomDoors||[]).forEach(d=>{
+    s+=`<g class="room-door" transform="translate(${(d.x*ROOM.w).toFixed(1)},${(d.y*ROOM.h).toFixed(1)})" pointer-events="none">
+      <circle r="9"/><text x="0" y="4" text-anchor="middle">🚪</text></g>`;
+  });
 
   (ev.plan.zones||[]).forEach(z=>{
     const d=ZTYPES[z.type]||ZTYPES.dance;
@@ -2641,6 +2696,12 @@ function paintPlan(){
       </div>
 
       <div class="box">
+        <h3>Salle existante <small style="font-weight:400;color:var(--muted)">(facultatif)</small></h3>
+        <p class="hint" style="margin:0 0 10px">Si votre lieu de réception fait partie de nos salles modélisées, choisissez-la pour afficher sa forme et ses portes sur le plan — sinon, le rectangle habituel reste utilisé. Une estimation approximative, à ajuster au besoin.</p>
+        <div id="roomTplBox"><p class="empty" style="padding:6px 0">Chargement…</p></div>
+        ${EV.plan.roomOutline?`<button class="mini-btn" id="roomResetBtn" style="width:100%;margin-top:8px;justify-content:center">Retirer la forme de salle</button>`:''}
+      </div>
+      <div class="box">
         <h3>Ajouter au plan</h3>
         <div class="zbtns">
           ${Object.keys(TSHAPES).map(k=>`<button class="zb${k==='maries'?' gold':''}" data-add="${k}">+ ${TSHAPES[k].n}</button>`).join('')}
@@ -2719,6 +2780,9 @@ function paintPlan(){
     const auto=EV.plan.zones||[];
     EV.plan.zones=zones.length?zones:auto;
     (EV.list||[]).forEach(g=>g.seat=null);save();paintPlan();toast('Plan réorganisé');};
+  if($('roomResetBtn'))$('roomResetBtn').onclick=()=>{
+    EV.plan.roomOutline=null;EV.plan.roomDoors=null;EV.plan.roomTplId=null;save();paintPlan();
+    toast('Forme par défaut restaurée');};
   document.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>{
     const n=(EV.plan.tables||[]).length;
     const t=newTable(b.dataset.add,ROOM.w/2,ROOM.h/2,n);
@@ -2780,6 +2844,36 @@ function paintPlan(){
   bindPlan($('paneplan'),id=>{selObj=id;paintPlan();},()=>{});
   $('fsOpenBtn').onclick=()=>fsOpen('edit');
   bindSeats();
+  loadRoomTemplates();
+}
+// Salles modélisées (voir room-templates-migration.sql) : catalogue facultatif
+// que n'importe quel·le organisateur peut parcourir pour appliquer une forme
+// de salle + des portes devinées par IA à son plan — jamais obligatoire, le
+// rectangle habituel reste utilisé si rien n'est choisi. Les photos sont
+// prises et analysées séparément par l'équipe Evenza (tableau de bord
+// fondateur, admin.html) pour éviter des appels IA facturés sur n'importe
+// quel compte organisateur ; ici on ne fait que LIRE le catalogue déjà créé.
+let ROOM_TPLS_CACHE=null;
+async function loadRoomTemplates(){
+  if(!sb)return;
+  if(!ROOM_TPLS_CACHE){
+    try{const {data,error}=await sb.rpc('list_room_templates');if(error)throw error;ROOM_TPLS_CACHE=data||[];}
+    catch(e){ROOM_TPLS_CACHE=[];}
+  }
+  const box=$('roomTplBox');if(!box)return;
+  if(!ROOM_TPLS_CACHE.length){
+    box.innerHTML='<p class="empty" style="padding:6px 0">Aucune salle modélisée pour l’instant.</p>';
+    return;
+  }
+  box.innerHTML=ROOM_TPLS_CACHE.map(t=>`
+    <button class="mini-btn" data-roomtpl="${esc(t.id)}" style="width:100%;margin-bottom:7px;justify-content:flex-start;gap:10px">
+      ${t.photo?`<img src="${t.photo}" alt="" style="width:34px;height:34px;border-radius:7px;object-fit:cover;flex-shrink:0">`:''}
+      <span>${esc(t.name)}${t.city?' · '+esc(t.city):''}</span>
+    </button>`).join('');
+  box.querySelectorAll('[data-roomtpl]').forEach(b=>b.onclick=()=>{
+    const t=ROOM_TPLS_CACHE.find(x=>x.id===b.dataset.roomtpl);if(!t)return;
+    EV.plan.roomOutline=t.outline;EV.plan.roomDoors=t.doors||[];EV.plan.roomTplId=t.id;
+    save();paintPlan();toast('Forme de « '+t.name+' » appliquée — ajoutez vos tables par-dessus');});
 }
 function miniSvg(k){
   const p=genPlan(k,k==='theatre'?18:24);
@@ -5209,9 +5303,257 @@ function paintTableShare(){
 }
 
 /* ============================================================
+   ANNUAIRE DES PRESTATAIRES (phase 1 — gratuit, sans paiement)
+   Compte prestataire entièrement indépendant des comptes organisateurs
+   (profiles/PLANS/JOBS) : providers.owner_id pointe sur le même pool
+   d'authentification Supabase, mais rien n'empêche qu'un même courriel ait
+   aussi un profil organisateur — les deux coexistent sans se gêner.
+============================================================ */
+let vendorAuthMode='signup',VPROV=null;
+
+function vendorCatOptions(sel){
+  return VENDOR_CATS.map(c=>`<option value="${esc(c.n)}"${c.n===sel?' selected':''}>${esc(c.ic)} ${esc(c.n)}</option>`).join('');
+}
+
+async function renderVendorAuth(){
+  document.querySelectorAll('#vauthSeg [data-vauth]').forEach(b=>{
+    b.classList.toggle('sel',b.dataset.vauth===vendorAuthMode);
+    b.onclick=()=>{vendorAuthMode=b.dataset.vauth;renderVendorAuth();};});
+  const b=$('vauthBody');
+  if(vendorAuthMode==='login'){
+    b.innerHTML=`
+      <h1>Content de vous revoir</h1>
+      <p class="sub">Connectez-vous pour gérer votre fiche de l'annuaire.</p>
+      <div class="field"><label for="vliMail">Courriel</label><input class="inp" id="vliMail" type="email" autocomplete="email" placeholder="vous@exemple.ca"></div>
+      <div class="field"><label for="vliPass">Mot de passe</label><input class="inp" id="vliPass" type="password" autocomplete="current-password" placeholder="••••••••"></div>
+      <button class="btn btn-navy" id="vliGo" style="width:100%">Se connecter</button>
+      <p class="empty" id="vliErr" style="color:var(--red);display:none"></p>`;
+    $('vliGo').onclick=async()=>{
+      const m=($('vliMail').value||'').trim().toLowerCase(),p=$('vliPass').value||'';
+      $('vliGo').disabled=true;
+      const {error}=await sb.auth.signInWithPassword({email:m,password:p});
+      $('vliGo').disabled=false;
+      if(error){$('vliErr').style.display='block';
+        $('vliErr').textContent=/confirm/i.test(error.message)?'Confirmez d’abord votre courriel (regardez votre boîte de réception).':'Courriel ou mot de passe incorrect.';
+        return;}
+      await refreshSession();
+      location.hash='#/presta';
+      toast('Bonjour '+m.split('@')[0]);};
+    $('vliPass').onkeydown=e=>{if(e.key==='Enter')$('vliGo').click();};
+    return;
+  }
+  b.innerHTML=`
+    <h1>Rejoignez l'annuaire</h1>
+    <p class="sub">Créez votre fiche prestataire : une fois approuvée, les futurs mariés pourront vous trouver sur Evenza.</p>
+    ${USER?`<p class="empty" style="background:var(--gray);border-radius:10px;padding:10px 12px">Vous êtes déjà connecté·e en tant que <b>${esc((PROFILE&&PROFILE.name)||USER.email)}</b> — on ajoute votre fiche prestataire à ce même compte.</p>`:''}
+    <div class="row2">
+      <div class="field"><label for="vsuName">Nom de l'entreprise</label><input class="inp" id="vsuName" placeholder="Studio Lumen" autocomplete="organization"></div>
+      <div class="field"><label for="vsuCat">Catégorie</label><select class="inp" id="vsuCat">${vendorCatOptions()}</select></div>
+    </div>
+    <div class="field"><label for="vsuCity">Ville</label><input class="inp" id="vsuCity" placeholder="Montréal" autocomplete="address-level2"></div>
+    ${USER?'':`
+    <div class="field"><label for="vsuMail">Courriel</label><input class="inp" id="vsuMail" type="email" placeholder="vous@exemple.ca" autocomplete="email"></div>
+    <div class="field"><label for="vsuPass">Mot de passe <span class="hint">8 caractères minimum</span></label><input class="inp" id="vsuPass" type="password" placeholder="••••••••" autocomplete="new-password"></div>`}
+    <button class="btn btn-gold" id="vsuGo" style="width:100%">Créer mon profil prestataire</button>
+    <p class="empty" id="vsuErr" style="color:var(--red);display:none"></p>`;
+  $('vsuGo').onclick=async()=>{
+    const name=($('vsuName').value||'').trim(),cat=$('vsuCat').value,city=($('vsuCity').value||'').trim();
+    const err=m=>{$('vsuErr').style.display='block';$('vsuErr').textContent=m;};
+    if(name.length<2)return err('Indiquez le nom de votre entreprise.');
+    if(USER){
+      $('vsuGo').disabled=true;
+      await createProviderRow({name,category:cat,city});
+      $('vsuGo').disabled=false;
+      return;
+    }
+    const mail=($('vsuMail').value||'').trim().toLowerCase(),pass=$('vsuPass').value||'';
+    if(!mail.includes('@')||!mail.includes('.'))return err('Courriel invalide.');
+    if(pass.length<8)return err('Mot de passe trop court (8 caractères minimum).');
+    try{localStorage.setItem('evz.pendingVendor',JSON.stringify({name,category:cat,city}));}catch(e){}
+    $('vsuGo').disabled=true;
+    const {data,error}=await sb.auth.signUp({email:mail,password:pass});
+    $('vsuGo').disabled=false;
+    if(error)return err(/registered/i.test(error.message)?'Un compte existe déjà avec ce courriel. Connectez-vous.':error.message);
+    if(data.session){
+      await refreshSession();
+      await createProviderRow({name,category:cat,city});
+    }else{
+      vendorAuthMode='login';renderVendorAuth();
+      toast('Profil créé — confirmez votre courriel, puis connectez-vous');
+    }};
+}
+
+async function createProviderRow(pend){
+  if(!sb||!USER)return;
+  // La RLS sur providers ne laisse lire que ses propres lignes (ou l'admin
+  // les siennes) — impossible de présoumettre une liste de slugs déjà pris
+  // par d'autres comme on le fait pour les événements. On tente plutôt
+  // l'insertion et on réessaie avec un suffixe si le slug est déjà pris
+  // (contrainte unique sur providers.slug).
+  const base=slugify(pend.name);let slug=base,n=2,error=null;
+  for(let i=0;i<8;i++){
+    const r=await sb.from('providers').insert({owner_id:USER.id,slug,name:pend.name,category:pend.category,city:pend.city});
+    error=r.error;
+    if(!error){error=null;break;}
+    if(error.code!=='23505'){break;}
+    slug=base+'-'+n;n++;
+  }
+  if(error){toast('Erreur : '+error.message);return;}
+  try{localStorage.removeItem('evz.pendingVendor');}catch(e){}
+  location.hash='#/presta';
+  toast('Profil créé — complétez-le puis soumettez-le pour validation');
+}
+// Appelé depuis le démarrage de l'app (après confirmation de courriel, au
+// premier login) — mirroir de ensureProfile()/evz.pendingProfile, mais
+// jamais mêlé à ce chemin-là : un compte prestataire pur ne doit pas créer
+// de ligne 'profiles'.
+async function maybeCreatePendingVendor(){
+  let pend=null;try{pend=JSON.parse(localStorage.getItem('evz.pendingVendor')||'null');}catch(e){}
+  if(!pend||!USER)return;
+  const {data:mine}=await sb.from('providers').select('id').eq('owner_id',USER.id).maybeSingle();
+  if(!mine)await createProviderRow(pend);
+  else try{localStorage.removeItem('evz.pendingVendor');}catch(e){}
+}
+
+const vdashPhotoPending={cover:'',photos:[]};
+async function renderVendorDash(){
+  const w=$('vdashWrap');
+  w.innerHTML='<p class="empty" style="padding:30px">Chargement…</p>';
+  const {data}=await sb.from('providers').select('*').eq('owner_id',USER.id).maybeSingle();
+  VPROV=data;
+  if(!VPROV){location.hash='#/presta/c';return;}
+  vdashPhotoPending.photos=(VPROV.photos||[]).slice();
+  vdashPhotoPending.cover=VPROV.cover_photo||'';
+  paintVendorDash();
+}
+function paintVendorDash(){
+  const w=$('vdashWrap');
+  const status=VPROV.active?{t:'En ligne ✓',c:'#1D8A5A'}:VPROV.submitted_at?{t:'En attente de validation',c:'var(--gold)'}:{t:'Brouillon',c:'var(--muted)'};
+  w.innerHTML=`
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:6px">
+      <h1 style="margin:0">Ma fiche prestataire</h1>
+      ${PROFILE?'<a href="#/espace" class="mini-btn">↔ Mon espace organisateur</a>':''}
+    </div>
+    <p class="sub" style="color:${status.c};font-weight:600">${status.t}</p>
+    ${VPROV.active?`<p class="empty" style="padding:0 0 14px"><a href="#/annuaire/${esc(VPROV.slug)}" target="_blank">Voir ma fiche publique →</a></p>`:''}
+    <div class="row2">
+      <div class="field"><label for="vdName">Nom de l'entreprise</label><input class="inp" id="vdName" value="${esc(VPROV.name)}"></div>
+      <div class="field"><label for="vdCat">Catégorie</label><select class="inp" id="vdCat">${vendorCatOptions(VPROV.category)}</select></div>
+    </div>
+    <div class="field"><label for="vdCity">Ville</label><input class="inp" id="vdCity" value="${esc(VPROV.city)}"></div>
+    <div class="field"><label for="vdDesc">Description</label><textarea class="inp" id="vdDesc" style="min-height:90px">${esc(VPROV.description)}</textarea></div>
+    <div class="row2">
+      <div class="field"><label for="vdPhone">Téléphone</label><input class="inp" id="vdPhone" value="${esc(VPROV.phone)}"></div>
+      <div class="field"><label for="vdEmail">Courriel public</label><input class="inp" id="vdEmail" value="${esc(VPROV.email)}"></div>
+    </div>
+    <div class="field"><label for="vdSite">Site web</label><input class="inp" id="vdSite" placeholder="https://" value="${esc(VPROV.website)}"></div>
+    <div class="field"><label>Photo de couverture</label>
+      <div class="ac-inspo" style="grid-template-columns:repeat(auto-fill,minmax(120px,1fr))">
+        ${vdashPhotoPending.cover?`<div class="ac-inspo-item"><img src="${vdashPhotoPending.cover}" alt=""><button class="ac-inspo-x" id="vdCoverX">×</button></div>`
+          :`<label class="ac-inspo-add"><span class="ac-inspo-plus">+</span><small>Ajouter</small><input type="file" accept="image/*" hidden id="vdCoverIn"></label>`}
+      </div></div>
+    <div class="field"><label>Portfolio photos <span class="hint">8 maximum</span></label>
+      <div class="ac-inspo">
+        ${vdashPhotoPending.photos.map((p,i)=>`<div class="ac-inspo-item"><img src="${p}" alt=""><button class="ac-inspo-x" data-vdphx="${i}">×</button></div>`).join('')}
+        ${vdashPhotoPending.photos.length<8?`<label class="ac-inspo-add"><span class="ac-inspo-plus">+</span><small>Ajouter</small><input type="file" accept="image/*" hidden id="vdPhotoIn"></label>`:''}
+      </div></div>
+    <div style="display:flex;gap:10px;margin-top:6px">
+      <button class="btn btn-outline" id="vdSave" style="flex:1">Enregistrer</button>
+      ${VPROV.active?'':`<button class="btn btn-gold" id="vdSubmit" style="flex:1">Soumettre pour validation</button>`}
+    </div>
+    <p class="empty" id="vdErr" style="color:var(--red);display:none;margin-top:8px"></p>`;
+  if($('vdCoverIn'))$('vdCoverIn').onchange=e=>{const f=e.target.files&&e.target.files[0];if(!f)return;
+    toast('Traitement de l’image…');
+    compressImage(f,900,180000).then(url=>{vdashPhotoPending.cover=url;paintVendorDash();}).catch(()=>toast('Image illisible'));};
+  if($('vdCoverX'))$('vdCoverX').onclick=()=>{vdashPhotoPending.cover='';paintVendorDash();};
+  if($('vdPhotoIn'))$('vdPhotoIn').onchange=e=>{const f=e.target.files&&e.target.files[0];if(!f)return;
+    if(vdashPhotoPending.photos.length>=8){toast('8 photos maximum');return;}
+    toast('Traitement de l’image…');
+    compressImage(f,900,180000).then(url=>{vdashPhotoPending.photos.push(url);paintVendorDash();}).catch(()=>toast('Image illisible'));};
+  w.querySelectorAll('[data-vdphx]').forEach(b=>b.onclick=()=>{vdashPhotoPending.photos.splice(+b.dataset.vdphx,1);paintVendorDash();});
+  const gather=()=>({name:($('vdName').value||'').trim(),category:$('vdCat').value,city:($('vdCity').value||'').trim(),
+    description:($('vdDesc').value||'').trim(),phone:($('vdPhone').value||'').trim(),email:($('vdEmail').value||'').trim(),
+    website:($('vdSite').value||'').trim(),cover_photo:vdashPhotoPending.cover,photos:vdashPhotoPending.photos});
+  $('vdSave').onclick=async()=>{
+    $('vdSave').disabled=true;
+    const patch=gather();
+    // Une fiche déjà en ligne reste en ligne après une simple mise à jour —
+    // seule la première soumission doit repasser par la validation.
+    if(VPROV.submitted_at&&!VPROV.active)patch.submitted_at=null;
+    const {data,error}=await sb.from('providers').update(patch).eq('id',VPROV.id).select().maybeSingle();
+    $('vdSave').disabled=false;
+    if(error){$('vdErr').style.display='block';$('vdErr').textContent='Erreur : '+error.message;return;}
+    VPROV=data;toast('Enregistré');paintVendorDash();};
+  if($('vdSubmit'))$('vdSubmit').onclick=async()=>{
+    $('vdSubmit').disabled=true;
+    const patch=gather();
+    const {error:uerr}=await sb.from('providers').update(patch).eq('id',VPROV.id);
+    if(uerr){$('vdSubmit').disabled=false;$('vdErr').style.display='block';$('vdErr').textContent='Erreur : '+uerr.message;return;}
+    const {error}=await sb.rpc('submit_provider_for_review');
+    $('vdSubmit').disabled=false;
+    if(error){$('vdErr').style.display='block';$('vdErr').textContent=error.message;return;}
+    toast('Soumis pour validation');renderVendorDash();};
+}
+
+async function renderDirectory(category){
+  const w=$('annuaireWrap');
+  w.innerHTML='<p class="empty" style="padding:30px">Chargement…</p>';
+  if(!sb){w.innerHTML='<p class="empty" style="padding:30px">Service non configuré.</p>';return;}
+  let list=[];
+  try{const {data,error}=await sb.rpc('list_providers',{p_category:category||null});if(error)throw error;list=data||[];}catch(e){}
+  w.innerHTML=`
+    <div class="sec-head"><span class="kicker">L'ANNUAIRE</span><h2 class="serif">Des prestataires de confiance.</h2></div>
+    <div class="ac-vendors" style="margin-bottom:26px">
+      <a class="ac-vcat${!category?' sel':''}" href="#/annuaire" style="border-color:${!category?'var(--navy)':'var(--line)'}"><span class="ac-vic">✨</span>Tous</a>
+      ${VENDOR_CATS.map(c=>`<a class="ac-vcat" href="#/annuaire?cat=${encodeURIComponent(c.n)}" style="border-color:${category===c.n?'var(--navy)':'var(--line)'}"><span class="ac-vic">${c.ic}</span>${esc(c.n)}</a>`).join('')}
+    </div>
+    <div class="ac-provs">
+      ${list.length?list.map(p=>`
+        <a class="ac-prov" href="#/annuaire/${esc(p.slug)}">
+          ${p.cover_photo?`<img class="ac-prov-img" src="${p.cover_photo}" alt="">`:`<div class="ac-prov-img ac-prov-ph">🏷️</div>`}
+          <div class="ac-prov-body">
+            <span class="ac-prov-cat">${esc(p.category)}</span>
+            <b>${esc(p.name)}</b>
+            <small>${esc(p.city||'')}</small>
+            ${p.description?`<p>${esc(p.description.slice(0,110))}${p.description.length>110?'…':''}</p>`:''}
+          </div>
+        </a>`).join(''):'<p class="empty">Aucun prestataire dans cette catégorie pour le moment.</p>'}
+    </div>`;
+}
+
+async function renderVendorProfile(slug){
+  const w=$('vpWrap');
+  w.innerHTML='<div class="shr-card"><p class="empty" style="padding:30px">Chargement…</p></div>';
+  if(!sb){w.innerHTML='<div class="shr-card"><p class="empty" style="padding:30px">Service non configuré.</p></div>';return;}
+  let d=null;
+  try{const {data,error}=await sb.rpc('get_provider',{p_slug:slug});if(error)throw error;d=data;}catch(e){}
+  if(!d){w.innerHTML='<div class="shr-card"><div class="shr-top"><b>Evenza</b></div><div style="padding:26px"><p class="empty">Cette fiche est introuvable ou n’est plus en ligne. <a href="#/annuaire">Retour à l’annuaire</a></p></div></div>';return;}
+  const photos=d.photos||[];
+  w.innerHTML=`
+  <div class="shr-card">
+    <div class="shr-top">
+      <span class="shr-eyebrow">${esc(d.category||'PRESTATAIRE')}</span>
+      <h1>${esc(d.name)}</h1>
+      <p>${esc(d.city||'')}</p>
+    </div>
+    <div class="shr-body">
+      ${d.cover_photo?`<img src="${d.cover_photo}" alt="" style="width:100%;border-radius:12px;margin-bottom:18px;display:block">`:''}
+      ${d.description?`<p class="shr-intro">${esc(d.description)}</p>`:''}
+      ${photos.length?`<div class="ac-inspo" style="margin-bottom:20px">${photos.map(p=>`<div class="ac-inspo-item"><img src="${p}" alt=""></div>`).join('')}</div>`:''}
+      <div style="display:flex;flex-direction:column;gap:6px;font-size:14px">
+        ${d.phone?`<span>📞 ${esc(d.phone)}</span>`:''}
+        ${d.email?`<a href="mailto:${esc(d.email)}">✉️ ${esc(d.email)}</a>`:''}
+        ${d.website?`<a href="${esc(d.website)}" target="_blank" rel="noopener">🔗 ${esc(d.website)}</a>`:''}
+      </div>
+      <p class="empty" style="padding-top:20px"><a href="#/annuaire">← Retour à l’annuaire</a></p>
+    </div>
+  </div>`;
+}
+
+/* ============================================================
    ROUTEUR
 ============================================================ */
-const VIEWS=['setup','compte','reset','legal','espace','work','invite','share','feed','tableshare','giftlist'];
+const VIEWS=['setup','compte','reset','legal','espace','work','invite','share','feed','tableshare','giftlist','vauth','vdash','annuaire','vprofile'];
 function show(v){VIEWS.forEach(x=>$(x).classList.toggle('on',x===v));
   document.body.classList.toggle('app-on',!!v);window.scrollTo({top:0});}
 async function route(){
@@ -5252,6 +5594,16 @@ async function route(){
   if(p[0]==='e'&&p[1]){
     if(!USER){location.hash='#/compte';return;}
     show('work');selObj=null;renderWork(p[1],p[2]||'plan');return;}
+  if(p[0]==='presta'&&p[1]==='c'){show('vauth');renderVendorAuth();return;}
+  if(p[0]==='presta'&&p[1]==='admin'){
+    // La modération des prestataires s'est déplacée dans le tableau de bord
+    // fondateur séparé (admin.html) — plus aucune logique d'admin ici.
+    location.hash='#/';return;}
+  if(p[0]==='presta'&&!p[1]){
+    if(!USER){location.hash='#/presta/c';return;}
+    show('vdash');renderVendorDash();return;}
+  if(p[0]==='annuaire'&&p[1]){show('vprofile');renderVendorProfile(p[1]);return;}
+  if(p[0]==='annuaire'){show('annuaire');renderDirectory(qs.get('cat')||'');return;}
   show(null);}
 window.addEventListener('hashchange',route);
 
@@ -5311,6 +5663,8 @@ function maybeAutoTour(){
   document.querySelectorAll('[data-go="setup"]').forEach(b=>b.onclick=e=>{e.preventDefault();
     if(b.dataset.plan){authPlan=planKey(b.dataset.plan);if(USER)setPlan(authPlan);}
     location.hash=USER?'#/creer':'#/compte';});
+  if($('prestaTile'))$('prestaTile').onclick=e=>{e.preventDefault();
+    location.hash=USER?'#/presta':'#/presta/c';};
   $('wkPrint').onclick=()=>window.print();
   if($('helpBtn'))$('helpBtn').onclick=openTour;
   if($('tour'))$('tour').onclick=e=>{if(e.target===$('tour'))closeTour();};
@@ -5333,10 +5687,12 @@ function maybeAutoTour(){
     document.body.appendChild(bar);
   }else{
     await refreshSession();
+    if(USER)await maybeCreatePendingVendor();
     sb.auth.onAuthStateChange(async(_e,s)=>{
       const had=!!USER;
       USER=s?s.user:null;
       if(USER&&!PROFILE)await refreshSession();
+      if(USER)await maybeCreatePendingVendor();
       if(!USER&&had)route();
     });
   }
