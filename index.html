@@ -5129,14 +5129,37 @@ async function renderSharedSpace(token){
       if(!body&&!img){toast('Écrivez un message');return;}
       sendBtn.disabled=true;sendBtn.textContent='Envoi…';
       const {error}=await sb.rpc('add_contribution',{p_token:token,p_author:author,p_body:body,p_item_id:it.id,p_image:img,p_vendor_email:email});
-      if(error){sendBtn.disabled=false;sendBtn.textContent='Envoyer';toast('Envoi impossible');return;}
+      sendBtn.disabled=false;sendBtn.textContent='Envoyer';
+      if(error){toast('Envoi impossible');return;}
       delete pendingImg[it.id];
       toast('Message envoyé');
       // Avertit l'organisateur par courriel — jamais bloquant si ça échoue
       // (le message est déjà enregistré).
       sb.functions.invoke('notify-space-message',{body:{
         p_token:token,p_item_id:it.id,p_source:'vendor',p_author:author,p_body:body}}).catch(()=>{});
-      renderSharedSpace(token);
+      // Affiche le message tout de suite dans le fil, SANS tout recharger
+      // (renderSharedSpace remettait toute la page en "Chargement…" à chaque
+      // envoi — si on retapait un 2e message juste après, le champ de texte
+      // et le bouton n'existaient plus le temps du rechargement, donc le clic
+      // ne partait nulle part. C'était la cause du bug "le 2e message ne part pas").
+      const thread=sendBtn.closest('.sp-thread');
+      if(thread){
+        let msgsBox=thread.querySelector('.sp-msgs');
+        if(!msgsBox){
+          msgsBox=document.createElement('div');
+          msgsBox.className='sp-msgs';
+          const empty=thread.querySelector('.empty');
+          if(empty)empty.remove();
+          thread.insertBefore(msgsBox,thread.querySelector('.sp-compose'));
+        }
+        const row=document.createElement('div');
+        row.className='sp-msg mine';
+        row.innerHTML=`<b>${esc(author||'Vous')}</b>${body?`<span>${esc(body)}</span>`:''}${img?`<img src="${img}" alt="">`:''}<small>à l'instant</small>`;
+        msgsBox.appendChild(row);
+      }
+      if(ta)ta.value='';
+      const prev=document.getElementById('shrImgPrev-'+it.id);
+      if(prev)prev.innerHTML='';
     };
   });
 }
